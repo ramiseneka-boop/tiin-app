@@ -455,7 +455,7 @@ const LANG = {
     deposited:'Отложено ✓',withdrawn:'Снято ✓',
     limitsSaved:'Лимиты сохранены ✓',enterDay:'Введите день (1-31)',
     icsDownloaded:'Файл .ics скачан 📅',allDownloaded:'Все платежи скачаны 📅',
-    csvDownloaded:'CSV скачан ✓',pdfDownloaded:'PDF скачан ✓',
+    csvDownloaded:'CSV скачан ✓',pdfDownloaded:'PDF скачан ✓',backupData:'Бэкап данных',restoreData:'Восстановить',backupDone:'Бэкап сохранён ✓',restoreDone:'Восстановлено {n} записей ✓',
     incomeAdded:'Доход добавлен ✓',expenseAdded:'Расход добавлен ✓',
     auto:'(авто)',allTags:'Все теги',newGoal:'Новая цель',example:'Например: Машина',
     deadlineOpt:'Дедлайн (опционально)',tomorrowPayment:'Завтра платёж',paymentAmount:'Сумма',
@@ -522,7 +522,7 @@ const LANG = {
     deposited:'Жиналды ✓',withdrawn:'Алынды ✓',
     limitsSaved:'Лимиттер сақталды ✓',enterDay:'Күнді енгізіңіз (1-31)',
     icsDownloaded:'.ics жүктелді 📅',allDownloaded:'Барлық төлемдер жүктелді 📅',
-    csvDownloaded:'CSV жүктелді ✓',pdfDownloaded:'PDF жүктелді ✓',
+    csvDownloaded:'CSV жүктелді ✓',pdfDownloaded:'PDF жүктелді ✓',backupData:'Деректер сақтау',restoreData:'Қалпына келтіру',backupDone:'Сақталды ✓',restoreDone:'{n} жазба қалпына келтірілді ✓',
     incomeAdded:'Кіріс қосылды ✓',expenseAdded:'Шығыс қосылды ✓',
     auto:'(авто)',allTags:'Барлық тегтер',newGoal:'Жаңа мақсат',example:'Мысалы: Көлік',
     deadlineOpt:'Мерзімі (міндетті емес)',tomorrowPayment:'Ертең төлем',paymentAmount:'Сома',
@@ -996,7 +996,8 @@ function renderAnalytics() {
   html += renderWeeklyReport();
 
   // Export
-  html += `<div class="card"><h3 class="gold" style="font-size:16px;margin-bottom:8px">📤 ${t('export')}</h3><div class="export-row"><button class="btn btn-ghost btn-sm" onclick="exportCSV()">CSV</button><button class="btn btn-ghost btn-sm" onclick="exportPDF()">PDF</button></div></div>`;
+  html += `<div class="card"><h3 class="gold" style="font-size:16px;margin-bottom:8px">📤 ${t('export')}</h3><div class="export-row"><button class="btn btn-ghost btn-sm" onclick="exportCSV()">CSV</button><button class="btn btn-ghost btn-sm" onclick="exportPDF()">PDF</button></div>
+  <div class="export-row" style="margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="exportAllData()">💾 ${t('backupData')}</button><button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFile').click()">📂 ${t('restoreData')}</button><input type="file" id="importFile" accept=".json" style="display:none" onchange="importAllData(event)"></div></div>`;
 
   el.innerHTML = html;
 
@@ -1520,6 +1521,37 @@ function exportCSV() {
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = `finance_${currentYear}_${currentMonth+1}.csv`; a.click();
   toast(t('csvDownloaded'));
+}
+
+function exportAllData() {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    data[key] = localStorage.getItem(key);
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `tiin-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+  toast(t('backupDone'));
+}
+
+function importAllData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      let count = 0;
+      Object.keys(data).forEach(key => { localStorage.setItem(key, data[key]); count++; });
+      toast(t('restoreDone').replace('{n}', count));
+      render();
+    } catch(err) { toast('Ошибка файла'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
 }
 
 function exportPDF() {
