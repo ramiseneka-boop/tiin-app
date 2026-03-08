@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-30 0 360 120" width="360" height="120">
+  <defs>
+    <linearGradient id="goldText" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#C9A44C"/>
+      <stop offset="50%" stop-color="#E8D07E"/>
+      <stop offset="100%" stop-color="#C9A44C"/>
+    </linearGradient>
+    <radialGradient id="coin3d" cx="0.35" cy="0.3" r="0.65">
+      <stop offset="0%" stop-color="#F5EBB5"/>
+      <stop offset="40%" stop-color="#E8D07E"/>
+      <stop offset="75%" stop-color="#C9A44C"/>
+      <stop offset="100%" stop-color="#8B7332"/>
+    </radialGradient>
+    <radialGradient id="coinInner" cx="0.4" cy="0.38" r="0.55">
+      <stop offset="0%" stop-color="#EED980"/>
+      <stop offset="100%" stop-color="#B8943E"/>
+    </radialGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-color="#5A4820" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Внешний ободок монеты (как у настоящего тиына) -->
+  <circle cx="60" cy="60" r="48" fill="url(#coin3d)" filter="url(#shadow)"/>
+  
+  <!-- Рубчатый край (зубцы по краю монеты) -->
+  <g stroke="#A8863A" stroke-width="0.8" opacity="0.4">
+    <circle cx="60" cy="60" r="46.5" fill="none" stroke-dasharray="2.5 2.5"/>
+  </g>
+  
+  <!-- Внутренний круг (как на реальной монете — разделяет ободок и центр) -->
+  <circle cx="60" cy="60" r="42" fill="none" stroke="#B8943E" stroke-width="2" opacity="0.6"/>
+  <circle cx="60" cy="60" r="39" fill="url(#coinInner)"/>
+  <circle cx="60" cy="60" r="39" fill="none" stroke="#C9A44C" stroke-width="0.8" opacity="0.4"/>
+  
+  <!-- Блик -->
+  <ellipse cx="48" cy="42" rx="18" ry="10" fill="white" opacity="0.12" transform="rotate(-20,48,42)"/>
+
+  <!-- Большая буква T по центру (как номинал на монете) -->
+  <text x="60" y="63" font-family="'Georgia','Times New Roman',serif" font-size="48" font-weight="700" fill="#6B5220" text-anchor="middle" dominant-baseline="central" opacity="0.85">T</text>
+  
+  <!-- Мелкие засечки — декор как на реальных монетах -->
+  <!-- Верхняя дуга текст "TIIN" мелко -->
+  <path id="topArc" d="M 30,38 A 32,32 0 0 1 90,38" fill="none" stroke="none"/>
+  <text font-family="'Inter','Helvetica Neue',Arial,sans-serif" font-size="7" fill="#6B5220" opacity="0.6" letter-spacing="3">
+    <textPath href="#topArc" startOffset="50%" text-anchor="middle">TIIN</textPath>
+  </text>
+  
+  <!-- Нижняя дуга — год или слово -->
+  <path id="bottomArc" d="M 32,82 A 32,32 0 0 0 88,82" fill="none" stroke="none"/>
+  <text font-family="'Inter','Helvetica Neue',Arial,sans-serif" font-size="6.5" fill="#6B5220" opacity="0.5" letter-spacing="1.5">
+    <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">• 2026 •</textPath>
+  </text>
+
+  <!-- Маленькие точки-декор по сторонам от T -->
+  <circle cx="38" cy="60" r="1.5" fill="#6B5220" opacity="0.4"/>
+  <circle cx="82" cy="60" r="1.5" fill="#6B5220" opacity="0.4"/>
+  
+  <!-- Маленькие звёздочки сверху и снизу -->
+  <polygon points="60,30 61,33 64,33 62,35 63,38 60,36 57,38 58,35 56,33 59,33" fill="#6B5220" opacity="0.35"/>
+  <polygon points="60,88 61,91 64,91 62,93 63,96 60,94 57,96 58,93 56,91 59,91" fill="#6B5220" opacity="0.35"/>
+
+  <!-- Text TIIN справа -->
+  <text x="135" y="68" font-family="'Inter','Helvetica Neue',Arial,sans-serif" font-size="46" font-weight="800" letter-spacing="4" fill="url(#goldText)">TIIN</text>
+  <text x="137" y="88" font-family="'Inter','Helvetica Neue',Arial,sans-serif" font-size="10" fill="#9CA3AF" letter-spacing="0.5">Каждый тиын на счету</text>
+</svg>
