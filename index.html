@@ -974,7 +974,8 @@ function renderTransactions() {
     const today = new Date(); today.setHours(0,0,0,0);
     const diffDays = Math.round((d - today) / 86400000);
     let badge = '';
-    if (diffDays === 0) badge = ' <span style="color:var(--red);font-weight:700;font-size:10px">• СЕГОДНЯ</span>';
+    if (diffDays < 0) badge = ' <span style="color:#F87171;font-weight:700;font-size:10px">• ПРОСРОЧЕНО</span>';
+    else if (diffDays === 0) badge = ' <span style="color:var(--red);font-weight:700;font-size:10px">• СЕГОДНЯ</span>';
     else if (diffDays === 1) badge = ' <span style="color:#FBBF24;font-weight:700;font-size:10px">• ЗАВТРА</span>';
     else if (diffDays > 1 && diffDays <= 3) badge = ` <span style="color:#FBBF24;font-size:10px">• через ${diffDays} дн.</span>`;
     html += `<div class="day-group"><div class="day-header">${dayStr}${badge}</div>`;
@@ -984,7 +985,10 @@ function renderTransactions() {
       const sign = tx.type === 'income' ? '+' : '−';
       const tagsHtml = tx.tags && tx.tags.length ? `<div class="tx-tags" style="font-size:10px;color:var(--gold1);margin-top:2px">${tx.tags.map(tg=>'#'+tg).join(' ')}</div>` : '';
       const walletIcon = tx.wallet === 'business' ? '💼 ' : '';
-      html += `<div class="tx-item" onclick="deleteTx(${tx.id})">
+      let txBorder = '';
+      if (tx.type === 'expense' && diffDays < 0) txBorder = 'border:1.5px solid #F87171;box-shadow:0 0 12px rgba(248,113,113,0.15);';
+      else if (tx.type === 'expense' && diffDays >= 0 && diffDays <= 2) txBorder = 'border:1.5px solid #FBBF24;box-shadow:0 0 12px rgba(251,191,36,0.15);';
+      html += `<div class="tx-item" onclick="deleteTx(${tx.id})" style="${txBorder}">
         <div class="tx-icon">${cat.icon}</div>
         <div class="tx-info"><div class="tx-cat">${walletIcon}${cat.name}</div><div class="tx-comment">${tx.comment||''}</div>${tagsHtml}</div>
         <div class="tx-amount ${cls}">${sign}${fmt(tx.amount)}</div>
