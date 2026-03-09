@@ -741,11 +741,12 @@ function changeMonth(d) {
   render();
 }
 
-function checkRecurring() {
+function checkRecurring(forYear, forMonth) {
   const recurring = getRecurring();
   if (!recurring.length) return;
   const now = new Date();
-  const y = now.getFullYear(), m = now.getMonth();
+  const y = forYear !== undefined ? forYear : now.getFullYear();
+  const m = forMonth !== undefined ? forMonth : now.getMonth();
   const txns = getTxns(y, m);
   let changed = false;
   recurring.forEach(r => {
@@ -777,6 +778,7 @@ function checkRecurring() {
 function render() {
   document.getElementById('monthTitle').textContent = t('months_arr')[currentMonth] + ' ' + currentYear;
   updateStaticTexts();
+  checkRecurring(currentYear, currentMonth);
   const txns = filterTxnsByWallet(getTxns(currentYear, currentMonth));
   const inc = txns.filter(tx=>tx.type==='income').reduce((s,tx)=>s+tx.amount,0);
   const exp = txns.filter(tx=>tx.type==='expense').reduce((s,tx)=>s+tx.amount,0);
