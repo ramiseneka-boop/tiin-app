@@ -963,14 +963,20 @@ function renderTransactions() {
 
   if (!txns.length) { el.innerHTML = filterHtml + `<div class="empty"><div class="emoji">📭</div><p>${t('noTransactions')}</p></div>`; return; }
   const grouped = {};
-  txns.sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id);
+  txns.sort((a,b) => a.date.localeCompare(b.date) || a.id - b.id);
   txns.forEach(tx => { if (!grouped[tx.date]) grouped[tx.date] = []; grouped[tx.date].push(tx); });
   let html = filterHtml;
   const allCats = [...EXPENSE_CATS, ...INCOME_CATS];
-  for (const date of Object.keys(grouped).sort().reverse()) {
+  for (const date of Object.keys(grouped).sort()) {
     const d = new Date(date + 'T00:00:00');
-    const dayStr = d.toLocaleDateString('ru-RU', {day:'numeric',month:'long',weekday:'short'});
-    html += `<div class="day-group"><div class="day-header">${dayStr}</div>`;
+    const dayStr = d.toLocaleDateString(currentLang==='kz'?'kk-KZ':'ru-RU', {day:'numeric',month:'long',weekday:'short'});
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diffDays = Math.round((d - today) / 86400000);
+    let badge = '';
+    if (diffDays === 0) badge = ' <span style="color:var(--red);font-weight:700;font-size:10px">• СЕГОДНЯ</span>';
+    else if (diffDays === 1) badge = ' <span style="color:#FBBF24;font-weight:700;font-size:10px">• ЗАВТРА</span>';
+    else if (diffDays > 1 && diffDays <= 3) badge = ` <span style="color:#FBBF24;font-size:10px">• через ${diffDays} дн.</span>`;
+    html += `<div class="day-group"><div class="day-header">${dayStr}${badge}</div>`;
     grouped[date].forEach(tx => {
       const cat = allCats.find(c=>c.id===tx.category) || {icon:'❓',name:'?'};
       const cls = tx.type === 'income' ? 'income' : 'expense';
