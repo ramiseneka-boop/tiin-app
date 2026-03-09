@@ -1356,7 +1356,8 @@ function submitRecurring() {
   const catEl = document.querySelector('#recCatChips .chip.selected');
   if (!name || !amount || !day || !catEl) { toast(t('fillAllFields')); return; }
   const recurring = getRecurring();
-  recurring.push({ id: Date.now(), name, amount, day: Math.min(Math.max(day, 1), 31), type: typeEl ? typeEl.dataset.id : 'expense', category: catEl.dataset.id, wallet: currentWallet === 'all' ? 'personal' : currentWallet });
+  const sm = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
+  recurring.push({ id: Date.now(), name, amount, day: Math.min(Math.max(day, 1), 31), type: typeEl ? typeEl.dataset.id : 'expense', category: catEl.dataset.id, wallet: currentWallet === 'all' ? 'personal' : currentWallet, startMonth: sm });
   saveRecurring(recurring);
   closeModal();
   toast(t('paymentCreated'));
