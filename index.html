@@ -523,7 +523,7 @@ const LANG = {
     enterAmount:'Введите сумму',selectCategory:'Выберите категорию',selectDate:'Выберите дату',
     enterName:'Введите название',noData:'Нет данных',
     credits:'Кредиты',food:'Еда',transport:'Дорога',health:'Здоровье',
-    leisure:'Отдых',extra:'Доп расходы',rentHome:'Аренда жилья',rentOffice:'Аренда офиса',internet:'Интернет',subscriptions:'Подписки',taxes:'Налоги',other:'Другое',
+    leisure:'Отдых',extra:'Доп расходы',rentHome:'Аренда жилья',rentOffice:'Аренда офиса',internet:'Интернет',subscriptions:'Подписки',taxes:'Налоги',utilities:'Ком. услуги',other:'Другое',
     salary:'Зарплата',businessInc:'Бизнес',otherInc:'Другое',
     newTemplate:'Новый шаблон',name:'Название',type:'Тип',create:'Создать',
     existingTemplates:'Существующие шаблоны:',templateCreated:'Шаблон создан ✓',templateDeleted:'Шаблон удалён',
@@ -590,7 +590,7 @@ const LANG = {
     enterAmount:'Соманы енгізіңіз',selectCategory:'Санатты таңдаңыз',selectDate:'Күнді таңдаңыз',
     enterName:'Атауын енгізіңіз',noData:'Деректер жоқ',
     credits:'Несиелер',food:'Тамақ',transport:'Жол',health:'Денсаулық',
-    leisure:'Демалыс',extra:'Қосымша',rentHome:'Тұрғын үй жалдау',rentOffice:'Кеңсе жалдау',internet:'Интернет',subscriptions:'Жазылымдар',taxes:'Салықтар',other:'Басқа',
+    leisure:'Демалыс',extra:'Қосымша',rentHome:'Тұрғын үй жалдау',rentOffice:'Кеңсе жалдау',internet:'Интернет',subscriptions:'Жазылымдар',taxes:'Салықтар',utilities:'Ком. қызметтер',other:'Басқа',
     salary:'Жалақы',businessInc:'Бизнес',otherInc:'Басқа',
     newTemplate:'Жаңа үлгі',name:'Атауы',type:'Түрі',create:'Құру',
     existingTemplates:'Бар үлгілер:',templateCreated:'Үлгі құрылды ✓',templateDeleted:'Үлгі жойылды',
@@ -700,6 +700,7 @@ const EXPENSE_CATS = [
   {id:'internet',icon:'🌐',langKey:'internet'},
   {id:'subscriptions',icon:'📱',langKey:'subscriptions'},
   {id:'taxes',icon:'🏛️',langKey:'taxes'},
+  {id:'utilities',icon:'🔌',langKey:'utilities'},
   {id:'other_exp',icon:'📝',langKey:'other'}
 ];
 const INCOME_CATS = [
@@ -712,7 +713,7 @@ function catName(cat) { return t(cat.langKey || CAT_KEY_MAP[cat.id] || 'other');
 EXPENSE_CATS.forEach(c => Object.defineProperty(c, 'name', {get(){ return catName(c); }}));
 INCOME_CATS.forEach(c => Object.defineProperty(c, 'name', {get(){ return catName(c); }}));
 
-const CAT_COLORS = {credits:'#F87171',food:'#FB923C',transport:'#FBBF24',health:'#34D399',leisure:'#60A5FA',extra:'#A78BFA',rent_home:'#E879F9',rent_office:'#818CF8',internet:'#38BDF8',subscriptions:'#F472B6',taxes:'#EF4444',other_exp:'#9CA3AF',salary:'#34D399',business:'#60A5FA',other_inc:'#FBBF24'};
+const CAT_COLORS = {credits:'#F87171',food:'#FB923C',transport:'#FBBF24',health:'#34D399',leisure:'#60A5FA',extra:'#A78BFA',rent_home:'#E879F9',rent_office:'#818CF8',internet:'#38BDF8',subscriptions:'#F472B6',taxes:'#EF4444',utilities:'#22D3EE',other_exp:'#9CA3AF',salary:'#34D399',business:'#60A5FA',other_inc:'#FBBF24'};
 
 let currentYear, currentMonth, currentTab = 'transactions', currentWallet = 'all', currentTagFilter = '';
 
