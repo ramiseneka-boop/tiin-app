@@ -380,6 +380,57 @@ window.addEventListener('load', function(){
   }, 2200);
 });
 </script>
+<!-- Install Banner -->
+<div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:90;padding:16px;padding-bottom:calc(16px + var(--safe-bottom));background:linear-gradient(145deg,#161B2E,#1C2333);border-top:1px solid rgba(201,164,76,0.2);box-shadow:0 -4px 24px rgba(0,0,0,0.5);animation:slideUp .4s ease">
+  <div style="display:flex;align-items:flex-start;gap:12px;max-width:480px;margin:0 auto">
+    <img src="icon-180.png" style="width:48px;height:48px;border-radius:12px;flex-shrink:0" alt="">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">Установи TIIN на телефон</div>
+      <div id="installInstructions" style="font-size:12px;color:var(--text2);line-height:1.5"></div>
+    </div>
+    <button onclick="dismissInstallBanner()" style="background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0;line-height:1">✕</button>
+  </div>
+</div>
+<style>
+html.light #installBanner{background:linear-gradient(145deg,#FFFFFF,#F0F0F4);border-top-color:rgba(201,164,76,0.3);box-shadow:0 -4px 24px rgba(0,0,0,0.1)}
+</style>
+<script>
+(function(){
+  if(localStorage.getItem('installDismissed')) return;
+  if(window.matchMedia('(display-mode:standalone)').matches) return;
+  if(window.navigator.standalone) return;
+  var b=document.getElementById('installBanner');
+  var inst=document.getElementById('installInstructions');
+  var ua=navigator.userAgent||'';
+  var isIOS=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  var isAndroid=/Android/.test(ua);
+  if(isIOS){
+    inst.innerHTML='Нажми <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2.5" style="vertical-align:-2px"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> внизу экрана → <b>«На экран Домой»</b>';
+  } else if(isAndroid){
+    inst.innerHTML='Нажми <b>⋮</b> в браузере → <b>«Добавить на главный экран»</b>';
+  } else {
+    return;
+  }
+  setTimeout(function(){ b.style.display='block'; }, 3000);
+})();
+function dismissInstallBanner(){
+  document.getElementById('installBanner').style.display='none';
+  localStorage.setItem('installDismissed','1');
+}
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault();
+  var b=document.getElementById('installBanner');
+  var inst=document.getElementById('installInstructions');
+  inst.innerHTML='<button onclick="window._installPrompt.prompt()" style="background:linear-gradient(135deg,#C9A44C,#E8D07E);color:#0B0D17;border:none;border-radius:12px;padding:10px 24px;font-size:14px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;margin-top:4px">Установить приложение</button>';
+  window._installPrompt=e;
+  setTimeout(function(){ b.style.display='block'; }, 2000);
+});
+window.addEventListener('appinstalled',function(){
+  document.getElementById('installBanner').style.display='none';
+  localStorage.setItem('installDismissed','1');
+});
+</script>
+
 <div class="top-controls">
   <div class="lang-toggle" id="langToggle" onclick="toggleLang()"><span id="langRu" class="active">РУС</span><span id="langKz">ҚАЗ</span></div>
   <button class="ctrl-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
