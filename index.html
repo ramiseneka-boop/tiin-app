@@ -1337,7 +1337,6 @@ function openRecurringModal() {
     <div class="form-group"><label>${t('goalName')}</label><input type="text" class="form-input" id="recName" placeholder="${t('credits')}"></div>
     <div class="form-group"><label>${t('amount')}</label><input type="number" class="form-input" id="recAmount" placeholder="0" inputmode="numeric"></div>
     <div class="form-group"><label>${t('dayOfMonth')}</label><input type="number" class="form-input" id="recDay" placeholder="1" min="1" max="31" inputmode="numeric"></div>
-    <div class="form-group"><label>${currentLang==='kz'?'Қай айдан бастап':'С какого месяца'}</label><input type="month" class="form-input" id="recStartMonth" value="${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}"></div>
     <div class="form-group"><label>${t('type')}</label><div class="chips" id="recTypeChips">
       <div class="chip selected" data-id="expense" onclick="selectChip(this)">${t('expense')}</div>
       <div class="chip" data-id="income" onclick="selectChip(this)">${t('income')}</div>
@@ -1357,8 +1356,7 @@ function submitRecurring() {
   const catEl = document.querySelector('#recCatChips .chip.selected');
   if (!name || !amount || !day || !catEl) { toast(t('fillAllFields')); return; }
   const recurring = getRecurring();
-  const startMonth = document.getElementById('recStartMonth') ? document.getElementById('recStartMonth').value : '';
-  recurring.push({ id: Date.now(), name, amount, day: Math.min(Math.max(day, 1), 31), type: typeEl ? typeEl.dataset.id : 'expense', category: catEl.dataset.id, wallet: currentWallet === 'all' ? 'personal' : currentWallet, startMonth: startMonth || '' });
+  recurring.push({ id: Date.now(), name, amount, day: Math.min(Math.max(day, 1), 31), type: typeEl ? typeEl.dataset.id : 'expense', category: catEl.dataset.id, wallet: currentWallet === 'all' ? 'personal' : currentWallet });
   saveRecurring(recurring);
   closeModal();
   toast(t('paymentCreated'));
