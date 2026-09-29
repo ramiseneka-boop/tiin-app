@@ -2,6 +2,15 @@
 (function () {
   'use strict';
 
+  // Load v2 CSS after the legacy inline stylesheet so the new desktop layer wins.
+  if (!document.getElementById('tiinV2FinalStyles')) {
+    const styles = document.createElement('link');
+    styles.id = 'tiinV2FinalStyles';
+    styles.rel = 'stylesheet';
+    styles.href = 'styles/tiin-v2.css?v=3';
+    document.head.appendChild(styles);
+  }
+
   window.localDateString = function localDateString(date = new Date()) {
     const offset = date.getTimezoneOffset();
     return new Date(date.getTime() - offset * 60_000).toISOString().slice(0, 10);
@@ -88,9 +97,31 @@
   }
 
   const originalRender = window.render;
+  function buildDesktopContext() {
+    const actions = document.querySelector('.actions');
+    if (!actions) return;
+    let panel = document.getElementById('desktopContext');
+    if (!panel) {
+      panel = document.createElement('aside');
+      panel.id = 'desktopContext';
+      panel.className = 'desktop-context';
+      actions.insertAdjacentElement('afterend', panel);
+    }
+    const txns = filterTxnsByWallet(getTxns(currentYear, currentMonth));
+    const expense = txns.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+    panel.innerHTML = `<div class="desktop-context-title">${currentLang === 'kz' ? 'Осы ай' : 'Этот месяц'}</div>
+      <div class="desktop-context-number">${fmt(expense)}</div>
+      <div class="desktop-context-label">${currentLang === 'kz' ? 'шығындар' : 'расходы'}</div>
+      <div class="desktop-context-divider"></div>
+      <div class="desktop-context-row"><span>${currentLang === 'kz' ? 'Операциялар' : 'Операции'}</span><b>${txns.length}</b></div>
+      <div class="desktop-context-row"><span>${currentLang === 'kz' ? 'Деректер' : 'Данные'}</span><b class="desktop-local">${currentLang === 'kz' ? 'Құрылғыда' : 'На устройстве'}</b></div>
+      <button class="desktop-context-action" onclick="switchTab('analytics')">${currentLang === 'kz' ? 'Аналитиканы ашу' : 'Открыть аналитику'} →</button>`;
+  }
+
   window.render = function renderV2() {
     originalRender();
     upgradeDashboard();
+    buildDesktopContext();
   };
   const originalDeleteTx = window.deleteTx;
   window.deleteTx = function deleteTxV2(id) { originalDeleteTx(Number.isNaN(Number(id)) ? id : Number(id)); };
