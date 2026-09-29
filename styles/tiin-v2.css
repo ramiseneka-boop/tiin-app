@@ -82,3 +82,40 @@ html.light .day-group { background:rgba(255,252,246,.65); border-color:rgba(32,3
 .balance-hero-period { color:var(--text-muted); font-size:12px; }
 html.light .balance-hero { background:linear-gradient(128deg,#FFFCF6,#F7F0E3); border-color:rgba(138,106,47,.25); box-shadow:0 8px 22px rgba(56,45,24,.07); }
 @media (min-width:768px) { .summary { grid-template-columns:1fr 1fr; max-width:520px; } .summary-item { padding:18px; } }
+
+
+/* Full desktop workspace. These rules are intentionally last: legacy CSS remains only for mobile compatibility. */
+@media (min-width:1024px) {
+  body { padding-bottom:0 !important; }
+  .container { max-width:none !important; width:auto !important; margin:0 0 0 248px !important; padding:30px 42px 56px !important; display:grid; grid-template-columns:minmax(560px, 1fr) 318px; column-gap:26px; align-items:start; }
+  .top-controls { position:fixed !important; top:24px !important; right:34px !important; z-index:40; }
+  .app-header { grid-column:1 / -1; min-height:68px; margin:0 0 12px !important; padding:0 160px 12px 0 !important; border-bottom:1px solid rgba(157,167,186,.12); }
+  .app-header > div:first-child { display:none; }
+  .app-header > div:nth-child(2) { order:2; margin-left:18px; }
+  .app-header > div:nth-child(3) { justify-content:flex-start !important; }
+  .app-header img { height:44px !important; }
+  .month-nav { grid-column:1; justify-content:flex-start; padding:8px 0 18px !important; }
+  .month-nav h2 { text-align:left; min-width:210px; }
+  .wallet-toggle { grid-column:1; max-width:640px; margin-bottom:18px !important; }
+  .balance-hero { grid-column:1; margin:0 0 14px !important; padding:26px !important; }
+  .balance-hero .value.balance { font-size:48px !important; }
+  .summary { grid-column:1; max-width:none !important; margin-bottom:18px !important; }
+  .summary-item { min-height:108px; padding:20px !important; }
+  .templates-scroll { grid-column:1; }
+  .actions { grid-column:1; max-width:440px !important; }
+  #tab-transactions,#tab-analytics,#tab-goals,#tab-payments,#tab-payment_tracker { grid-column:1 / -1; margin-top:18px; }
+  .tabs { width:248px !important; padding:32px 14px !important; background:#11182A !important; border-right:1px solid rgba(157,167,186,.12) !important; }
+  .tab { min-height:48px !important; padding:0 15px !important; color:var(--text-secondary) !important; }
+  .tab span { display:block !important; font-size:13px !important; }
+  .tab.active { color:var(--gold-light) !important; background:#1D2740 !important; border-radius:12px !important; }
+  .desktop-context { grid-column:2; grid-row:3 / span 4; display:block; width:100%; min-height:260px; padding:22px; border:1px solid rgba(157,167,186,.12); border-radius:18px; background:var(--surface); box-shadow:0 10px 24px rgba(0,0,0,.16); }
+  .desktop-context-title { color:var(--text-primary); font-weight:700; font-size:16px; }
+  .desktop-context-number { margin-top:24px; color:var(--red); font-size:27px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .desktop-context-label { margin-top:3px; color:var(--text-muted); font-size:12px; }
+  .desktop-context-divider { height:1px; margin:22px 0 12px; background:rgba(157,167,186,.12); }
+  .desktop-context-row { display:flex; justify-content:space-between; padding:7px 0; color:var(--text-secondary); font-size:13px; }
+  .desktop-context-row b { color:var(--text-primary); font-weight:700; }
+  .desktop-context-row .desktop-local { color:var(--gold-light); font-size:11px; }
+  .desktop-context-action { width:100%; margin-top:16px; padding:11px 12px; border:1px solid rgba(212,175,90,.35); border-radius:10px; background:transparent; color:var(--gold-light); cursor:pointer; font:600 13px Inter,sans-serif; }
+}
+@media (max-width:1023px) { .desktop-context { display:none; } }
