@@ -156,3 +156,7 @@ html.light .balance-hero { background:linear-gradient(128deg,#FFFCF6,#F7F0E3); b
 .wallet-toggle{padding:5px!important;border-radius:18px!important;background:#111B30!important}.wallet-btn{border-radius:14px!important}.wallet-btn.active{background:linear-gradient(110deg,#2D2B28,#353026)!important;box-shadow:inset 0 0 0 1px rgba(212,175,90,.75)!important}
 .tabs{background:#121C31!important;border:1px solid rgba(122,162,255,.18)!important}
 @media(min-width:1024px){.balance-hero{min-height:210px;padding:27px 30px!important}.summary-item{min-height:116px}.day-title{font-size:20px!important}}
+
+.balance-hero{background-image:linear-gradient(90deg,rgba(7,13,25,.92) 0%,rgba(8,16,30,.67) 54%,rgba(8,16,30,.25) 100%),url('../assets/tiin-mountains.svg')!important;background-position:center!important;background-size:cover!important}
+.summary-item.balance-kpi:before{content:'◉';color:#E7C978;background:rgba(212,175,90,.16)}.summary-item.balance-kpi{color:#E7C978}.summary-item.balance-kpi .value{color:#E7C978!important}
+.summary{grid-template-columns:repeat(3,1fr)!important}@media(max-width:520px){.summary{grid-template-columns:1fr 1fr!important}.summary-item.balance-kpi{grid-column:1/-1}}
