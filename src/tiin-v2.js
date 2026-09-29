@@ -7,16 +7,6 @@
     return new Date(date.getTime() - offset * 60_000).toISOString().slice(0, 10);
   };
 
-  function dayStatus(date) {
-    const target = new Date(date + 'T00:00:00');
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const diff = Math.round((target - today) / 86400000);
-    if (diff < 0) return { key:'overdue', label: currentLang === 'kz' ? 'Мерзімі өтті' : 'Просрочено' };
-    if (diff === 0) return { key:'today', label: currentLang === 'kz' ? 'Бүгін' : 'Сегодня' };
-    if (diff === 1) return { key:'waiting', label: currentLang === 'kz' ? 'Ертең' : 'Завтра' };
-    return { key:'waiting', label: currentLang === 'kz' ? `${diff} күннен кейін` : `Через ${diff} дн.` };
-  }
-
   function dayTotals(txns) {
     const income = txns.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
     const expense = txns.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
@@ -37,8 +27,13 @@
       const items = grouped[date].sort((a, b) => Number(a.id) - Number(b.id));
       const d = new Date(date + 'T00:00:00');
       const label = d.toLocaleDateString(currentLang === 'kz' ? 'kk-KZ' : 'ru-RU', { weekday:'short', day:'numeric', month:'long' });
-      const totals = dayTotals(items); const state = dayStatus(date);
-      html += `<section class="day-group"><header class="day-header"><div><div class="day-title">${label}</div><span class="day-status ${state.key}">${state.label}</span></div><div class="day-totals"><span>${currentLang === 'kz' ? 'Кіріс' : 'Доход'} <b class="income">+${fmt(totals.income)}</b></span><span>${currentLang === 'kz' ? 'Шығыс' : 'Расход'} <b class="expense">−${fmt(totals.expense)}</b></span><span>${currentLang === 'kz' ? 'Нәтиже' : 'Итог'} <b class="net">${totals.net >= 0 ? '+' : '−'}${fmt(Math.abs(totals.net))}</b></span></div></header>`;
+      const totals = dayTotals(items);
+      // Transaction dates are historical records, not planned payments. Never mark them overdue.
+      // Only show a metric when it exists, except the day's final balance which is always useful.
+      const incomeMetric = totals.income > 0 ? `<span class="day-metric income"><small>${currentLang === 'kz' ? 'Кіріс' : 'Доход'}</small><b>+${fmt(totals.income)}</b></span>` : '';
+      const expenseMetric = totals.expense > 0 ? `<span class="day-metric expense"><small>${currentLang === 'kz' ? 'Шығыс' : 'Расход'}</small><b>−${fmt(totals.expense)}</b></span>` : '';
+      const netSign = totals.net >= 0 ? '+' : '−';
+      html += `<section class="day-group"><header class="day-header"><div class="day-heading"><div class="day-title">${label}</div><div class="day-caption">${currentLang === 'kz' ? 'Күн қорытындысы' : 'Итоги дня'}</div></div><div class="day-totals">${incomeMetric}${expenseMetric}<span class="day-metric net"><small>${currentLang === 'kz' ? 'Нәтиже' : 'Итог'}</small><b>${netSign}${fmt(Math.abs(totals.net))}</b></span></div></header>`;
       items.forEach(tx => {
         const cat = allCats.find(item => item.id === tx.category) || { icon:'•', name: currentLang === 'kz' ? 'Санат' : 'Категория' };
         const isIncome = tx.type === 'income'; const tags = tx.tags?.length ? `<div class="tx-tags">${tx.tags.map(tag => `#${tag}`).join(' ')}</div>` : '';
@@ -70,6 +65,33 @@
     closeModal(); toast(currentLang === 'kz' ? 'Сақталды ✓' : 'Сохранено ✓'); render();
   };
 
+  function upgradeDashboard() {
+    const balance = document.getElementById('totalBalance');
+    const summary = document.querySelector('.summary');
+    if (!balance || !summary) return;
+    let hero = document.querySelector('.balance-hero');
+    if (!hero) {
+      hero = document.createElement('section');
+      hero.className = 'balance-hero';
+      hero.setAttribute('aria-label', currentLang === 'kz' ? 'Жалпы баланс' : 'Общий баланс');
+      hero.innerHTML = `<div class="balance-hero-top"><span class="balance-hero-label"></span><span class="sync-status">${currentLang === 'kz' ? 'Синхрондау жергілікті' : 'Данные на устройстве'}</span></div><div class="balance-hero-period"></div>`;
+      summary.parentNode.insertBefore(hero, summary);
+      const oldCard = balance.closest('.summary-item');
+      hero.insertBefore(balance, hero.querySelector('.balance-hero-period'));
+      if (oldCard) oldCard.remove();
+    }
+    hero.querySelector('.balance-hero-label').textContent = currentLang === 'kz' ? 'Жалпы баланс' : 'Общий баланс';
+    hero.querySelector('.balance-hero-period').textContent = `${t('months_arr')[currentMonth]} ${currentYear}`;
+    const labels = summary.querySelectorAll('.summary-item .label');
+    if (labels[0]) labels[0].textContent = `${t('income')} · ${currentLang === 'kz' ? 'осы ай' : 'за месяц'}`;
+    if (labels[1]) labels[1].textContent = `${t('expense')} · ${currentLang === 'kz' ? 'осы ай' : 'за месяц'}`;
+  }
+
+  const originalRender = window.render;
+  window.render = function renderV2() {
+    originalRender();
+    upgradeDashboard();
+  };
   const originalDeleteTx = window.deleteTx;
   window.deleteTx = function deleteTxV2(id) { originalDeleteTx(Number.isNaN(Number(id)) ? id : Number(id)); };
   setTimeout(() => { render(); }, 0);
