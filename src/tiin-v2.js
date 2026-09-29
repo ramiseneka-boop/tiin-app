@@ -94,6 +94,16 @@
     const labels = summary.querySelectorAll('.summary-item .label');
     if (labels[0]) labels[0].textContent = `${t('income')} · ${currentLang === 'kz' ? 'осы ай' : 'за месяц'}`;
     if (labels[1]) labels[1].textContent = `${t('expense')} · ${currentLang === 'kz' ? 'осы ай' : 'за месяц'}`;
+    let balanceKpi = document.getElementById('balanceKpi');
+    if (!balanceKpi) {
+      balanceKpi = document.createElement('div');
+      balanceKpi.id = 'balanceKpi';
+      balanceKpi.className = 'summary-item balance-kpi';
+      balanceKpi.innerHTML = '<div class="label"></div><div class="value balance"></div>';
+      summary.appendChild(balanceKpi);
+    }
+    balanceKpi.querySelector('.label').textContent = currentLang === 'kz' ? 'БАЛАНС · ОСЫ АЙ' : 'БАЛАНС · ЗА МЕСЯЦ';
+    balanceKpi.querySelector('.value').textContent = balance.textContent;
   }
 
   const originalRender = window.render;
