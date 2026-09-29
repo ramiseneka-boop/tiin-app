@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tiin-v2-1';
+const CACHE_NAME = 'tiin-v2-4';
 const APP_SHELL = ['./', './index.html', './manifest.json', './styles/tiin-v2.css', './src/tiin-v2.js', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', event => {
