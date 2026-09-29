@@ -65,6 +65,33 @@
     closeModal(); toast(currentLang === 'kz' ? 'Сақталды ✓' : 'Сохранено ✓'); render();
   };
 
+  function upgradeDashboard() {
+    const balance = document.getElementById('totalBalance');
+    const summary = document.querySelector('.summary');
+    if (!balance || !summary) return;
+    let hero = document.querySelector('.balance-hero');
+    if (!hero) {
+      hero = document.createElement('section');
+      hero.className = 'balance-hero';
+      hero.setAttribute('aria-label', currentLang === 'kz' ? 'Жалпы баланс' : 'Общий баланс');
+      hero.innerHTML = `<div class="balance-hero-top"><span class="balance-hero-label"></span><span class="sync-status">${currentLang === 'kz' ? 'Синхрондау жергілікті' : 'Данные на устройстве'}</span></div><div class="balance-hero-period"></div>`;
+      summary.parentNode.insertBefore(hero, summary);
+      const oldCard = balance.closest('.summary-item');
+      hero.insertBefore(balance, hero.querySelector('.balance-hero-period'));
+      if (oldCard) oldCard.remove();
+    }
+    hero.querySelector('.balance-hero-label').textContent = currentLang === 'kz' ? 'Жалпы баланс' : 'Общий баланс';
+    hero.querySelector('.balance-hero-period').textContent = `${t('months_arr')[currentMonth]} ${currentYear}`;
+    const labels = summary.querySelectorAll('.summary-item .label');
+    if (labels[0]) labels[0].textContent = `${t('income')} · ${currentLang === 'kz' ? 'осы ай' : 'за месяц'}`;
+    if (labels[1]) labels[1].textContent = `${t('expense')} · ${currentLang === 'kz' ? 'осы ай' : 'за месяц'}`;
+  }
+
+  const originalRender = window.render;
+  window.render = function renderV2() {
+    originalRender();
+    upgradeDashboard();
+  };
   const originalDeleteTx = window.deleteTx;
   window.deleteTx = function deleteTxV2(id) { originalDeleteTx(Number.isNaN(Number(id)) ? id : Number(id)); };
   setTimeout(() => { render(); }, 0);
