@@ -55,3 +55,30 @@ html.light .day-group { background:rgba(255,252,246,.65); border-color:rgba(32,3
   .actions { max-width:440px; }.modal { max-width:560px; border-radius:24px; margin:auto; }
   .modal-overlay { align-items:center; }.modal::before { display:none; }
 }
+
+
+/* Daily totals: records are neutral; only payment tracker carries overdue state. */
+.day-header { padding:10px 8px 13px; }
+.day-caption { color:var(--text-muted); font-size:10px; margin-top:3px; }
+.day-totals { gap:10px; color:inherit; font-size:inherit; }
+.day-metric { display:flex; flex-direction:column; align-items:flex-end; gap:2px; white-space:nowrap; }
+.day-metric small { color:var(--text-muted); font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:.25px; }
+.day-metric b { font-size:12px; font-weight:750; }
+.day-metric.income b { color:var(--green); }
+.day-metric.expense b { color:var(--red); }
+.day-metric.net b { color:var(--gold-light); }
+
+/* Executive Graphite dashboard: balance is the primary number, monthly flow is secondary. */
+.summary { grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.summary-item { text-align:left; padding:14px; border:1px solid rgba(157,167,186,.12) !important; border-top-width:1px !important; border-radius:16px; }
+.summary-item .label { color:var(--text-secondary); font-size:10px; letter-spacing:.4px; }
+.summary-item .value { font-size:clamp(16px,4.5vw,22px); text-shadow:none !important; }
+.summary-item .value.income { color:var(--green); }
+.summary-item .value.expense { color:var(--red); }
+.balance-hero { margin:8px 0 12px; padding:20px; border-radius:20px; background:linear-gradient(128deg,#1D2740 0%,#161F34 55%,#141B2D 100%); border:1px solid rgba(212,175,90,.28); box-shadow:0 12px 32px rgba(0,0,0,.22); }
+.balance-hero-top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.balance-hero-label { color:var(--text-secondary); font-size:13px; font-weight:600; }
+.balance-hero .value.balance { display:block; margin:11px 0 5px; color:var(--text-primary); background:none; -webkit-text-fill-color:currentColor; font-size:clamp(30px,9vw,46px); font-weight:800; letter-spacing:-1.6px; font-variant-numeric:tabular-nums; }
+.balance-hero-period { color:var(--text-muted); font-size:12px; }
+html.light .balance-hero { background:linear-gradient(128deg,#FFFCF6,#F7F0E3); border-color:rgba(138,106,47,.25); box-shadow:0 8px 22px rgba(56,45,24,.07); }
+@media (min-width:768px) { .summary { grid-template-columns:1fr 1fr; max-width:520px; } .summary-item { padding:18px; } }
