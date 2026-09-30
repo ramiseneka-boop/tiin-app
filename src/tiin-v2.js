@@ -49,22 +49,22 @@
         const wallet = tx.wallet === 'business' ? '💼 ' : '';
         // Keeping the id in a data attribute avoids invalid nested quotes in inline handlers.
         const txId = encodeURIComponent(String(tx.id));
-        html += `<article class="tx-item" data-tx-id="${txId}" onclick="editTx(decodeURIComponent(this.dataset.txId))"><div class="tx-icon">${cat.icon}</div><div class="tx-info"><div class="tx-cat">${wallet}${cat.name}</div><div class="tx-comment">${tx.comment || ''}</div>${tags}</div><div class="tx-actions"><div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '−'}${fmt(tx.amount)}</div><div class="tx-menu-wrap"><button class="tx-menu" type="button" aria-label="Действия с операцией" onclick="event.stopPropagation();toggleTxMenu(this)">⋮</button><div class="tx-popover" onclick="event.stopPropagation()"><button type="button" onclick="editTx(decodeURIComponent(this.closest('.tx-item').dataset.txId))">Изменить</button><button class="danger" type="button" onclick="deleteTx(decodeURIComponent(this.closest('.tx-item').dataset.txId))">Удалить</button></div></div></div></article>`;
+        html += `<article class="tx-item" data-tx-id="${txId}" onclick="editTx(decodeURIComponent(this.dataset.txId))"><div class="tx-icon">${cat.icon}</div><div class="tx-info"><div class="tx-cat">${wallet}${cat.name}</div><div class="tx-comment">${tx.comment || ''}</div>${tags}</div><div class="tx-actions"><div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '−'}${fmt(tx.amount)}</div><button class="tx-menu" type="button" aria-label="Действия с операцией" onclick="event.stopPropagation();openTxActions('${txId}')">⋮</button></div></article>`;
       });
       html += '</section>';
     });
     el.innerHTML = html;
   };
 
-  window.toggleTxMenu = function toggleTxMenu(button) {
-    const popover = button.parentElement.querySelector('.tx-popover');
-    const wasOpen = popover.classList.contains('open');
-    document.querySelectorAll('.tx-popover.open').forEach(item => item.classList.remove('open'));
-    if (!wasOpen) popover.classList.add('open');
+  window.openTxActions = function openTxActions(encodedId) {
+    const id = decodeURIComponent(encodedId);
+    const txns = getTxns(currentYear, currentMonth);
+    const tx = txns.find(item => String(item.id) === String(id));
+    if (!tx) return;
+    const label = tx.comment || (currentLang === 'kz' ? 'Операция' : 'Операция');
+    document.getElementById('modal').innerHTML = `<div class="tx-action-sheet"><div class="tx-action-title">${label}</div><div class="tx-action-subtitle">${currentLang === 'kz' ? 'Әрекетті таңдаңыз' : 'Выберите действие'}</div><button class="btn btn-gold" onclick="editTx('${String(tx.id).replace(/'/g, "\\'")}')">${currentLang === 'kz' ? 'Өзгерту' : 'Изменить'}</button><button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="deleteTx('${String(tx.id).replace(/'/g, "\\'")}')">${currentLang === 'kz' ? 'Жою' : 'Удалить'}</button><button class="tx-action-cancel" onclick="closeModal()">${currentLang === 'kz' ? 'Бас тарту' : 'Отмена'}</button></div>`;
+    document.getElementById('modalOverlay').classList.add('open');
   };
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.tx-popover.open').forEach(item => item.classList.remove('open'));
-  });
 
   window.editTx = function editTx(id) {
     const txns = getTxns(currentYear, currentMonth); const tx = txns.find(item => String(item.id) === String(id));
