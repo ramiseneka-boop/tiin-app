@@ -7,7 +7,7 @@
     const styles = document.createElement('link');
     styles.id = 'tiinV2FinalStyles';
     styles.rel = 'stylesheet';
-    styles.href = 'styles/tiin-v2.css?v=4';
+    styles.href = 'styles/tiin-v2.css?v=5';
     document.head.appendChild(styles);
   }
 
@@ -47,12 +47,24 @@
         const cat = allCats.find(item => item.id === tx.category) || { icon:'•', name: currentLang === 'kz' ? 'Санат' : 'Категория' };
         const isIncome = tx.type === 'income'; const tags = tx.tags?.length ? `<div class="tx-tags">${tx.tags.map(tag => `#${tag}`).join(' ')}</div>` : '';
         const wallet = tx.wallet === 'business' ? '💼 ' : '';
-        html += `<article class="tx-item" onclick="editTx(${JSON.stringify(String(tx.id))})"><div class="tx-icon">${cat.icon}</div><div class="tx-info"><div class="tx-cat">${wallet}${cat.name}</div><div class="tx-comment">${tx.comment || ''}</div>${tags}</div><div class="tx-actions"><div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '−'}${fmt(tx.amount)}</div><button class="tx-menu" aria-label="Редактировать" onclick="event.stopPropagation();editTx(${JSON.stringify(String(tx.id))})">⋮</button></div></article>`;
+        // Keeping the id in a data attribute avoids invalid nested quotes in inline handlers.
+        const txId = encodeURIComponent(String(tx.id));
+        html += `<article class="tx-item" data-tx-id="${txId}" onclick="editTx(decodeURIComponent(this.dataset.txId))"><div class="tx-icon">${cat.icon}</div><div class="tx-info"><div class="tx-cat">${wallet}${cat.name}</div><div class="tx-comment">${tx.comment || ''}</div>${tags}</div><div class="tx-actions"><div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '−'}${fmt(tx.amount)}</div><div class="tx-menu-wrap"><button class="tx-menu" type="button" aria-label="Действия с операцией" onclick="event.stopPropagation();toggleTxMenu(this)">⋮</button><div class="tx-popover" onclick="event.stopPropagation()"><button type="button" onclick="editTx(decodeURIComponent(this.closest('.tx-item').dataset.txId))">Изменить</button><button class="danger" type="button" onclick="deleteTx(decodeURIComponent(this.closest('.tx-item').dataset.txId))">Удалить</button></div></div></div></article>`;
       });
       html += '</section>';
     });
     el.innerHTML = html;
   };
+
+  window.toggleTxMenu = function toggleTxMenu(button) {
+    const popover = button.parentElement.querySelector('.tx-popover');
+    const wasOpen = popover.classList.contains('open');
+    document.querySelectorAll('.tx-popover.open').forEach(item => item.classList.remove('open'));
+    if (!wasOpen) popover.classList.add('open');
+  };
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.tx-popover.open').forEach(item => item.classList.remove('open'));
+  });
 
   window.editTx = function editTx(id) {
     const txns = getTxns(currentYear, currentMonth); const tx = txns.find(item => String(item.id) === String(id));
@@ -133,7 +145,15 @@
     upgradeDashboard();
     buildDesktopContext();
   };
-  const originalDeleteTx = window.deleteTx;
-  window.deleteTx = function deleteTxV2(id) { originalDeleteTx(Number.isNaN(Number(id)) ? id : Number(id)); };
+  window.deleteTx = function deleteTxV2(id) {
+    if (!confirm(t('confirmDelete'))) return;
+    const txns = getTxns(currentYear, currentMonth);
+    const remaining = txns.filter(item => String(item.id) !== String(id));
+    if (remaining.length === txns.length) return;
+    saveTxns(currentYear, currentMonth, remaining);
+    closeModal();
+    toast(t('deleted'));
+    render();
+  };
   setTimeout(() => { render(); }, 0);
 }());
