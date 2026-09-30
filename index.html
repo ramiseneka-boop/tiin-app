@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 32356)
+Total output lines: 2076
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -715,206 +718,7 @@ function catName(cat) { return t(cat.langKey || CAT_KEY_MAP[cat.id] || 'other');
 EXPENSE_CATS.forEach(c => Object.defineProperty(c, 'name', {get(){ return catName(c); }}));
 INCOME_CATS.forEach(c => Object.defineProperty(c, 'name', {get(){ return catName(c); }}));
 
-const CAT_COLORS = {credits:'#F87171',food:'#FB923C',transport:'#FBBF24',health:'#34D399',leisure:'#60A5FA',extra:'#A78BFA',rent_home:'#E879F9',rent_office:'#818CF8',internet:'#38BDF8',subscriptions:'#F472B6',taxes:'#EF4444',utilities:'#22D3EE',shop:'#F59E0B',other_exp:'#9CA3AF',salary:'#34D399',business:'#60A5FA',other_inc:'#FBBF24'};
-
-let currentYear, currentMonth, currentTab = 'transactions', currentWallet = 'all', currentTagFilter = '';
-
-function updateTodayDate() {
-  const el = document.getElementById('todayDate');
-  if (!el) return;
-  const now = new Date();
-  const day = now.getDate();
-  const daysRu = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
-  const daysKz = ['Жексенбі','Дүйсенбі','Сейсенбі','Сәрсенбі','Бейсенбі','Жұма','Сенбі'];
-  const days = currentLang === 'kz' ? daysKz : daysRu;
-  const dayName = days[now.getDay()];
-  el.innerHTML = `<div style="font-size:28px;font-weight:800;color:var(--gold1);line-height:1">${day}</div><div style="font-size:10px;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px">${dayName}</div>`;
-}
-
-function init() {
-  initTheme();
-  initLang();
-  updateTodayDate();
-  const now = new Date();
-  currentYear = now.getFullYear();
-  currentMonth = now.getMonth();
-  checkRecurring();
-  render();
-}
-
-function getKey(y,m) { return `txns_${y}_${m}`; }
-function getTxns(y,m) { return JSON.parse(localStorage.getItem(getKey(y,m)) || '[]'); }
-function saveTxns(y,m,data) { localStorage.setItem(getKey(y,m), JSON.stringify(data)); }
-function getGoals() { return JSON.parse(localStorage.getItem('goals') || '[]'); }
-function saveGoals(g) { localStorage.setItem('goals', JSON.stringify(g)); }
-function getTemplates() { return JSON.parse(localStorage.getItem('templates') || '[]'); }
-function saveTemplates(t) { localStorage.setItem('templates', JSON.stringify(t)); }
-function getRecurring() { return JSON.parse(localStorage.getItem('recurring') || '[]'); }
-function saveRecurring(r) { localStorage.setItem('recurring', JSON.stringify(r)); }
-function getBudgets() { return JSON.parse(localStorage.getItem('budgets') || '{}'); }
-function saveBudgets(b) { localStorage.setItem('budgets', JSON.stringify(b)); }
-function getPayday() { return parseInt(localStorage.getItem('payday') || '0'); }
-function setPayday(d) { localStorage.setItem('payday', d.toString()); }
-function fmt(n) { return Math.round(n).toLocaleString('ru-RU') + ' ₸'; }
-
-function filterTxnsByWallet(txns) {
-  if (currentWallet === 'all') return txns;
-  return txns.filter(tx => (tx.wallet || 'personal') === currentWallet);
-}
-
-function getAllTags() {
-  const tags = new Set();
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k.startsWith('txns_')) {
-      const txns = JSON.parse(localStorage.getItem(k) || '[]');
-      txns.forEach(tx => { if (tx.tags) tx.tags.forEach(tag => tags.add(tag)); });
-    }
-  }
-  return [...tags].sort();
-}
-
-function safeCalc(expr) {
-  const cleaned = expr.replace(/\s/g, '');
-  if (!/^[\d+\-*/().]+$/.test(cleaned)) return null;
-  try { const r = Function('"use strict";return (' + cleaned + ')')(); return isFinite(r) ? r : null; }
-  catch(e) { return null; }
-}
-
-function switchWallet(w) {
-  currentWallet = w;
-  document.querySelectorAll('.wallet-btn').forEach(b => b.classList.toggle('active', b.dataset.wallet === w));
-  render();
-}
-
-function changeMonth(d) {
-  currentMonth += d;
-  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-  checkRecurring();
-  render();
-}
-
-function checkRecurring(forYear, forMonth) {
-  const recurring = getRecurring();
-  if (!recurring.length) return;
-  const now = new Date();
-  const y = forYear !== undefined ? forYear : now.getFullYear();
-  const m = forMonth !== undefined ? forMonth : now.getMonth();
-  const txns = getTxns(y, m);
-  let changed = false;
-  recurring.forEach(r => {
-    // Skip if startMonth is set and current month is before it
-    if (r.startMonth) {
-      const [sy, sm] = r.startMonth.split('-').map(Number);
-      if (y < sy || (y === sy && m < sm - 1)) return;
-    }
-    const rid = 'recurring_' + r.id;
-    if (!txns.find(tx => tx.auto_recurring_id === rid)) {
-      const day = Math.min(r.day, new Date(y, m + 1, 0).getDate());
-      txns.push({
-        id: Date.now() + Math.random(),
-        type: r.type || 'expense',
-        amount: r.amount,
-        category: r.category,
-        comment: r.name + ' ' + t('auto'),
-        date: `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`,
-        wallet: r.wallet || 'personal',
-        tags: [],
-        auto_recurring_id: rid
-      });
-      changed = true;
-    }
-  });
-  if (changed) saveTxns(y, m, txns);
-}
-
-function render() {
-  document.getElementById('monthTitle').textContent = t('months_arr')[currentMonth] + ' ' + currentYear;
-  updateStaticTexts();
-  checkRecurring(currentYear, currentMonth);
-  const txns = filterTxnsByWallet(getTxns(currentYear, currentMonth));
-  const inc = txns.filter(tx=>tx.type==='income').reduce((s,tx)=>s+tx.amount,0);
-  const exp = txns.filter(tx=>tx.type==='expense').reduce((s,tx)=>s+tx.amount,0);
-  document.getElementById('totalIncome').textContent = fmt(inc);
-  document.getElementById('totalExpense').textContent = fmt(exp);
-  document.getElementById('totalBalance').textContent = fmt(inc - exp);
-  // Debt badge
-  const mainDebts = getDebts(currentYear, currentMonth);
-  const mainDebtSum = mainDebts.reduce((s, d) => s + d.amount, 0);
-  const balanceEl = document.getElementById('totalBalance').parentElement;
-  const existingBadge = balanceEl.querySelector('.debt-badge');
-  if (existingBadge) existingBadge.remove();
-  if (mainDebtSum > 0) {
-    const badge = document.createElement('div');
-    badge.className = 'debt-badge';
-    badge.style.cssText = 'font-size:11px;color:#F87171;margin-top:4px;font-weight:600';
-    badge.textContent = '🔴 ' + t('totalDebt') + ': ' + fmt(mainDebtSum);
-    balanceEl.appendChild(badge);
-  }
-  renderTemplates();
-  renderTab();
-}
-
-function renderTemplates() {
-  const templates = getTemplates();
-  const el = document.getElementById('templatesScroll');
-  const allCats = [...EXPENSE_CATS, ...INCOME_CATS];
-  let html = '';
-  templates.forEach((t, i) => {
-    const cat = allCats.find(c => c.id === t.category) || {icon:'⚡'};
-    html += `<div class="template-chip" onclick="applyTemplate(${i})">${cat.icon} ${t.name} ${fmt(t.amount)}</div>`;
-  });
-  html += `<div class="template-chip add-template" onclick="openTemplateModal()">＋ ${t('template').replace('+ ','')}</div>`;
-  el.innerHTML = html;
-}
-
-function applyTemplate(i) {
-  const templates = getTemplates();
-  const t = templates[i];
-  if (!t) return;
-  const now = new Date();
-  const y = now.getFullYear(), m = now.getMonth();
-  const txns = getTxns(y, m);
-  txns.push({
-    id: Date.now(),
-    type: t.type || 'expense',
-    amount: t.amount,
-    category: t.category,
-    comment: t.name,
-    date: localDateString(now),
-    wallet: currentWallet === 'all' ? 'personal' : currentWallet,
-    tags: t.tags || []
-  });
-  saveTxns(y, m, txns);
-  toast(`${t.name} ${currentLang==='ru'?'добавлено':'қосылды'} ✓`);
-  if (y === currentYear && m === currentMonth) render();
-}
-
-function openTemplateModal() {
-  const allCats = [...EXPENSE_CATS];
-  document.getElementById('modal').innerHTML = `
-    <h3>${t('newTemplate')}</h3>
-    <div class="form-group"><label>${t('goalName')}</label><input type="text" class="form-input" id="tplName" placeholder="${currentLang==='ru'?'Бензин':'Бензин'}"></div>
-    <div class="form-group"><label>${t('amount')}</label><input type="number" class="form-input" id="tplAmount" placeholder="0" inputmode="numeric"></div>
-    <div class="form-group"><label>${t('type')}</label><div class="chips" id="tplTypeChips">
-      <div class="chip selected" data-id="expense" onclick="selectChip(this)">${t('expense')}</div>
-      <div class="chip" data-id="income" onclick="selectChip(this)">${t('income')}</div>
-    </div></div>
-    <div class="form-group"><label>${t('category')}</label><div class="chips" id="tplCatChips">
-      ${allCats.map(c => `<div class="chip" data-id="${c.id}" onclick="selectChip(this)">${c.icon} ${c.name}</div>`).join('')}
-    </div></div>
-    <button class="btn btn-gold" onclick="saveTemplate()" style="width:100%;margin-top:8px">${t('create')}</button>
-    ${getTemplates().length ? '<div style="margin-top:16px"><h4 style="font-size:14px;color:var(--text2);margin-bottom:8px">'+t('existingTemplates')+'</h4>' + getTemplates().map((tp,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="font-size:13px">${tp.name} — ${fmt(tp.amount)}</span><button class="btn btn-danger btn-sm" style="padding:4px 10px;min-height:auto" onclick="deleteTemplate(${i})">✕</button></div>`).join('') + '</div>' : ''}`;
-  document.getElementById('modalOverlay').classList.add('open');
-}
-
-function saveTemplate() {
-  const name = document.getElementById('tplName').value.trim();
-  const amount = parseFloat(document.getElementById('tplAmount').value);
-  const typeEl = document.querySelector('#tplTypeChips .chip.selected');
-  const catEl = document.querySelector('#tplCatChips .chip.selected');
-  if (!name) { toast(t('enterName')); return; }
+const CAT_COLORS = {credits:'#F87171…2356 tokens truncated…(!name) { toast(t('enterName')); return; }
   if (!amount || amount <= 0) { toast(t('enterAmount')); return; }
   if (!catEl) { toast(t('selectCategory')); return; }
   const templates = getTemplates();
@@ -2064,11 +1868,13 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=9', {
+    updateViaCache: 'none'
+  }).catch(() => {}));
 }
 
 init();
 </script>
-<script src="src/tiin-v2.js?v=7"></script>
+<script src="src/tiin-v2.js?v=9"></script>
 </body>
 </html>
