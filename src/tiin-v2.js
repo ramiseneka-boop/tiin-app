@@ -155,5 +155,38 @@
     toast(t('deleted'));
     render();
   };
+  // Native-feeling mobile sheet dismissal: drag the visible handle area down.
+  (function enableModalDragDismiss() {
+    const overlay = document.getElementById('modalOverlay');
+    const modal = document.getElementById('modal');
+    if (!overlay || !modal) return;
+    let startY = null;
+    let lastY = null;
+
+    modal.addEventListener('pointerdown', event => {
+      const top = modal.getBoundingClientRect().top;
+      if (event.clientY - top > 56) return;
+      startY = event.clientY;
+      lastY = event.clientY;
+      modal.setPointerCapture?.(event.pointerId);
+    });
+    modal.addEventListener('pointermove', event => {
+      if (startY === null) return;
+      lastY = event.clientY;
+      const distance = Math.max(0, lastY - startY);
+      modal.style.transform = `translateY(${Math.min(distance, 180)}px)`;
+    });
+    function finishDrag() {
+      if (startY === null) return;
+      const distance = Math.max(0, (lastY || startY) - startY);
+      modal.style.transform = '';
+      startY = null;
+      lastY = null;
+      if (distance >= 80) closeModal();
+    }
+    modal.addEventListener('pointerup', finishDrag);
+    modal.addEventListener('pointercancel', finishDrag);
+  }());
+
   setTimeout(() => { render(); }, 0);
 }());
