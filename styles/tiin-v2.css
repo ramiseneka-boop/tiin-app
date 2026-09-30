@@ -239,3 +239,41 @@ html:not(.light) .balance-hero {
     linear-gradient(0deg,rgba(7,13,25,.25),transparent 58%),
     url('../assets/tiin-mountains.svg')!important;
 }
+
+
+/* Transaction action menu */
+.tx-actions { position:relative; }
+.tx-menu-wrap { position:relative; flex:0 0 auto; }
+.tx-menu { touch-action:manipulation; }
+.tx-popover {
+  display:none;
+  position:absolute;
+  z-index:60;
+  top:calc(100% - 4px);
+  right:0;
+  min-width:142px;
+  overflow:hidden;
+  padding:5px;
+  border:1px solid rgba(157,167,186,.22);
+  border-radius:12px;
+  background:#1B2740;
+  box-shadow:0 14px 30px rgba(0,0,0,.32);
+}
+.tx-popover.open { display:block; }
+.tx-popover button {
+  display:block;
+  width:100%;
+  border:0;
+  border-radius:8px;
+  padding:10px 11px;
+  background:transparent;
+  color:var(--text-primary);
+  font:600 13px Inter,sans-serif;
+  text-align:left;
+  cursor:pointer;
+}
+.tx-popover button:active,.tx-popover button:hover { background:rgba(157,167,186,.12); }
+.tx-popover button.danger { color:var(--red); }
+html.light .tx-popover { background:#FFFCF6; border-color:rgba(91,70,30,.18); box-shadow:0 12px 25px rgba(83,61,19,.14); }
+html.light .tx-popover button { color:#303238; }
+html.light .tx-popover button.danger { color:#B44650; }
