@@ -277,3 +277,11 @@ html:not(.light) .balance-hero {
 html.light .tx-popover { background:#FFFCF6; border-color:rgba(91,70,30,.18); box-shadow:0 12px 25px rgba(83,61,19,.14); }
 html.light .tx-popover button { color:#303238; }
 html.light .tx-popover button.danger { color:#B44650; }
+
+
+/* Transaction actions use the existing modal: never clip inside a list card. */
+.tx-action-sheet { padding:4px 0 2px; }
+.tx-action-title { overflow:hidden; color:var(--text-primary); font-size:18px; font-weight:750; line-height:1.25; text-overflow:ellipsis; white-space:nowrap; }
+.tx-action-subtitle { margin:6px 0 20px; color:var(--text-secondary); font-size:13px; }
+.tx-action-sheet .btn { min-height:52px!important; font-size:16px!important; }
+.tx-action-cancel { width:100%; margin-top:14px; padding:12px; border:0; background:transparent; color:var(--text-secondary); font:600 15px Inter,sans-serif; }
