@@ -285,3 +285,16 @@ html.light .tx-popover button.danger { color:#B44650; }
 .tx-action-subtitle { margin:6px 0 20px; color:var(--text-secondary); font-size:13px; }
 .tx-action-sheet .btn { min-height:52px!important; font-size:16px!important; }
 .tx-action-cancel { width:100%; margin-top:14px; padding:12px; border:0; background:transparent; color:var(--text-secondary); font:600 15px Inter,sans-serif; }
+
+
+/* Action sheet must sit above the persistent mobile navigation. */
+.modal-overlay { z-index:10000!important; padding-bottom:0!important; }
+.modal-overlay .modal {
+  position:relative;
+  z-index:10001!important;
+  margin-bottom:0!important;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px))!important;
+}
+@media (max-width:767px) {
+  .modal-overlay .modal { max-height:calc(100dvh - 18px)!important; }
+}
