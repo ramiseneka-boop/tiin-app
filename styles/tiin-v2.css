@@ -160,3 +160,82 @@ html.light .balance-hero { background:linear-gradient(128deg,#FFFCF6,#F7F0E3); b
 .balance-hero{background-image:linear-gradient(90deg,rgba(7,13,25,.92) 0%,rgba(8,16,30,.67) 54%,rgba(8,16,30,.25) 100%),url('../assets/tiin-mountains.svg')!important;background-position:center!important;background-size:cover!important}
 .summary-item.balance-kpi:before{content:'◉';color:#E7C978;background:rgba(212,175,90,.16)}.summary-item.balance-kpi{color:#E7C978}.summary-item.balance-kpi .value{color:#E7C978!important}
 .summary{grid-template-columns:repeat(3,1fr)!important}@media(max-width:520px){.summary{grid-template-columns:1fr 1fr!important}.summary-item.balance-kpi{grid-column:1/-1}}
+
+/* Light theme reset: warm paper surfaces instead of a dark-light hybrid. */
+html.light {
+  --bg-primary:#F8F3E9;
+  --bg-secondary:#EEE5D6;
+  --surface:#FFFCF6;
+  --surface-active:#F6EBD8;
+  --text-primary:#25272B;
+  --text-secondary:#636873;
+  --text-muted:#8A887F;
+}
+html.light,html.light body { background:#F8F3E9!important; color:var(--text-primary)!important; }
+html.light body { background:linear-gradient(180deg,#FCF8F0 0%,#F2E9DB 100%)!important; }
+html.light .app-header { border-color:rgba(90,69,27,.13)!important; }
+html.light .wallet-toggle,html.light .tabs,html.light .template-chip,
+html.light .card,html.light .tx-item,html.light .summary-item,
+html.light .goal-card,html.light .payment-card,html.light .day-group,
+html.light .desktop-context {
+  background:#FFFCF6!important;
+  border-color:rgba(91,70,30,.16)!important;
+  box-shadow:0 7px 18px rgba(83,61,19,.08)!important;
+}
+html.light .wallet-btn { color:#676A70!important; }
+html.light .wallet-btn.active {
+  color:#765919!important;
+  background:#F4E7C9!important;
+  box-shadow:inset 0 0 0 1px rgba(167,125,43,.56)!important;
+}
+html.light .balance-hero {
+  background-image:
+    linear-gradient(90deg,rgba(255,252,246,.82) 0%,rgba(255,252,246,.48) 56%,rgba(255,252,246,.16) 100%),
+    url('../assets/tiin-mountains.svg')!important;
+  background-position:center!important;
+  border-color:rgba(157,116,41,.70)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.92),0 12px 25px rgba(91,67,22,.12)!important;
+}
+html.light .balance-hero:after { background:radial-gradient(ellipse,rgba(212,175,90,.18),transparent 64%)!important; }
+html.light .balance-hero-label { color:#25272B!important; }
+html.light .balance-hero-label:after { color:#556FAD!important; }
+html.light .balance-hero .value.balance { color:#9C762C!important; text-shadow:none!important; }
+html.light .balance-hero-period { color:#656970!important; }
+html.light .sync-status { color:#64676C!important; background:rgba(255,252,246,.72)!important; border-color:rgba(91,70,30,.16)!important; }
+html.light .summary-item .label { color:#6D7077!important; }
+html.light .summary-item:nth-child(1) { background:linear-gradient(145deg,#F5FCF7,#FFFCF6)!important; color:#218A66!important; }
+html.light .summary-item:nth-child(2) { background:linear-gradient(145deg,#FFF6F3,#FFFCF6)!important; color:#C45259!important; }
+html.light .summary-item.balance-kpi { background:linear-gradient(145deg,#FFF9EC,#FFFCF6)!important; color:#9C762C!important; }
+html.light .summary-item.balance-kpi .value { color:#9C762C!important; }
+html.light .day-header { border-color:rgba(91,70,30,.13)!important; }
+html.light .day-title,html.light .tx-cat { color:#25272B!important; }
+html.light .tx-comment,html.light .day-caption { color:#73757B!important; }
+html.light .tx-icon { background:#F3EADC!important; }
+html.light .tx-menu { color:#676A70!important; }
+html.light .btn-expense { background:linear-gradient(135deg,#FFF2F1,#FFE8E5)!important; color:#B44650!important; border-color:#E78A8D!important; }
+html.light .btn-income { background:linear-gradient(135deg,#ECFAF3,#DDF4E9)!important; color:#187B58!important; border-color:#63C8A0!important; }
+html.light .template-chip { color:#4F535C!important; }
+html.light .tabs .tab { color:#72757C!important; }
+html.light .tabs .tab.active { color:#765919!important; background:#F7EDD8!important; }
+html.light .tabs .tab.active::after { background:#B98B31!important; }
+
+/* Keep financial values intact on narrow phones, including the ₸ symbol. */
+@media (max-width:767px) {
+  .summary-item { min-width:0!important; padding:14px 10px!important; }
+  .summary-item:before { left:10px!important; width:36px!important; height:36px!important; font-size:18px!important; }
+  .summary-item .label,.summary-item .value { padding-left:45px!important; }
+  .summary-item .label { font-size:9px!important; letter-spacing:.1px!important; }
+  .summary-item .value { font-size:clamp(14px,3.95vw,19px)!important; letter-spacing:-.55px!important; white-space:nowrap!important; }
+  .summary-item:after { width:48px!important; right:9px!important; bottom:8px!important; }
+}
+@media (max-width:390px) {
+  .summary-item .value { font-size:14px!important; letter-spacing:-.75px!important; }
+}
+
+/* The landscape is present in the dark card, without covering the balance. */
+html:not(.light) .balance-hero {
+  background-image:
+    linear-gradient(90deg,rgba(7,13,25,.74) 0%,rgba(8,16,30,.48) 54%,rgba(8,16,30,.14) 100%),
+    linear-gradient(0deg,rgba(7,13,25,.25),transparent 58%),
+    url('../assets/tiin-mountains.svg')!important;
+}
