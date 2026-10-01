@@ -7,7 +7,7 @@
     const styles = document.createElement('link');
     styles.id = 'tiinV2FinalStyles';
     styles.rel = 'stylesheet';
-    styles.href = 'styles/tiin-v2.css?v=9';
+    styles.href = 'styles/tiin-v2.css?v=11';
     document.head.appendChild(styles);
   }
 
@@ -86,6 +86,26 @@
     closeModal(); toast(currentLang === 'kz' ? 'Сақталды ✓' : 'Сохранено ✓'); render();
   };
 
+  function cumulativeBalanceThrough(year, month) {
+    let total = 0;
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index);
+      const match = key && key.match(/^txns_(\\d{4})_(\\d{1,2})$/);
+      if (!match) continue;
+      const txYear = Number(match[1]);
+      const txMonth = Number(match[2]);
+      if (txYear > year || (txYear === year && txMonth > month)) continue;
+      let records = [];
+      try { records = JSON.parse(localStorage.getItem(key) || '[]'); } catch (_) { continue; }
+      records.forEach(tx => {
+        if (currentWallet !== 'all' && (tx.wallet || 'personal') !== currentWallet) return;
+        const amount = Number(tx.amount || 0);
+        total += tx.type === 'income' ? amount : -amount;
+      });
+    }
+    return total;
+  }
+
   function upgradeDashboard() {
     const balance = document.getElementById('totalBalance');
     const summary = document.querySelector('.summary');
@@ -114,7 +134,10 @@
       balanceKpi.innerHTML = '<div class="label"></div><div class="value balance"></div>';
       summary.appendChild(balanceKpi);
     }
-    balanceKpi.querySelector('.label').textContent = currentLang === 'kz' ? 'БАЛАНС · ОСЫ АЙ' : 'БАЛАНС · ЗА МЕСЯЦ';
+    // Balance is a running amount: all completed months plus the selected one.
+    const runningBalance = cumulativeBalanceThrough(currentYear, currentMonth);
+    balance.textContent = fmt(runningBalance);
+    balanceKpi.querySelector('.label').textContent = currentLang === 'kz' ? 'ЖАЛПЫ БАЛАНС' : 'ОБЩИЙ БАЛАНС';
     balanceKpi.querySelector('.value').textContent = balance.textContent;
   }
 
