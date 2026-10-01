@@ -7,7 +7,7 @@
     const styles = document.createElement('link');
     styles.id = 'tiinV2FinalStyles';
     styles.rel = 'stylesheet';
-    styles.href = 'styles/tiin-v2.css?v=11';
+    styles.href = 'styles/tiin-v2.css?v=12';
     document.head.appendChild(styles);
   }
 
@@ -90,7 +90,7 @@
     let total = 0;
     for (let index = 0; index < localStorage.length; index += 1) {
       const key = localStorage.key(index);
-      const match = key && key.match(/^txns_(\\d{4})_(\\d{1,2})$/);
+      const match = key && key.match(/^txns_(\d{4})_(\d{1,2})$/);
       if (!match) continue;
       const txYear = Number(match[1]);
       const txMonth = Number(match[2]);
