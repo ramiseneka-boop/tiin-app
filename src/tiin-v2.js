@@ -7,7 +7,7 @@
     const styles = document.createElement('link');
     styles.id = 'tiinV2FinalStyles';
     styles.rel = 'stylesheet';
-    styles.href = 'styles/tiin-v2.css?v=16';
+    styles.href = 'styles/tiin-v2.css?v=17';
     document.head.appendChild(styles);
   }
 
@@ -218,39 +218,46 @@
     toast(t('deleted'));
     render();
   };
-  // Native-feeling mobile sheet dismissal: drag the visible handle area down.
+  // Sheet dismissal works with both iOS touch events and desktop pointer events.
   (function enableModalDragDismiss() {
     const overlay = document.getElementById('modalOverlay');
     const modal = document.getElementById('modal');
     if (!overlay || !modal) return;
-    let startY = null;
-    let lastY = null;
+    let startY = null, currentY = null, dragging = false;
 
-    modal.addEventListener('pointerdown', event => {
+    function begin(y) {
       const top = modal.getBoundingClientRect().top;
-      if (event.clientY - top > 56) return;
-      startY = event.clientY;
-      lastY = event.clientY;
-      modal.setPointerCapture?.(event.pointerId);
-    });
-    modal.addEventListener('pointermove', event => {
-      if (startY === null) return;
-      lastY = event.clientY;
-      const distance = Math.max(0, lastY - startY);
-      modal.style.transform = `translateY(${Math.min(distance, 180)}px)`;
-    });
-    function finishDrag() {
-      if (startY === null) return;
-      const distance = Math.max(0, (lastY || startY) - startY);
-      modal.style.transform = '';
-      startY = null;
-      lastY = null;
-      if (distance >= 80) closeModal();
+      if (y - top > 86) return false;
+      startY = y; currentY = y; dragging = true;
+      modal.style.transition = 'none';
+      return true;
     }
-    modal.addEventListener('pointerup', finishDrag);
-    modal.addEventListener('pointercancel', finishDrag);
+    function move(y, event) {
+      if (!dragging || startY === null) return;
+      currentY = y;
+      const distance = Math.max(0, y - startY);
+      if (distance > 0) event?.preventDefault?.();
+      modal.style.transform = `translateY(${Math.min(distance, 260)}px)`;
+    }
+    function end() {
+      if (!dragging) return;
+      const distance = Math.max(0, (currentY || startY) - startY);
+      dragging = false; startY = null; currentY = null;
+      modal.style.transition = '';
+      modal.style.transform = '';
+      if (distance >= 72) closeModal();
+    }
+    modal.addEventListener('pointerdown', event => {
+      if (begin(event.clientY)) modal.setPointerCapture?.(event.pointerId);
+    });
+    modal.addEventListener('pointermove', event => move(event.clientY, event));
+    modal.addEventListener('pointerup', end);
+    modal.addEventListener('pointercancel', end);
+    modal.addEventListener('touchstart', event => begin(event.touches[0].clientY), { passive: true });
+    modal.addEventListener('touchmove', event => move(event.touches[0].clientY, event), { passive: false });
+    modal.addEventListener('touchend', end);
+    modal.addEventListener('touchcancel', end);
   }());
-
 
   // === Planning lists =======================================================
   // Planned items are intentionally separate from transactions until confirmed.
@@ -626,6 +633,62 @@
   window.renderTab = function renderTabWithPlanning() {
     if (currentTab === 'planning') renderPlanning();
     else originalRenderTabV2();
+  };
+
+
+  // === Custom categories ====================================================
+  // Stored separately and injected into the existing category arrays so custom
+  // categories are available in templates, manual operations and planning lists.
+  const CUSTOM_CATEGORIES_KEY = 'custom_categories';
+  function getCustomCategories() {
+    try { const rows = JSON.parse(localStorage.getItem(CUSTOM_CATEGORIES_KEY) || '[]'); return Array.isArray(rows) ? rows : []; } catch (_) { return []; }
+  }
+  function persistCustomCategories(rows) { localStorage.setItem(CUSTOM_CATEGORIES_KEY, JSON.stringify(rows)); }
+  function hydrateCustomCategories() {
+    getCustomCategories().forEach(category => {
+      const target = category.type === 'income' ? INCOME_CATS : EXPENSE_CATS;
+      if (!target.some(item => item.id === category.id)) target.push({ id: category.id, icon: category.icon || '🏷️', name: category.name, custom: true });
+    });
+  }
+  hydrateCustomCategories();
+
+  function templateCats(type) { return type === 'income' ? INCOME_CATS : EXPENSE_CATS; }
+  function renderTemplateCategoryChips(type, selectedId) {
+    const holder = document.getElementById('tplCatChips');
+    if (!holder) return;
+    holder.innerHTML = templateCats(type).map(cat => '<button type="button" class="chip ' + (cat.id === selectedId ? 'selected' : '') + '" data-id="' + esc(cat.id) + '" onclick="selectChip(this)">' + cat.icon + ' ' + esc(cat.name) + '</button>').join('');
+  }
+  window.setTemplateType = function setTemplateType(button) {
+    selectChip(button);
+    renderTemplateCategoryChips(button.dataset.id, null);
+  };
+  window.addTemplateCustomCategory = function addTemplateCustomCategory() {
+    const name = document.getElementById('tplCustomCategoryName')?.value.trim();
+    const icon = document.getElementById('tplCustomCategoryIcon')?.value.trim() || '🏷️';
+    const type = document.querySelector('#tplTypeChips .chip.selected')?.dataset.id || 'expense';
+    if (!name) { toast(currentLang === 'kz' ? 'Санат атауын енгізіңіз' : 'Введите название категории'); return; }
+    const id = 'custom_' + type + '_' + Date.now();
+    const category = { id, name, icon: Array.from(icon)[0] || '🏷️', type };
+    const rows = getCustomCategories(); rows.push(category); persistCustomCategories(rows);
+    const target = type === 'income' ? INCOME_CATS : EXPENSE_CATS; target.push({ id, name, icon: category.icon, custom:true });
+    renderTemplateCategoryChips(type, id);
+    document.getElementById('tplCustomCategoryName').value = '';
+    document.getElementById('tplCustomCategoryIcon').value = '🏷️';
+  };
+  window.openTemplateModal = function openTemplateModalWithCategories() {
+    const existing = getTemplates();
+    document.getElementById('modal').innerHTML = '<h3>' + t('newTemplate') + '</h3>' +
+      '<div class="form-group"><label>' + t('goalName') + '</label><input type="text" class="form-input" id="tplName" placeholder="' + (currentLang === 'ru' ? 'Бензин' : 'Бензин') + '"></div>' +
+      '<div class="form-group"><label>' + t('amount') + '</label><input type="number" class="form-input" id="tplAmount" placeholder="0" inputmode="numeric"></div>' +
+      '<div class="form-group"><label>' + t('type') + '</label><div class="chips" id="tplTypeChips">' +
+      '<button type="button" class="chip selected" data-id="expense" onclick="setTemplateType(this)">' + t('expense') + '</button>' +
+      '<button type="button" class="chip" data-id="income" onclick="setTemplateType(this)">' + t('income') + '</button></div></div>' +
+      '<div class="form-group"><label>' + t('category') + '</label><div class="chips" id="tplCatChips"></div>' +
+      '<div class="custom-category-row"><input class="form-input custom-category-icon" id="tplCustomCategoryIcon" value="🏷️" maxlength="2" aria-label="Эмодзи"><input class="form-input" id="tplCustomCategoryName" placeholder="' + (currentLang === 'kz' ? 'Жаңа санат' : 'Новая категория') + '"><button type="button" class="planning-add" onclick="addTemplateCustomCategory()">＋</button></div><div class="custom-category-hint">' + (currentLang === 'kz' ? 'Өз санатыңызды және эмодзиіңізді қосыңыз' : 'Добавьте свою категорию и эмодзи') + '</div></div>' +
+      '<button class="btn btn-gold" onclick="saveTemplate()" style="width:100%;margin-top:8px">' + t('create') + '</button>' +
+      (existing.length ? '<div class="template-existing"><h4>' + t('existingTemplates') + '</h4>' + existing.map((tp,i) => '<div><span>' + esc(tp.name) + ' — ' + fmt(tp.amount) + '</span><button class="btn btn-danger btn-sm" onclick="deleteTemplate(' + i + ')">✕</button></div>').join('') + '</div>' : '');
+    renderTemplateCategoryChips('expense', null);
+    document.getElementById('modalOverlay').classList.add('open');
   };
 
   setTimeout(() => { render(); }, 0);
