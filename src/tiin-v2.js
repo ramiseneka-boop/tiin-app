@@ -7,7 +7,7 @@
     const styles = document.createElement('link');
     styles.id = 'tiinV2FinalStyles';
     styles.rel = 'stylesheet';
-    styles.href = 'styles/tiin-v2.css?v=14';
+    styles.href = 'styles/tiin-v2.css?v=15';
     document.head.appendChild(styles);
   }
 
@@ -249,6 +249,383 @@
     modal.addEventListener('pointerup', finishDrag);
     modal.addEventListener('pointercancel', finishDrag);
   }());
+
+
+  // === Planning lists =======================================================
+  // Planned items are intentionally separate from transactions until confirmed.
+  const PLANNING_STORAGE_KEY = 'planning_lists';
+  let planningView = 'active';
+  let planningOpenListId = null;
+
+  const planningText = {
+    ru: {
+      title: 'Списки', newList: '+ Новый список', expenses: 'Расходы', incomes: 'Доходы',
+      active: 'Активные', archived: 'Архив', all: 'Все', planned: 'Запланировано',
+      confirmed: 'Подтверждено', remaining: 'Осталось', create: 'Создать список',
+      listName: 'Название списка', listType: 'Тип списка', planExpense: 'План расходов',
+      planIncome: 'План доходов', wallet: 'Кошелёк', dateOptional: 'Плановая дата',
+      commentOptional: 'Комментарий', addItem: '+ Добавить пункт', noLists: 'Пока нет списков',
+      noListsHint: 'Запланируйте покупки, поездку или ожидаемые доходы — финансы изменятся только после подтверждения.',
+      listDetails: 'Детали списка', itemName: 'Название пункта', quantity: 'Количество',
+      unit: 'Единица', unitPlaceholder: 'шт., уп., мес.', unitPrice: 'Цена за единицу',
+      plannedAmount: 'Плановая сумма', category: 'Категория', tags: 'Теги',
+      save: 'Сохранить', cancel: 'Отмена', confirmExpense: 'Подтвердить расход',
+      confirmIncome: 'Подтвердить доход', actualAmount: 'Фактическая сумма',
+      confirm: 'Подтвердить', completed: 'Приобретено', received: 'Получено',
+      plannedStatus: 'Планируется', cancelled: 'Отменено', actual: 'Фактически',
+      edit: 'Изменить', archive: 'В архив', restore: 'Восстановить', duplicate: 'Дублировать',
+      delete: 'Удалить', listActions: 'Действия со списком', itemActions: 'Действия с пунктом',
+      completedOf: 'выполнено', difference: 'Отклонение', back: 'Назад',
+      revertTitle: 'Снять отметку?', keepOperation: 'Оставить финансовую операцию',
+      deleteOperation: 'Удалить связанную операцию', deleteOperationHint: 'Расход/доход будет удалён после подтверждения.',
+      linkedOperation: 'Операция создана', missingAmount: 'Укажите сумму', enterName: 'Введите название',
+      noPrice: 'Цена не указана', confirmDeleteList: 'Удалить список и все его пункты?',
+      confirmDeleteItem: 'Удалить этот пункт?', completedTotal: 'Фактически подтверждено'
+    },
+    kz: {
+      title: 'Тізімдер', newList: '+ Жаңа тізім', expenses: 'Шығыстар', incomes: 'Кірістер',
+      active: 'Белсенді', archived: 'Мұрағат', all: 'Барлығы', planned: 'Жоспарланған',
+      confirmed: 'Расталған', remaining: 'Қалды', create: 'Тізім құру',
+      listName: 'Тізім атауы', listType: 'Тізім түрі', planExpense: 'Шығыс жоспары',
+      planIncome: 'Кіріс жоспары', wallet: 'Әмиян', dateOptional: 'Жоспарланған күн',
+      commentOptional: 'Түсініктеме', addItem: '+ Тармақ қосу', noLists: 'Тізімдер жоқ',
+      noListsHint: 'Сатып алуды, сапарды не күтілетін кірісті жоспарлаңыз — қаржы тек растаудан кейін өзгереді.',
+      listDetails: 'Тізім деректері', itemName: 'Тармақ атауы', quantity: 'Саны',
+      unit: 'Өлшемі', unitPlaceholder: 'дана, қапт., ай', unitPrice: 'Бірлік бағасы',
+      plannedAmount: 'Жоспарланған сома', category: 'Санат', tags: 'Тегтер',
+      save: 'Сақтау', cancel: 'Бас тарту', confirmExpense: 'Шығысты растау',
+      confirmIncome: 'Кірісті растау', actualAmount: 'Нақты сома',
+      confirm: 'Растау', completed: 'Сатып алынды', received: 'Алынды',
+      plannedStatus: 'Жоспарда', cancelled: 'Бас тартылды', actual: 'Нақты',
+      edit: 'Өзгерту', archive: 'Мұрағатқа', restore: 'Қалпына келтіру', duplicate: 'Көшіру',
+      delete: 'Жою', listActions: 'Тізім әрекеттері', itemActions: 'Тармақ әрекеттері',
+      completedOf: 'орындалды', difference: 'Айырма', back: 'Артқа',
+      revertTitle: 'Белгіні алып тастау?', keepOperation: 'Қаржы операциясын қалдыру',
+      deleteOperation: 'Байланысты операцияны жою', deleteOperationHint: 'Шығыс/кіріс расталғаннан кейін жойылады.',
+      linkedOperation: 'Операция жасалды', missingAmount: 'Соманы енгізіңіз', enterName: 'Атауды енгізіңіз',
+      noPrice: 'Баға көрсетілмеген', confirmDeleteList: 'Тізімді және барлық тармақтарды жою керек пе?',
+      confirmDeleteItem: 'Бұл тармақты жою керек пе?', completedTotal: 'Нақты расталған'
+    }
+  };
+
+  function pt(key) { return planningText[currentLang]?.[key] || planningText.ru[key] || key; }
+  function esc(value) {
+    return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function getPlanningLists() {
+    try {
+      const lists = JSON.parse(localStorage.getItem(PLANNING_STORAGE_KEY) || '[]');
+      return Array.isArray(lists) ? lists : [];
+    } catch (_) { return []; }
+  }
+  function savePlanningLists(lists) {
+    localStorage.setItem(PLANNING_STORAGE_KEY, JSON.stringify(lists));
+  }
+  function planningList(id) { return getPlanningLists().find(list => list.id === id); }
+  function listMetrics(list) {
+    const items = list.items || [];
+    const active = items.filter(item => item.status !== 'cancelled');
+    const completed = active.filter(item => item.status === 'completed');
+    const planned = active.reduce((sum, item) => sum + Number(item.plannedAmount || 0), 0);
+    const completedTotal = completed.reduce((sum, item) => sum + Number(item.actualAmount ?? item.plannedAmount ?? 0), 0);
+    const completedPlan = completed.reduce((sum, item) => sum + Number(item.plannedAmount || 0), 0);
+    return { planned, completedTotal, remaining: planned - completedPlan, completedCount: completed.length, activeCount: active.length };
+  }
+  function moneyInput(value) { return Number(value || 0); }
+  function listTypeLabel(type) { return type === 'income' ? pt('planIncome') : pt('planExpense'); }
+  function listStatusPill(list) {
+    return '<span class="planning-type ' + list.type + '">' + (list.type === 'income' ? '↑' : '↓') + ' ' + listTypeLabel(list.type) + '</span>';
+  }
+  function formatPlanningDate(value) {
+    if (!value) return '';
+    try { return new Date(value + 'T00:00:00').toLocaleDateString(currentLang === 'kz' ? 'kk-KZ' : 'ru-RU', { day: 'numeric', month: 'short' }); } catch (_) { return value; }
+  }
+  function planningWalletLabel(wallet) { return wallet === 'business' ? '💼 ' + t('business') : '👤 ' + t('personal'); }
+
+  function ensurePlanningAccess() {
+    const templates = document.getElementById('templatesScroll');
+    if (templates && !document.getElementById('planningAccess')) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.id = 'planningAccess';
+      button.className = 'template-chip planning-access';
+      button.innerHTML = '☷ <span>' + pt('title') + '</span>';
+      button.onclick = window.openPlanning;
+      templates.appendChild(button);
+    }
+    const container = document.querySelector('.container');
+    if (container && !document.getElementById('tab-planning')) {
+      const panel = document.createElement('div');
+      panel.id = 'tab-planning';
+      panel.className = 'tab-content';
+      container.appendChild(panel);
+    }
+  }
+
+  window.openPlanning = function openPlanning() {
+    ensurePlanningAccess();
+    planningOpenListId = null;
+    switchTab('planning');
+  };
+
+  function planningCategories(type) {
+    return type === 'income' ? INCOME_CATS : EXPENSE_CATS;
+  }
+
+  function renderPlanning() {
+    ensurePlanningAccess();
+    const host = document.getElementById('tab-planning');
+    if (!host) return;
+    const lists = getPlanningLists();
+    if (planningOpenListId) {
+      const list = lists.find(item => item.id === planningOpenListId);
+      if (list) { renderPlanningDetail(host, list); return; }
+      planningOpenListId = null;
+    }
+    const visible = lists.filter(list => {
+      if (planningView === 'active') return list.status !== 'archived';
+      if (planningView === 'archived') return list.status === 'archived';
+      if (planningView === 'expense') return list.status !== 'archived' && list.type === 'expense';
+      if (planningView === 'income') return list.status !== 'archived' && list.type === 'income';
+      return true;
+    });
+    host.innerHTML = '<section class="planning-screen">' +
+      '<div class="planning-header"><div><div class="planning-eyebrow">' + pt('title') + '</div><h2>' + pt('title') + '</h2></div><button class="planning-add" onclick="openPlanningListModal()">＋ ' + pt('newList').replace('+ ', '') + '</button></div>' +
+      '<div class="planning-filters">' +
+      [['active',pt('active')],['expense',pt('expenses')],['income',pt('incomes')],['archived',pt('archived')]].map(filter => '<button class="' + (planningView === filter[0] ? 'active' : '') + '" onclick="setPlanningView(\'' + filter[0] + '\')">' + filter[1] + '</button>').join('') +
+      '</div>' +
+      (visible.length ? '<div class="planning-list-grid">' + visible.map(renderPlanningCard).join('') + '</div>' :
+        '<div class="planning-empty"><div class="planning-empty-icon">☷</div><h3>' + pt('noLists') + '</h3><p>' + pt('noListsHint') + '</p><button class="btn btn-gold" onclick="openPlanningListModal()">' + pt('newList') + '</button></div>') +
+      '</section>';
+  }
+
+  function renderPlanningCard(list) {
+    const m = listMetrics(list);
+    const progress = m.activeCount ? Math.round(m.completedCount / m.activeCount * 100) : 0;
+    const meta = [planningWalletLabel(list.wallet), formatPlanningDate(list.plannedDate)].filter(Boolean).join(' · ');
+    return '<article class="planning-card" onclick="openPlanningList(\'' + list.id + '\')">' +
+      '<div class="planning-card-top"><div>' + listStatusPill(list) + '<h3>' + esc(list.title) + '</h3><p>' + esc(meta) + '</p></div><button class="planning-menu" onclick="event.stopPropagation();openPlanningListActions(\'' + list.id + '\')" aria-label="' + pt('listActions') + '">⋮</button></div>' +
+      '<div class="planning-progress"><span style="width:' + progress + '%"></span></div><div class="planning-progress-label">' + m.completedCount + '/' + m.activeCount + ' ' + pt('completedOf') + '</div>' +
+      '<div class="planning-metrics"><div><small>' + pt('planned') + '</small><b>' + fmt(m.planned) + '</b></div><div><small>' + pt('confirmed') + '</small><b class="' + list.type + '">' + fmt(m.completedTotal) + '</b></div><div><small>' + pt('remaining') + '</small><b>' + fmt(m.remaining) + '</b></div></div>' +
+      '</article>';
+  }
+
+  window.setPlanningView = function setPlanningView(view) { planningView = view; planningOpenListId = null; renderPlanning(); };
+  window.openPlanningList = function openPlanningList(id) { planningOpenListId = id; renderPlanning(); };
+  window.closePlanningList = function closePlanningList() { planningOpenListId = null; renderPlanning(); };
+
+  function renderPlanningDetail(host, list) {
+    const m = listMetrics(list);
+    const itemRows = (list.items || []).map(item => renderPlanningItem(list, item)).join('') || '<div class="planning-empty compact"><p>' + pt('noListsHint') + '</p></div>';
+    host.innerHTML = '<section class="planning-screen planning-detail">' +
+      '<div class="planning-detail-head"><button class="planning-back" onclick="closePlanningList()">←</button><div class="planning-title-wrap">' + listStatusPill(list) + '<h2>' + esc(list.title) + '</h2><p>' + esc(planningWalletLabel(list.wallet)) + (list.comment ? ' · ' + esc(list.comment) : '') + '</p></div><button class="planning-menu large" onclick="openPlanningListActions(\'' + list.id + '\')">⋮</button></div>' +
+      '<div class="planning-summary"><div><small>' + pt('planned') + '</small><b>' + fmt(m.planned) + '</b></div><div><small>' + pt('completedTotal') + '</small><b class="' + list.type + '">' + fmt(m.completedTotal) + '</b></div><div><small>' + pt('remaining') + '</small><b>' + fmt(m.remaining) + '</b></div></div>' +
+      '<div class="planning-detail-subhead"><span>' + m.completedCount + '/' + m.activeCount + ' ' + pt('completedOf') + '</span><button class="planning-add small" onclick="openPlanningItemModal(\'' + list.id + '\')">＋ ' + pt('addItem').replace('+ ', '') + '</button></div>' +
+      '<div class="planning-items">' + itemRows + '</div>' +
+      '</section>';
+  }
+
+  function renderPlanningItem(list, item) {
+    const completed = item.status === 'completed';
+    const cancelled = item.status === 'cancelled';
+    const statusLabel = completed ? (list.type === 'income' ? pt('received') : pt('completed')) : (cancelled ? pt('cancelled') : pt('plannedStatus'));
+    const amount = completed ? Number(item.actualAmount ?? item.plannedAmount ?? 0) : Number(item.plannedAmount || 0);
+    const plannedText = item.plannedAmount ? fmt(item.plannedAmount) : pt('noPrice');
+    const actualLine = completed ? '<span class="planning-item-actual">' + pt('actual') + ': ' + fmt(amount) + '</span>' : '';
+    const qty = Number(item.quantity || 1) > 1 ? ' · ' + item.quantity + (item.unit ? ' ' + esc(item.unit) : '') : '';
+    return '<article class="planning-item ' + (completed ? 'is-completed' : '') + (cancelled ? ' is-cancelled' : '') + '">' +
+      '<button class="planning-check" aria-label="' + statusLabel + '" onclick="' + (completed ? 'openPlanningRevertModal' : 'openPlanningConfirmModal') + '(\'' + list.id + '\',\'' + item.id + '\')" ' + (cancelled ? 'disabled' : '') + '>' + (completed ? '✓' : '') + '</button>' +
+      '<div class="planning-item-main" onclick="openPlanningItemModal(\'' + list.id + '\',\'' + item.id + '\')"><div class="planning-item-title">' + esc(item.title) + '</div><div class="planning-item-meta">' + statusLabel + qty + (item.category ? ' · ' + esc(item.category) : '') + '</div>' + actualLine + '</div>' +
+      '<div class="planning-item-right"><b class="' + list.type + '">' + plannedText + '</b><button class="planning-menu" onclick="openPlanningItemActions(\'' + list.id + '\',\'' + item.id + '\')">⋮</button></div>' +
+      '</article>';
+  }
+
+  function selectedChipHtml(id, label, selected) { return '<button type="button" class="chip ' + (selected ? 'selected' : '') + '" data-id="' + esc(id) + '" onclick="selectChip(this)">' + label + '</button>'; }
+
+  window.openPlanningListModal = function openPlanningListModal(id) {
+    const list = id ? planningList(id) : null;
+    const draft = list || { title:'', type:'expense', wallet: currentWallet === 'business' ? 'business' : 'personal', plannedDate:'', comment:'', tags:[] };
+    document.getElementById('modal').innerHTML = '<h3>' + (list ? pt('edit') : pt('newList')) + '</h3>' +
+      '<div class="form-group"><label>' + pt('listName') + '</label><input class="form-input" id="planningListTitle" value="' + esc(draft.title) + '" placeholder="' + pt('listName') + '"></div>' +
+      '<div class="form-group"><label>' + pt('listType') + '</label><div class="chips" id="planningTypeChips">' +
+      selectedChipHtml('expense','↓ ' + pt('planExpense'),draft.type === 'expense') + selectedChipHtml('income','↑ ' + pt('planIncome'),draft.type === 'income') + '</div></div>' +
+      '<div class="form-group"><label>' + pt('wallet') + '</label><div class="chips" id="planningWalletChips">' +
+      selectedChipHtml('personal','👤 ' + t('personal'),draft.wallet !== 'business') + selectedChipHtml('business','💼 ' + t('business'),draft.wallet === 'business') + '</div></div>' +
+      '<div class="form-group"><label>' + pt('dateOptional') + '</label><input type="date" class="form-input" id="planningListDate" value="' + esc(draft.plannedDate || '') + '"></div>' +
+      '<div class="form-group"><label>' + pt('commentOptional') + '</label><input class="form-input" id="planningListComment" value="' + esc(draft.comment || '') + '"></div>' +
+      '<div class="form-group"><label>' + pt('tags') + '</label><input class="form-input" id="planningListTags" value="' + esc((draft.tags || []).join(' ')) + '" placeholder="#"></div>' +
+      '<button class="btn btn-gold" onclick="savePlanningList(' + (list ? '\'' + list.id + '\'' : 'null') + ')">' + pt('save') + '</button>';
+    document.getElementById('modalOverlay').classList.add('open');
+  };
+
+  window.savePlanningList = function savePlanningList(id) {
+    const title = document.getElementById('planningListTitle').value.trim();
+    if (!title) { toast(pt('enterName')); return; }
+    const type = document.querySelector('#planningTypeChips .chip.selected')?.dataset.id || 'expense';
+    const wallet = document.querySelector('#planningWalletChips .chip.selected')?.dataset.id || 'personal';
+    const date = document.getElementById('planningListDate').value || null;
+    const comment = document.getElementById('planningListComment').value.trim();
+    const tags = document.getElementById('planningListTags').value.trim().split(/[\\s,]+/).filter(Boolean);
+    const lists = getPlanningLists();
+    if (id) {
+      const list = lists.find(item => item.id === id);
+      if (!list) return;
+      Object.assign(list, { title, type, wallet, plannedDate: date, comment, tags, updatedAt: new Date().toISOString() });
+    } else {
+      const now = new Date().toISOString();
+      const list = { id: 'plan-' + Date.now(), title, type, wallet, plannedDate:date, comment, tags, status:'active', createdAt:now, updatedAt:now, items:[] };
+      lists.unshift(list);
+      planningOpenListId = list.id;
+    }
+    savePlanningLists(lists); closeModal(); renderPlanning();
+  };
+
+  window.openPlanningItemModal = function openPlanningItemModal(listId, itemId) {
+    const list = planningList(listId); if (!list) return;
+    const item = itemId ? list.items.find(row => row.id === itemId) : null;
+    const draft = item || { title:'', quantity:1, unit:'шт.', plannedUnitPrice:'', plannedAmount:0, category:'', tags:[], plannedDate:list.plannedDate || '', comment:'' };
+    const categories = planningCategories(list.type);
+    document.getElementById('modal').innerHTML = '<h3>' + (item ? pt('edit') : pt('addItem')) + '</h3>' +
+      '<div class="form-group"><label>' + pt('itemName') + '</label><input class="form-input" id="planningItemTitle" value="' + esc(draft.title) + '"></div>' +
+      '<div class="planning-dual"><div class="form-group"><label>' + pt('quantity') + '</label><input type="number" min="0.01" step="any" class="form-input" id="planningItemQty" value="' + Number(draft.quantity || 1) + '"></div><div class="form-group"><label>' + pt('unit') + '</label><input class="form-input" id="planningItemUnit" value="' + esc(draft.unit || '') + '" placeholder="' + pt('unitPlaceholder') + '"></div></div>' +
+      '<div class="form-group"><label>' + pt('unitPrice') + '</label><input type="number" min="0" step="any" class="form-input" id="planningItemPrice" value="' + (draft.plannedUnitPrice ?? '') + '" placeholder="0"></div>' +
+      '<div class="form-group"><label>' + pt('category') + '</label><div class="chips" id="planningCatChips">' + categories.map(cat => selectedChipHtml(cat.id,cat.icon + ' ' + cat.name,cat.id === draft.category)).join('') + '</div></div>' +
+      '<div class="form-group"><label>' + pt('dateOptional') + '</label><input type="date" class="form-input" id="planningItemDate" value="' + esc(draft.plannedDate || '') + '"></div>' +
+      '<div class="form-group"><label>' + pt('commentOptional') + '</label><input class="form-input" id="planningItemComment" value="' + esc(draft.comment || '') + '"></div>' +
+      '<div class="form-group"><label>' + pt('tags') + '</label><input class="form-input" id="planningItemTags" value="' + esc((draft.tags || []).join(' ')) + '"></div>' +
+      '<button class="btn btn-gold" onclick="savePlanningItem(\'' + listId + '\',' + (item ? '\'' + item.id + '\'' : 'null') + ')">' + pt('save') + '</button>';
+    document.getElementById('modalOverlay').classList.add('open');
+  };
+
+  window.savePlanningItem = function savePlanningItem(listId, itemId) {
+    const title = document.getElementById('planningItemTitle').value.trim();
+    if (!title) { toast(pt('enterName')); return; }
+    const quantity = Math.max(0.01, Number(document.getElementById('planningItemQty').value || 1));
+    const priceRaw = document.getElementById('planningItemPrice').value;
+    const price = priceRaw === '' ? null : Math.max(0, Number(priceRaw));
+    const list = planningList(listId); if (!list) return;
+    const payload = {
+      title, quantity, unit: document.getElementById('planningItemUnit').value.trim(),
+      plannedUnitPrice: price, plannedAmount: price === null ? 0 : quantity * price,
+      category: document.querySelector('#planningCatChips .chip.selected')?.dataset.id || null,
+      plannedDate: document.getElementById('planningItemDate').value || null,
+      comment: document.getElementById('planningItemComment').value.trim(),
+      tags: document.getElementById('planningItemTags').value.trim().split(/[\\s,]+/).filter(Boolean)
+    };
+    const lists = getPlanningLists(); const target = lists.find(row => row.id === listId); if (!target) return;
+    if (itemId) {
+      const old = target.items.find(row => row.id === itemId); if (!old) return;
+      Object.assign(old, payload);
+    } else target.items.push({ id:'plan-item-' + Date.now(), status:'planned', actualAmount:null, transactionId:null, completedAt:null, ...payload });
+    target.updatedAt = new Date().toISOString(); savePlanningLists(lists); closeModal(); renderPlanning();
+  };
+
+  function findTransactionById(id) {
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index);
+      const match = key && key.match(/^txns_(\\d{4})_(\\d{1,2})$/);
+      if (!match) continue;
+      const records = getTxns(Number(match[1]), Number(match[2]));
+      const found = records.find(tx => String(tx.id) === String(id));
+      if (found) return { tx: found, year: Number(match[1]), month: Number(match[2]) };
+    }
+    return null;
+  }
+
+  window.openPlanningConfirmModal = function openPlanningConfirmModal(listId, itemId) {
+    const list = planningList(listId); const item = list?.items.find(row => row.id === itemId); if (!list || !item) return;
+    const categories = planningCategories(list.type);
+    const defaultAmount = item.plannedAmount || '';
+    document.getElementById('modal').innerHTML = '<h3>' + (list.type === 'income' ? pt('confirmIncome') : pt('confirmExpense')) + '</h3>' +
+      '<p class="planning-modal-description">' + esc(item.title) + '</p>' +
+      '<div class="form-group"><label>' + pt('actualAmount') + '</label><input type="number" min="0.01" step="any" class="form-input big" id="planningActualAmount" value="' + defaultAmount + '"></div>' +
+      '<div class="form-group"><label>' + t('date') + '</label><input type="date" class="form-input" id="planningActualDate" value="' + localDateString() + '"></div>' +
+      '<div class="form-group"><label>' + pt('category') + '</label><div class="chips" id="planningConfirmCat">' + categories.map(cat => selectedChipHtml(cat.id,cat.icon + ' ' + cat.name,cat.id === item.category)).join('') + '</div></div>' +
+      '<div class="form-group"><label>' + pt('wallet') + '</label><div class="chips" id="planningConfirmWallet">' + selectedChipHtml('personal','👤 ' + t('personal'),list.wallet !== 'business') + selectedChipHtml('business','💼 ' + t('business'),list.wallet === 'business') + '</div></div>' +
+      '<button class="btn btn-gold" onclick="confirmPlanningItem(\'' + listId + '\',\'' + itemId + '\')">' + pt('confirm') + '</button>';
+    document.getElementById('modalOverlay').classList.add('open');
+  };
+
+  window.confirmPlanningItem = function confirmPlanningItem(listId, itemId) {
+    const amount = Number(document.getElementById('planningActualAmount').value);
+    const date = document.getElementById('planningActualDate').value;
+    const list = planningList(listId); const item = list?.items.find(row => row.id === itemId);
+    if (!list || !item || !amount || amount <= 0) { toast(pt('missingAmount')); return; }
+    if (item.transactionId) { toast(pt('linkedOperation')); closeModal(); return; }
+    const category = document.querySelector('#planningConfirmCat .chip.selected')?.dataset.id || item.category || planningCategories(list.type)[0]?.id;
+    const wallet = document.querySelector('#planningConfirmWallet .chip.selected')?.dataset.id || list.wallet;
+    const targetDate = new Date(date + 'T00:00:00'); const year = targetDate.getFullYear(); const month = targetDate.getMonth();
+    const tx = { id: Date.now(), type:list.type, amount, category, comment:item.comment || list.comment || item.title, tags:[...(list.tags || []), ...(item.tags || [])], wallet, date, planningListId:listId, planningItemId:itemId };
+    const transactions = getTxns(year, month); transactions.push(tx); saveTxns(year, month, transactions);
+    const lists = getPlanningLists(); const target = lists.find(row => row.id === listId); const targetItem = target?.items.find(row => row.id === itemId);
+    if (targetItem) Object.assign(targetItem, { status:'completed', actualAmount:amount, transactionId:String(tx.id), completedAt:new Date().toISOString(), category, plannedDate: item.plannedDate || date });
+    if (target) target.updatedAt = new Date().toISOString();
+    savePlanningLists(lists); closeModal(); toast(list.type === 'income' ? t('incomeAdded') : t('expenseAdded')); render(); renderPlanning();
+  };
+
+  window.openPlanningRevertModal = function openPlanningRevertModal(listId, itemId) {
+    const list = planningList(listId); const item = list?.items.find(row => row.id === itemId); if (!list || !item) return;
+    document.getElementById('modal').innerHTML = '<div class="tx-action-sheet"><div class="tx-action-title">' + pt('revertTitle') + '</div><div class="tx-action-subtitle">' + esc(item.title) + '</div>' +
+      '<button class="btn btn-gold" onclick="revertPlanningItem(\'' + listId + '\',\'' + itemId + '\',false)">' + pt('keepOperation') + '</button>' +
+      '<button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="revertPlanningItem(\'' + listId + '\',\'' + itemId + '\',true)">' + pt('deleteOperation') + '</button>' +
+      '<p class="planning-delete-hint">' + pt('deleteOperationHint') + '</p><button class="tx-action-cancel" onclick="closeModal()">' + pt('cancel') + '</button></div>';
+    document.getElementById('modalOverlay').classList.add('open');
+  };
+
+  window.revertPlanningItem = function revertPlanningItem(listId, itemId, deleteLinked) {
+    const lists = getPlanningLists(); const list = lists.find(row => row.id === listId); const item = list?.items.find(row => row.id === itemId); if (!item) return;
+    if (deleteLinked && item.transactionId) {
+      const found = findTransactionById(item.transactionId);
+      if (found && !confirm(pt('deleteOperation') + '?')) return;
+      if (found) saveTxns(found.year, found.month, getTxns(found.year, found.month).filter(tx => String(tx.id) !== String(item.transactionId)));
+    }
+    Object.assign(item, { status:'planned', actualAmount:null, transactionId:null, completedAt:null });
+    list.updatedAt = new Date().toISOString(); savePlanningLists(lists); closeModal(); render(); renderPlanning();
+  };
+
+  window.openPlanningListActions = function openPlanningListActions(id) {
+    const list = planningList(id); if (!list) return;
+    const archiveLabel = list.status === 'archived' ? pt('restore') : pt('archive');
+    document.getElementById('modal').innerHTML = '<div class="tx-action-sheet"><div class="tx-action-title">' + esc(list.title) + '</div><div class="tx-action-subtitle">' + pt('listActions') + '</div>' +
+      '<button class="btn btn-gold" onclick="openPlanningListModal(\'' + id + '\')">' + pt('edit') + '</button>' +
+      '<button class="tx-action-cancel" onclick="duplicatePlanningList(\'' + id + '\')">' + pt('duplicate') + '</button>' +
+      '<button class="tx-action-cancel" onclick="togglePlanningArchive(\'' + id + '\')">' + archiveLabel + '</button>' +
+      '<button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="deletePlanningList(\'' + id + '\')">' + pt('delete') + '</button></div>';
+    document.getElementById('modalOverlay').classList.add('open');
+  };
+  window.duplicatePlanningList = function duplicatePlanningList(id) {
+    const lists = getPlanningLists(); const source = lists.find(row => row.id === id); if (!source) return;
+    const copy = JSON.parse(JSON.stringify(source)); copy.id = 'plan-' + Date.now(); copy.title = source.title + ' — копия'; copy.status = 'active'; copy.createdAt = new Date().toISOString(); copy.updatedAt = copy.createdAt;
+    copy.items = copy.items.map((item, index) => ({ ...item, id:'plan-item-' + Date.now() + '-' + index, status:'planned', actualAmount:null, transactionId:null, completedAt:null }));
+    lists.unshift(copy); savePlanningLists(lists); planningOpenListId = copy.id; closeModal(); renderPlanning();
+  };
+  window.togglePlanningArchive = function togglePlanningArchive(id) {
+    const lists = getPlanningLists(); const list = lists.find(row => row.id === id); if (!list) return;
+    list.status = list.status === 'archived' ? 'active' : 'archived'; list.updatedAt = new Date().toISOString(); savePlanningLists(lists); closeModal(); planningOpenListId = null; renderPlanning();
+  };
+  window.deletePlanningList = function deletePlanningList(id) {
+    if (!confirm(pt('confirmDeleteList'))) return;
+    savePlanningLists(getPlanningLists().filter(list => list.id !== id)); closeModal(); planningOpenListId = null; renderPlanning();
+  };
+  window.openPlanningItemActions = function openPlanningItemActions(listId, itemId) {
+    document.getElementById('modal').innerHTML = '<div class="tx-action-sheet"><div class="tx-action-title">' + pt('itemActions') + '</div>' +
+      '<button class="btn btn-gold" onclick="openPlanningItemModal(\'' + listId + '\',\'' + itemId + '\')">' + pt('edit') + '</button>' +
+      '<button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="deletePlanningItem(\'' + listId + '\',\'' + itemId + '\')">' + pt('delete') + '</button><button class="tx-action-cancel" onclick="closeModal()">' + pt('cancel') + '</button></div>';
+    document.getElementById('modalOverlay').classList.add('open');
+  };
+  window.deletePlanningItem = function deletePlanningItem(listId, itemId) {
+    if (!confirm(pt('confirmDeleteItem'))) return;
+    const lists = getPlanningLists(); const list = lists.find(row => row.id === listId); if (!list) return;
+    const item = list.items.find(row => row.id === itemId);
+    if (item?.transactionId) { toast(pt('linkedOperation')); return; }
+    list.items = list.items.filter(row => row.id !== itemId); list.updatedAt = new Date().toISOString(); savePlanningLists(lists); closeModal(); renderPlanning();
+  };
+
+  const originalRenderTabV2 = window.renderTab;
+  window.renderTab = function renderTabWithPlanning() {
+    if (currentTab === 'planning') renderPlanning();
+    else originalRenderTabV2();
+  };
 
   setTimeout(() => { render(); }, 0);
 }());
