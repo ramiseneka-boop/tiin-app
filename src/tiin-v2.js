@@ -145,6 +145,17 @@
   }
 
 
+  // Balance artwork follows the device's local time, without using UTC.
+  function applyTimeAwareBalanceArtwork(hero) {
+    const hour = new Date().getHours();
+    const daypart = hour >= 5 && hour < 10 ? 'morning'
+      : hour >= 10 && hour < 17 ? 'day'
+      : hour >= 17 && hour < 21 ? 'evening'
+      : 'night';
+    hero.dataset.daypart = daypart;
+    hero.setAttribute('data-daypart', daypart);
+  }
+
   function upgradeDashboard() {
     const balance = document.getElementById('totalBalance');
     const summary = document.querySelector('.summary');
@@ -160,6 +171,7 @@
       hero.insertBefore(balance, hero.querySelector('.balance-hero-period'));
       if (oldCard) oldCard.remove();
     }
+    applyTimeAwareBalanceArtwork(hero);
     hero.querySelector('.balance-hero-label').textContent = currentLang === 'kz' ? 'Жалпы баланс' : 'Общий баланс';
     hero.querySelector('.balance-hero-period').textContent = `${t('months_arr')[currentMonth]} ${currentYear}`;
     const labels = summary.querySelectorAll('.summary-item .label');
