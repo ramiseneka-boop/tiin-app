@@ -309,3 +309,10 @@ html.light .tx-popover button.danger { color:#B44650; }
 
 /* Sheet usability and custom categories */
 .modal{width:min(100%,640px);max-width:100vw;overscroll-behavior:contain;touch-action:pan-y}.modal::before{cursor:grab;touch-action:none}.modal:active::before{cursor:grabbing}.modal .form-group,.modal .planning-dual>*,.modal .chips{min-width:0;max-width:100%}.modal input,.modal .form-input,.modal input[type="date"]{width:100%;max-width:100%;min-width:0}.modal .chips{overflow:hidden}.modal .chip{max-width:100%;overflow:hidden;text-overflow:ellipsis}.planning-dual{min-width:0}.custom-category-row{display:grid;grid-template-columns:56px minmax(0,1fr) 48px;gap:8px;margin-top:10px;min-width:0}.custom-category-icon{text-align:center;padding-left:7px!important;padding-right:7px!important}.custom-category-hint{font-size:11px;color:var(--text-muted,#6f7a8e);margin-top:6px}.template-existing{margin-top:16px}.template-existing h4{font-size:14px;color:var(--text-secondary,#9da7ba);margin-bottom:8px}.template-existing>div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}.template-existing span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+
+/* Time-aware balance artwork: declared last so it wins over legacy hero skin. */
+.balance-hero[data-daypart="night"]{background-image:linear-gradient(110deg,rgba(8,14,29,.82) 0%,rgba(8,14,29,.55) 52%,rgba(8,14,29,.34) 100%),url('../assets/tiin-balance-mountains.jpeg')!important}
+.balance-hero[data-daypart="morning"]{background-image:linear-gradient(110deg,rgba(8,14,29,.78) 0%,rgba(8,14,29,.50) 54%,rgba(8,14,29,.24) 100%),url('../assets/tiin-balance-morning.png')!important}
+.balance-hero[data-daypart="day"]{background-image:linear-gradient(110deg,rgba(8,14,29,.76) 0%,rgba(8,14,29,.48) 54%,rgba(8,14,29,.25) 100%),url('../assets/tiin-balance-day.png')!important}
+.balance-hero[data-daypart="evening"]{background-image:linear-gradient(110deg,rgba(8,14,29,.80) 0%,rgba(8,14,29,.54) 54%,rgba(8,14,29,.26) 100%),url('../assets/tiin-balance-evening.png')!important}
