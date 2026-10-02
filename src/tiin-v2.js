@@ -206,6 +206,7 @@
     originalRender();
     upgradeDashboard();
     buildDesktopContext();
+    ensurePlanningAccess();
   };
   window.deleteTx = function deleteTxV2(id) {
     if (!confirm(t('confirmDelete'))) return;
