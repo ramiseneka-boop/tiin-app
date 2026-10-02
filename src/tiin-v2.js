@@ -7,7 +7,7 @@
     const styles = document.createElement('link');
     styles.id = 'tiinV2FinalStyles';
     styles.rel = 'stylesheet';
-    styles.href = 'styles/tiin-v2.css?v=13';
+    styles.href = 'styles/tiin-v2.css?v=14';
     document.head.appendChild(styles);
   }
 
@@ -87,6 +87,64 @@
   };
 
 
+  // Start the rolling balance at the last real month near the currently viewed one.
+  // This deliberately ignores unrelated old/demo records from earlier years.
+  function walletTransactions(year, month) {
+    return filterTxnsByWallet(getTxns(year, month));
+  }
+
+  function monthNet(year, month) {
+    return walletTransactions(year, month).reduce((total, tx) => {
+      const amount = Number(tx.amount || 0);
+      return total + (tx.type === 'income' ? amount : -amount);
+    }, 0);
+  }
+
+  function balanceAnchorKey() {
+    return `tiin_balance_anchor_v2_${currentWallet || 'all'}`;
+  }
+
+  function readBalanceAnchor() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(balanceAnchorKey()) || 'null');
+      return Number.isInteger(saved?.year) && Number.isInteger(saved?.month) ? saved : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function findNearestActiveMonth(year, month) {
+    // Ten years is ample while still avoiding an unbounded scan.
+    for (let offset = 0; offset < 120; offset += 1) {
+      const id = year * 12 + month - offset;
+      const testYear = Math.floor(id / 12);
+      const testMonth = ((id % 12) + 12) % 12;
+      if (walletTransactions(testYear, testMonth).length) return { year: testYear, month: testMonth };
+    }
+    return null;
+  }
+
+  function carriedBalance(year, month) {
+    let anchor = readBalanceAnchor();
+    const selectedId = year * 12 + month;
+    if (!anchor) {
+      anchor = findNearestActiveMonth(year, month);
+      if (!anchor) return 0;
+      // Save only the boundary of the current real finance history; transaction data stays untouched.
+      localStorage.setItem(balanceAnchorKey(), JSON.stringify(anchor));
+    }
+    const anchorId = anchor.year * 12 + anchor.month;
+    if (selectedId < anchorId) return monthNet(year, month);
+    let total = 0;
+    for (let id = anchorId; id <= selectedId; id += 1) {
+      const testYear = Math.floor(id / 12);
+      const testMonth = id % 12;
+      total += monthNet(testYear, testMonth);
+    }
+    return total;
+  }
+
+
   function upgradeDashboard() {
     const balance = document.getElementById('totalBalance');
     const summary = document.querySelector('.summary');
@@ -115,8 +173,10 @@
       balanceKpi.innerHTML = '<div class="label"></div><div class="value balance"></div>';
       summary.appendChild(balanceKpi);
     }
-    // Keep the legacy monthly calculation intact. It is the user's established source of truth.
-    balanceKpi.querySelector('.label').textContent = currentLang === 'kz' ? 'ОСЫ АЙДЫҢ БАЛАНСЫ' : 'БАЛАНС ЗА МЕСЯЦ';
+    // Carry the verified closing balance into the next month, then apply only new operations.
+    const closingBalance = carriedBalance(currentYear, currentMonth);
+    balance.textContent = fmt(closingBalance);
+    balanceKpi.querySelector('.label').textContent = currentLang === 'kz' ? 'АЙ СОҢЫНДАҒЫ ҚАЛДЫҚ' : 'ОСТАТОК НА КОНЕЦ МЕСЯЦА';
     balanceKpi.querySelector('.value').textContent = balance.textContent;
   }
 
