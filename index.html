@@ -2064,13 +2064,13 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=24', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=25', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
 </script>
 <script src="src/tiin-v2.js?v=21"></script>
 <script src="src/tiin-currency.js?v=1"></script>
-<script src="src/tiin-sync.js?v=4"></script>
+<script src="src/tiin-sync.js?v=5"></script>
 </body>
 </html>
