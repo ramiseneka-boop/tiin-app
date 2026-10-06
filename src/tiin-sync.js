@@ -50,8 +50,15 @@
   function safeJson(value, fallback) {
     try { return JSON.parse(value); } catch (_) { return fallback; }
   }
-  function queue() { return safeJson(localStorage.getItem(CONFIG.cacheKey), []); }
-  function saveQueue(items) { localStorage.setItem(CONFIG.cacheKey, JSON.stringify(items)); }
+  // Older TIIN builds could leave a non-array value in localStorage.
+  // Treat it as an empty queue rather than blocking sync or touching finance records.
+  function queue() {
+    const stored = safeJson(localStorage.getItem(CONFIG.cacheKey), []);
+    return Array.isArray(stored) ? stored : [];
+  }
+  function saveQueue(items) {
+    localStorage.setItem(CONFIG.cacheKey, JSON.stringify(Array.isArray(items) ? items : []));
+  }
   function queueDocument(key) {
     if (!isDataKey(key)) return;
     const value = localStorage.getItem(key);
