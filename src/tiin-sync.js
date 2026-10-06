@@ -14,28 +14,12 @@
     'payment_items', 'custom_categories', 'planning_lists', 'lang', 'theme'
   ]);
   const DATA_KEY_RE = /^(txns_\d{4}_\d{1,2}|payment_status_\d{4}_\d{1,2})$/;
-  const state = { client: null, user: null, timer: null, syncing: false, handoffCompleting: false };
+  const state = { client: null, user: null, timer: null, syncing: false };
   const authIntroKey = 'tiin_auth_intro_seen_v1';
-  const handoffStorageKey = 'tiin_google_handoff_v2';
-  const handoffTtlMs = 5 * 60 * 1000;
-  let callbackHandoffId = null;
-  try { callbackHandoffId = new URL(window.location.href).searchParams.get('tiin_handoff'); } catch (_) {}
-  function makeHandoffId() {
-    const bytes = new Uint8Array(32);
-    if (window.crypto?.getRandomValues) {
-      window.crypto.getRandomValues(bytes);
-      return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
-    }
-    return (crypto.randomUUID?.() || String(Date.now())) + (crypto.randomUUID?.() || String(Math.random())).replace(/-/g, '');
-  }
+
   function isDataKey(key) { return DATA_KEYS.has(key) || DATA_KEY_RE.test(key); }
   function locale() { return window.currentLang === 'kz' ? 'kk' : 'ru'; }
   function text(ru, kk) { return locale() === 'kk' ? (kk || ru) : ru; }
-  function isIosBrowserOutsidePwa() {
-    const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
-    const standalone = window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone === true;
-    return ios && !standalone;
-  }
   function setStatus(label, kind) {
     document.querySelectorAll('.sync-status').forEach(el => {
       el.textContent = label;
@@ -81,7 +65,7 @@
     close();
   }
   function renderWelcome() {
-    modal('<div class="tiin-auth tiin-welcome"><div class="tiin-auth-kicker">TIIN</div><h3>' + text('Деньги — под контролем', 'Қаржыңыз — бақылауда') + '</h3><p>' + text('Войдите, чтобы безопасно синхронизировать данные между телефоном и компьютером.', 'Телефон мен компьютер арасындағы деректерді қауіпсіз синхрондау үшін кіріңіз.') + '</p><button class="btn tiin-google-button" onclick="TIINCloud.signInWithGoogle()"><span>G</span>' + text('Продолжить с Google', 'Google арқылы жалғастыру') + '</button><button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="TIINCloud.openEmailLogin()">' + text('Войти по email', 'Email арқылы кіру') + '</button><button class="tx-action-cancel" onclick="TIINCloud.continueWithoutAccount()">' + text('Пока без аккаунта', 'Әзірге аккаунтсыз') + '</button></div>');
+    modal('<div class="tiin-auth tiin-welcome"><div class="tiin-auth-kicker">TIIN</div><h3>' + text('Деньги — под контролем', 'Қаржыңыз — бақылауда') + '</h3><p>' + text('Войдите через Google, чтобы безопасно синхронизировать данные между телефоном и компьютером.', 'Телефон мен компьютер арасындағы деректерді қауіпсіз синхрондау үшін Google арқылы кіріңіз.') + '</p><button class="btn tiin-google-button" onclick="TIINCloud.signInWithGoogle()"><span>G</span>' + text('Продолжить с Google', 'Google арқылы жалғастыру') + '</button><button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="TIINCloud.openEmailLogin()">' + text('Войти по email', 'Email арқылы кіру') + '</button><button class="tx-action-cancel" onclick="TIINCloud.continueWithoutAccount()">' + text('Пока без аккаунта', 'Әзірге аккаунтсыз') + '</button></div>');
   }
 
   async function getClient() {
@@ -97,14 +81,7 @@
       });
     }
     state.client = window.supabase.createClient(CONFIG.url, CONFIG.publishableKey, {
-      // Use durable browser storage and restore the local session before any network request.
-      // This is important for installed iPhone PWAs after the app has been closed.
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        storage: window.localStorage
-      }
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: window.localStorage }
     });
     return state.client;
   }
@@ -279,113 +256,38 @@
     box.innerHTML = html;
     overlay.classList.add('open');
   }
-  async function invokeHandoff(action, payload, accessToken) {
-    const headers = { 'Content-Type': 'application/json', apikey: CONFIG.publishableKey };
-    if (accessToken) headers.Authorization = 'Bearer ' + accessToken;
-    const response = await fetch(CONFIG.url + '/functions/v1/tiin-auth-handoff', {
-      method: 'POST', headers, body: JSON.stringify({ action, ...payload })
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.error || 'handoff_failed');
-    return data;
-  }
-  function pendingHandoff() {
-    const record = safeJson(localStorage.getItem(handoffStorageKey), null);
-    if (!record?.id || !record?.createdAt || Date.now() - record.createdAt > handoffTtlMs) {
-      localStorage.removeItem(handoffStorageKey);
-      return null;
-    }
-    return record;
-  }
-  function renderIosReturnToApp() {
-    modal('<div class="tiin-auth tiin-welcome"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>' + text('Вход подтверждён', 'Кіру расталды') + '</h3><p>' + text('iPhone не позволяет сайту закрыть окно Gmail и открыть PWA сам. Нажмите «Вернуться в Gmail» или кнопку Gmail сверху слева, затем откройте TIIN с домашнего экрана. Аккаунт подключится автоматически.', 'iPhone сайтке Gmail терезесін жауып, PWA-ны өзі ашуға рұқсат бермейді. «Gmail-ге оралу» батырмасын немесе жоғары сол жақтағы Gmail батырмасын басып, TIIN-ді басты экраннан ашыңыз. Аккаунт автоматты қосылады.') + '</p><button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="TIINCloud.returnToApp()">' + text('Вернуться в Gmail', 'Gmail-ге оралу') + '</button></div>');
-  }
-  function returnToApp() {
-    try { history.back(); } catch (_) { try { window.close(); } catch (__) {} }
-  }
-  async function completeCallbackHandoff(client, user) {
-    if (!callbackHandoffId || !user || state.handoffCompleting) return false;
-    state.handoffCompleting = true;
-    try {
-      const { data, error } = await client.auth.getSession();
-      if (error || !data.session?.access_token || !data.session?.refresh_token) throw error || new Error('session_unavailable');
-      await invokeHandoff('complete', {
-        handoffId: callbackHandoffId,
-        accessToken: data.session.access_token,
-        refreshToken: data.session.refresh_token
-      }, data.session.access_token);
-      try { history.replaceState({}, document.title, window.location.pathname); } catch (_) {}
-      callbackHandoffId = null;
-      renderIosReturnToApp();
-      return true;
-    } catch (error) {
-      console.warn('TIIN Google return pending:', error.message);
-      return false;
-    } finally {
-      state.handoffCompleting = false;
-    }
-  }
-  async function consumePendingGoogleHandoff(client) {
-    const pending = pendingHandoff();
-    if (!pending || state.handoffCompleting) return false;
-    state.handoffCompleting = true;
-    try {
-      const result = await invokeHandoff('consume', { handoffId: pending.id });
-      if (result.pending || !result.session?.access_token || !result.session?.refresh_token) return false;
-      const { data, error } = await client.auth.setSession({
-        access_token: result.session.access_token,
-        refresh_token: result.session.refresh_token
-      });
-      if (error) throw error;
-      localStorage.removeItem(handoffStorageKey);
-      state.user = data.user || data.session?.user || await getPersistedUser(client);
-      refreshAccountButton();
-      await openAccount();
-      return true;
-    } catch (error) {
-      console.warn('TIIN Google handoff deferred:', error.message);
-      return false;
-    } finally {
-      state.handoffCompleting = false;
-    }
-  }
-
   function renderLogin(message) {
     modal('<div class="tiin-auth"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>' + text('Синхронизация между устройствами', 'Құрылғылар арасындағы синхрондау') + '</h3><p>' + (message || text('Войдите через Google или email. После входа вы сами подтвердите перенос локальных данных.', 'Google немесе email арқылы кіріңіз. Кейін жергілікті деректерді көшіруді өзіңіз растайсыз.')) + '</p><button class="btn" style="width:100%;margin-top:14px;border:1px solid rgba(255,255,255,.18);background:#fff;color:#182033" onclick="TIINCloud.signInWithGoogle()">G&nbsp; ' + text('Войти через Google', 'Google арқылы кіру') + '</button><div style="display:flex;align-items:center;gap:10px;margin:16px 0;color:#8f9bb2;font-size:12px"><span style="height:1px;background:currentColor;flex:1"></span>' + text('или по email', 'немесе email арқылы') + '<span style="height:1px;background:currentColor;flex:1"></span></div><label>' + text('Email', 'Email') + '</label><input id="tiinAuthEmail" class="form-input" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com"><button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="TIINCloud.sendMagicLink()">' + text('Получить ссылку для входа', 'Кіру сілтемесін алу') + '</button><button class="tx-action-cancel" onclick="closeModal()">' + text('Отмена', 'Бас тарту') + '</button></div>');
   }
   async function signInWithGoogle() {
     try {
       const client = await getClient();
-      const handoffId = makeHandoffId();
-      localStorage.setItem(handoffStorageKey, JSON.stringify({ id: handoffId, createdAt: Date.now() }));
-      const redirect = new URL(window.location.origin + window.location.pathname);
-      redirect.searchParams.set('tiin_handoff', handoffId);
       const { error } = await client.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: redirect.toString() }
+        options: { redirectTo: window.location.origin + window.location.pathname }
       });
       if (error) throw error;
     } catch (error) {
       renderLogin(text('Не удалось открыть вход через Google: ', 'Google арқылы кіруді ашу мүмкін болмады: ') + error.message);
     }
   }
+
   async function sendMagicLink() {
     const email = document.getElementById('tiinAuthEmail')?.value.trim();
     if (!email || !/^\S+@\S+\.\S+$/.test(email)) { alert(text('Введите корректный email', 'Дұрыс email енгізіңіз')); return; }
     try {
       const client = await getClient();
-      const handoffId = makeHandoffId();
-      localStorage.setItem(handoffStorageKey, JSON.stringify({ id: handoffId, createdAt: Date.now() }));
-      const redirect = new URL(window.location.origin + window.location.pathname);
-      redirect.searchParams.set('tiin_handoff', handoffId);
       const { error } = await client.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: redirect.toString() }
+        options: { emailRedirectTo: window.location.origin + window.location.pathname }
       });
       if (error) throw error;
-      renderLogin(text('Ссылка отправлена. Откройте письмо на этом устройстве и вернитесь в TIIN.', 'Сілтеме жіберілді. Осы құрылғыда хатты ашып, TIIN-ге оралыңыз.'));
+      renderLogin(text('Ссылка отправлена. Не запрашивайте её повторно: откройте последнее письмо на этом устройстве.', 'Сілтеме жіберілді. Оны қайта сұратпаңыз: соңғы хатты осы құрылғыда ашыңыз.'));
     } catch (error) {
-      renderLogin(text('Не удалось отправить ссылку: ', 'Сілтемені жіберу мүмкін болмады: ') + error.message);
+      const rateLimited = /rate limit/i.test(error.message || '');
+      renderLogin(rateLimited
+        ? text('Лимит писем временно исчерпан. Не отправляйте ещё раз — дождитесь следующего часа и запросите одну ссылку.', 'Хат лимиті уақытша таусылды. Қайта жібермеңіз — келесі сағатты күтіп, бір сілтеме сұратыңыз.')
+        : text('Не удалось отправить ссылку: ', 'Сілтемені жіберу мүмкін болмады: ') + error.message);
     }
   }
 
@@ -425,8 +327,6 @@
   async function openAccount() {
     try {
       const client = await getClient();
-      // getSession reads the saved session locally. getUser performs a network validation
-      // and could wrongly make an offline/returning PWA look signed out.
       const user = await getPersistedUser(client);
       if (!user) { renderLogin(); return; }
       state.user = user;
@@ -440,10 +340,6 @@
         return;
       }
       if (!localStorage.getItem(CONFIG.migrationKey) && !remote?.length) {
-        if (isIosBrowserOutsidePwa()) {
-          renderIosReturnToApp();
-          return;
-        }
         modal('<div class="tiin-auth"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>' + text('В аккаунте пока нет данных', 'Аккаунтта әзірге деректер жоқ') + '</h3><p>' + text('На этом устройстве тоже не найдено финансовых записей. Ничего не будет перезаписано.', 'Бұл құрылғыда да қаржылық жазбалар табылмады. Ештеңе қайта жазылмайды.') + '</p><button class="tx-action-cancel" onclick="closeModal()">' + text('Закрыть', 'Жабу') + '</button></div>');
         return;
       }
@@ -496,11 +392,8 @@
     window.addEventListener('online', flush);
     try {
       const client = await getClient();
-      // Restore the stored session immediately, including when the phone starts offline.
       const user = await getPersistedUser(client);
       state.user = user;
-      if (await completeCallbackHandoff(client, user)) return;
-      if (await consumePendingGoogleHandoff(client)) return;
       refreshAccountButton();
       if (!user) {
         setStatus(text('Данные на устройстве', 'Құрылғыдағы деректер'), 'local');
@@ -516,28 +409,19 @@
       client.auth.onAuthStateChange((event, session) => {
         state.user = session?.user || null;
         refreshAccountButton();
-        // Only open the migration dialog after a real new sign-in, not after every app relaunch.
-        if (state.user && event === 'SIGNED_IN') {
-          completeCallbackHandoff(client, state.user).then(done => { if (!done) openAccount(); });
-        }
+        if (state.user && event === 'SIGNED_IN') openAccount();
       });
-      // iOS may suspend a PWA completely. Re-read the persisted session when it returns.
       document.addEventListener('visibilitychange', async () => {
         if (document.hidden) return;
         try {
           const returningUser = await getPersistedUser(client);
-          if (returningUser) {
-            state.user = returningUser;
-            refreshAccountButton();
-          } else if (await consumePendingGoogleHandoff(client)) {
-            return;
-          }
-        } catch (_) { /* Keep the existing UI while offline. */ }
+          if (returningUser) { state.user = returningUser; refreshAccountButton(); }
+        } catch (_) {}
       });
     } catch (_) {
       setStatus(text('Нет сети', 'Желі жоқ'), 'offline');
     }
   }
-  window.TIINCloud = { open: openAccount, openEmailLogin: renderLogin, signInWithGoogle, sendMagicLink, confirmMigration, syncNow, signOut, continueWithoutAccount, restoreBackup: restoreRecoveryBackup, returnToApp };
+  window.TIINCloud = { open: openAccount, openEmailLogin: renderLogin, signInWithGoogle, sendMagicLink, confirmMigration, syncNow, signOut, continueWithoutAccount, restoreBackup: restoreRecoveryBackup };
   document.addEventListener('DOMContentLoaded', boot);
 })();
