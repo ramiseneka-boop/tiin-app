@@ -125,7 +125,7 @@
     const rate = Number(tx.rateToKzt || 1);
     return '<div class="form-group tx-currency-group"><label>' + ru('Валюта операции', 'Операция валютасы') + '</label>' +
       '<div class="tx-currency-row">' + selector('editCurrency', code) + '<button type="button" class="currency-refresh" onclick="TIINTransactionCurrency.refreshEditRate()" aria-label="refresh">↻</button></div>' +
-      '<input type="hidden" id="editRateToKzt" value="' + rate + '"><div class="tx-currency-preview" id="editCurrencyPreview"></div><div class="tx-currency-rate" id="editCurrencyRate"></div></div>';
+      '<input type="hidden" id="editRateToKzt" value="' + rate + '"><input type="hidden" id="editRateCurrency" value="' + code + '"><input type="hidden" id="editRateUpdatedAt" value="' + escape(tx.rateUpdatedAt || '') + '"><div class="tx-currency-preview" id="editCurrencyPreview"></div><div class="tx-currency-rate" id="editCurrencyRate"></div></div>';
   }
   function editPreview() {
     const fixedRate = Number(document.getElementById('editRateToKzt')?.value || 1);
@@ -143,6 +143,8 @@
         const rate = rateToKzt(code, snapshot);
         if (!rate) throw new Error('rate missing');
         document.getElementById('editRateToKzt').value = rate;
+        document.getElementById('editRateCurrency').value = code;
+        document.getElementById('editRateUpdatedAt').value = snapshot.updatedAt || '';
         editPreview();
       } catch (_) { toast(ru('Не удалось обновить курс', 'Курсты жаңарту мүмкін болмады')); }
     },
@@ -167,11 +169,15 @@
     document.getElementById('editAmount').addEventListener('input', editPreview);
     document.getElementById('editCurrency').addEventListener('change', async () => {
       const code = document.getElementById('editCurrency').value;
-      if (code === (tx.currency || 'KZT')) { document.getElementById('editRateToKzt').value = Number(tx.rateToKzt || 1); editPreview(); return; }
+      if (code === (tx.currency || 'KZT')) { document.getElementById('editRateToKzt').value = Number(tx.rateToKzt || 1); document.getElementById('editRateCurrency').value = code; editPreview(); return; }
+      if (code === 'KZT') { document.getElementById('editRateToKzt').value = 1; document.getElementById('editRateCurrency').value = code; document.getElementById('editRateUpdatedAt').value = ''; editPreview(); return; }
       try {
-        const snapshot = await ensureRates(false);
-        document.getElementById('editRateToKzt').value = rateToKzt(code, snapshot) || 1;
-      } catch (_) {}
+        const snapshot = await ensureRates(false); const nextRate = rateToKzt(code, snapshot);
+        if (!nextRate) throw new Error('rate missing');
+        document.getElementById('editRateToKzt').value = nextRate;
+        document.getElementById('editRateCurrency').value = code;
+        document.getElementById('editRateUpdatedAt').value = snapshot.updatedAt || '';
+      } catch (_) { toast(ru('Нет актуального курса. Проверь интернет и повтори.', 'Өзекті курс жоқ. Интернетті тексеріп, қайталаңыз.')); }
       editPreview();
     });
     editPreview();
@@ -182,17 +188,23 @@
     const tx = oldTxns.find(item => String(item.id) === String(id));
     const originalAmount = Number(document.getElementById('editAmount')?.value);
     const code = document.getElementById('editCurrency')?.value || 'KZT';
-    const rate = Number(document.getElementById('editRateToKzt')?.value || 1);
+    let rate = Number(document.getElementById('editRateToKzt')?.value || 1);
+    let rateUpdatedAt = document.getElementById('editRateUpdatedAt')?.value || null;
+    const rateCurrency = document.getElementById('editRateCurrency')?.value || 'KZT';
     const cat = document.querySelector('#editCatChips .chip.selected');
     const date = document.getElementById('editDate')?.value;
     if (!tx || !originalAmount || originalAmount <= 0 || !cat || !date || !rate) { toast(t('fillAllFields')); return; }
+    if (code !== rateCurrency) {
+      try { const snapshot = await ensureRates(false); rate = rateToKzt(code, snapshot); rateUpdatedAt = snapshot.updatedAt || null; if (!rate) throw new Error('rate missing'); }
+      catch (_) { toast(ru('Нет актуального курса. Проверь интернет и повтори.', 'Өзекті курс жоқ. Интернетті тексеріп, қайталаңыз.')); return; }
+    }
     const targetDate = new Date(date + 'T00:00:00');
     const comment = document.getElementById('editComment')?.value.trim() || '';
     const tags = (document.getElementById('editTags')?.value.trim() || '').split(/[\s,]+/).filter(Boolean);
     const wallet = document.querySelector('#editWalletChips .chip.selected')?.dataset.id || 'personal';
     saveTxns(currentYear, currentMonth, oldTxns.filter(item => String(item.id) !== String(id)));
     const target = getTxns(targetDate.getFullYear(), targetDate.getMonth());
-    target.push({ ...tx, amount: Math.round(originalAmount * rate), originalAmount, currency: code, rateToKzt: rate, category: cat.dataset.id, comment, tags, wallet, date });
+    target.push({ ...tx, amount: Math.round(originalAmount * rate), originalAmount, currency: code, rateToKzt: rate, rateUpdatedAt, category: cat.dataset.id, comment, tags, wallet, date });
     saveTxns(targetDate.getFullYear(), targetDate.getMonth(), target);
     localStorage.setItem(LAST_CURRENCY_KEY, code);
     closeModal(); toast(ru('Сохранено ✓', 'Сақталды ✓')); render();
