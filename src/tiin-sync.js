@@ -16,7 +16,6 @@
   const DATA_KEY_RE = /^(txns_\d{4}_\d{1,2}|payment_status_\d{4}_\d{1,2})$/;
   const state = { client: null, user: null, timer: null, syncing: false, handoffCompleting: false };
   const authIntroKey = 'tiin_auth_intro_seen_v1';
-  const authIntroKey = 'tiin_auth_intro_seen_v1';
   const handoffStorageKey = 'tiin_google_handoff_v2';
   const handoffTtlMs = 5 * 60 * 1000;
   let callbackHandoffId = null;
