@@ -1,8 +1,8 @@
-const CACHE_NAME = 'tiin-v2-34';
+const CACHE_NAME = 'tiin-command-deck-1';
 const APP_SHELL = [
-  './', './index.html', './manifest.json', './styles/tiin-v2.css',
+  './', './index.html', './manifest.json', './styles/tiin-v2.css', './styles/tiin-command-deck.css',
   './src/tiin-v2.js', './src/tiin-currency.js',
-  './src/tiin-multicurrency.js', './src/tiin-sync.js', './icon-192.png', './assets/tiin-balance-mountains.jpeg', './assets/tiin-balance-morning.png', './assets/tiin-balance-day.png', './assets/tiin-balance-evening.png', './icon-512.png',
+  './src/tiin-multicurrency.js', './src/tiin-sync.js', './src/tiin-command-deck.js', './icon-192.png', './assets/tiin-balance-mountains.jpeg', './assets/tiin-balance-morning.png', './assets/tiin-balance-day.png', './assets/tiin-balance-evening.png', './icon-512.png',
   './assets/tiin-balance-mountains.jpeg'
 ];
 
