@@ -20,6 +20,11 @@
   function isDataKey(key) { return DATA_KEYS.has(key) || DATA_KEY_RE.test(key); }
   function locale() { return window.currentLang === 'kz' ? 'kk' : 'ru'; }
   function text(ru, kk) { return locale() === 'kk' ? (kk || ru) : ru; }
+  function isIosBrowserOutsidePwa() {
+    const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+    const standalone = window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone === true;
+    return ios && !standalone;
+  }
   function setStatus(label, kind) {
     document.querySelectorAll('.sync-status').forEach(el => {
       el.textContent = label;
@@ -263,6 +268,15 @@
     box.innerHTML = html;
     overlay.classList.add('open');
   }
+  function renderIosReturnToApp() {
+    modal('<div class="tiin-auth tiin-welcome"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>' + text('Вход через Google выполнен', 'Google арқылы кіру аяқталды') + '</h3><p>' + text('Сейчас открыт Safari — у него отдельное хранилище от установленного TIIN, поэтому здесь нет ваших операций.', 'Қазір Safari ашық — оның орнатылған TIIN-нен бөлек қоймасы бар, сондықтан операциялар мұнда жоқ.') + '</p><p class="tiin-auth-note">' + text('Нажмите ✕ в левом верхнем углу, вернитесь в TIIN с домашнего экрана и откройте круглый значок аккаунта. Там появится перенос локальных данных в аккаунт.', 'Сол жақ жоғарыдағы ✕ басыңыз, басты экрандағы TIIN-ге оралып, аккаунт белгішесін ашыңыз. Сол жерде жергілікті деректерді аккаунтқа көшіру шығады.') + '</p><button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="TIINCloud.returnToApp()">' + text('Понятно — вернуться в TIIN', 'Түсіндім — TIIN-ге оралу') + '</button></div>');
+  }
+  function returnToApp() {
+    // iOS owns the authentication sheet. This closes the page when allowed;
+    // otherwise the visible × is the reliable system control.
+    try { window.close(); } catch (_) {}
+  }
+
   function renderLogin(message) {
     modal(`<div class="tiin-auth"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>${text('Синхронизация между устройствами', 'Құрылғылар арасындағы синхрондау')}</h3><p>${message || text('Войдите по email. После входа вы сами подтвердите перенос локальных данных.', 'Email арқылы кіріңіз. Кейін жергілікті деректерді көшіруді өзіңіз растайсыз.')}</p><button class="btn" style="width:100%;margin-top:14px;border:1px solid rgba(255,255,255,.18);background:#fff;color:#182033" onclick="TIINCloud.signInWithGoogle()">G&nbsp; ${text('Войти через Google', 'Google арқылы кіру')}</button><div style="display:flex;align-items:center;gap:10px;margin:16px 0;color:#8f9bb2;font-size:12px"><span style="height:1px;background:currentColor;flex:1"></span>${text('или по email', 'немесе email арқылы')}<span style="height:1px;background:currentColor;flex:1"></span></div><label>${text('Email', 'Email')}</label><input id="tiinAuthEmail" class="form-input" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com"><button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="TIINCloud.sendMagicLink()">${text('Получить ссылку для входа', 'Кіру сілтемесін алу')}</button><button class="tx-action-cancel" onclick="closeModal()">${text('Отмена', 'Бас тарту')}</button></div>`);
   }
@@ -344,6 +358,10 @@
         return;
       }
       if (!localStorage.getItem(CONFIG.migrationKey) && !remote?.length) {
+        if (isIosBrowserOutsidePwa()) {
+          renderIosReturnToApp();
+          return;
+        }
         modal('<div class="tiin-auth"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>' + text('В аккаунте пока нет данных', 'Аккаунтта әзірге деректер жоқ') + '</h3><p>' + text('На этом устройстве тоже не найдено финансовых записей. Ничего не будет перезаписано.', 'Бұл құрылғыда да қаржылық жазбалар табылмады. Ештеңе қайта жазылмайды.') + '</p><button class="tx-action-cancel" onclick="closeModal()">' + text('Закрыть', 'Жабу') + '</button></div>');
         return;
       }
@@ -432,6 +450,6 @@
       setStatus(text('Нет сети', 'Желі жоқ'), 'offline');
     }
   }
-  window.TIINCloud = { open: openAccount, openEmailLogin: renderLogin, signInWithGoogle, sendMagicLink, confirmMigration, syncNow, signOut, continueWithoutAccount, restoreBackup: restoreRecoveryBackup };
+  window.TIINCloud = { open: openAccount, openEmailLogin: renderLogin, signInWithGoogle, sendMagicLink, confirmMigration, syncNow, signOut, continueWithoutAccount, restoreBackup: restoreRecoveryBackup, returnToApp };
   document.addEventListener('DOMContentLoaded', boot);
 })();
