@@ -49,7 +49,7 @@
     button.title = button.getAttribute('aria-label');
     button.innerHTML = signedIn
       ? '<span class="tiin-account-avatar" aria-hidden="true">' + initial + '</span>'
-      : '<span class="tiin-account-icon" aria-hidden="true">⌁</span><span>' + text('Войти', 'Кіру') + '</span>';
+      : '<svg class="tiin-account-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.4"></circle><path d="M5.5 20c.8-3.8 3.1-5.8 6.5-5.8s5.7 2 6.5 5.8"></path></svg><span>' + text('Войти', 'Кіру') + '</span>';
   }
   function hasExistingFinanceData() {
     for (let i = 0; i < localStorage.length; i += 1) {
