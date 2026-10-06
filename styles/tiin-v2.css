@@ -349,3 +349,28 @@ html.light .tiin-account-button { background:rgba(255,252,246,.94); border-color
 .balance-hero[data-daypart="night"] {
   background-image:linear-gradient(110deg,rgba(8,14,29,.82) 0%,rgba(8,14,29,.55) 52%,rgba(8,14,29,.34) 100%),url('../assets/tiin-balance-mountains.jpeg');
 }
+
+
+/* Currency Center */
+.currency-access { color:var(--gold-light); border-color:rgba(212,175,90,.32); }
+.currency-modal h3 { margin-bottom:6px; }
+.currency-kicker { color:var(--gold-light); font-size:11px; letter-spacing:1.4px; text-align:center; font-weight:800; }
+.currency-status { color:var(--text-muted); font-size:11px; text-align:center; line-height:1.45; margin-bottom:18px; }
+.currency-fields { display:grid; gap:12px; }
+.currency-amount { font-size:28px; font-weight:750; text-align:center; font-variant-numeric:tabular-nums; }
+.currency-pair { display:grid; grid-template-columns:1fr 40px 1fr; align-items:end; gap:8px; }
+.currency-pair label { display:block; margin:0 0 6px; color:var(--text-secondary); font-size:11px; font-weight:650; text-transform:uppercase; letter-spacing:.45px; }
+.currency-select { width:100%; height:48px; padding:0 9px; border-radius:13px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid rgba(157,167,186,.2); font:600 13px Inter,-apple-system,BlinkMacSystemFont,sans-serif; }
+.currency-swap { width:40px; height:40px; margin-bottom:4px; border-radius:50%; border:1px solid rgba(212,175,90,.32); background:var(--surface-active); color:var(--gold-light); font-size:19px; cursor:pointer; }
+.currency-result { margin-top:14px; padding:16px; border:1px solid rgba(212,175,90,.28); border-radius:16px; background:linear-gradient(135deg,rgba(212,175,90,.12),rgba(22,31,52,.3)); text-align:center; }
+.currency-result span,.currency-result small { display:block; color:var(--text-secondary); font-size:11px; }
+.currency-result strong { display:block; color:var(--gold-light); font-size:28px; margin:6px 0; font-variant-numeric:tabular-nums; }
+.currency-list { margin-top:12px; border-top:1px solid rgba(157,167,186,.12); }
+.currency-list div { display:flex; justify-content:space-between; padding:10px 2px; border-bottom:1px solid rgba(157,167,186,.1); font-size:13px; }
+.currency-list span { color:var(--text-secondary); }.currency-list b { color:var(--text-primary); font-variant-numeric:tabular-nums; }
+@media (max-width:767px) {
+  .top-controls { top:8px; right:16px; gap:10px; }
+  #app > div:first-child { margin-top:38px; }
+  .tiin-account-button { min-height:38px; padding:0 10px; }
+}
+html.light .currency-select { background:var(--surface); border-color:rgba(32,36,45,.14); }
