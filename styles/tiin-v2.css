@@ -316,3 +316,36 @@ html.light .tx-popover button.danger { color:#B44650; }
 .balance-hero[data-daypart="morning"]{background-image:linear-gradient(110deg,rgba(8,14,29,.78) 0%,rgba(8,14,29,.50) 54%,rgba(8,14,29,.24) 100%),url('../assets/tiin-balance-morning.png')!important}
 .balance-hero[data-daypart="day"]{background-image:linear-gradient(110deg,rgba(8,14,29,.76) 0%,rgba(8,14,29,.48) 54%,rgba(8,14,29,.25) 100%),url('../assets/tiin-balance-day.png')!important}
 .balance-hero[data-daypart="evening"]{background-image:linear-gradient(110deg,rgba(8,14,29,.80) 0%,rgba(8,14,29,.54) 54%,rgba(8,14,29,.26) 100%),url('../assets/tiin-balance-evening.png')!important}
+
+
+/* Account entry is explicit: new users see onboarding, returning users have a clear control. */
+.tiin-account-button {
+  min-height:40px;
+  border:1px solid rgba(157,167,186,.18);
+  border-radius:999px;
+  padding:0 12px;
+  background:rgba(22,31,52,.92);
+  color:var(--text-primary);
+  font:600 12px/1 Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  cursor:pointer;
+  white-space:nowrap;
+  box-shadow:0 4px 12px rgba(0,0,0,.16);
+}
+.tiin-account-button:active { transform:scale(.97); }
+.tiin-account-icon { color:var(--gold-light); font-size:19px; line-height:1; transform:rotate(-25deg); }
+.tiin-account-button.is-signed-in { width:40px; padding:3px; border-color:rgba(212,175,90,.42); }
+.tiin-account-avatar { width:30px; height:30px; display:grid; place-items:center; border-radius:50%; background:linear-gradient(135deg,var(--gold),var(--gold-dark)); color:#101625; font-size:13px; font-weight:800; }
+.tiin-google-button { width:100%; margin-top:14px; background:#fff; color:#182033; border:1px solid rgba(0,0,0,.08); }
+.tiin-google-button span { font-weight:800; color:#4285F4; font-size:18px; }
+.tiin-welcome h3 { margin-bottom:10px; }
+.tiin-welcome p { text-align:center; color:var(--text-secondary); line-height:1.5; }
+html.light .tiin-account-button { background:rgba(255,252,246,.94); border-color:rgba(32,36,45,.14); color:var(--text-primary); }
+
+/* Force each local-time artwork, including night, after a stale PWA cache update. */
+.balance-hero[data-daypart="night"] {
+  background-image:linear-gradient(110deg,rgba(8,14,29,.82) 0%,rgba(8,14,29,.55) 52%,rgba(8,14,29,.34) 100%),url('../assets/tiin-balance-mountains.jpeg');
+}

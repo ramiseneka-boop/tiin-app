@@ -15,6 +15,7 @@
   ]);
   const DATA_KEY_RE = /^(txns_\d{4}_\d{1,2}|payment_status_\d{4}_\d{1,2})$/;
   const state = { client: null, user: null, timer: null, syncing: false };
+  const authIntroKey = 'tiin_auth_intro_seen_v1';
 
   function isDataKey(key) { return DATA_KEYS.has(key) || DATA_KEY_RE.test(key); }
   function locale() { return window.currentLang === 'kz' ? 'kk' : 'ru'; }
@@ -27,6 +28,44 @@
       el.style.cursor = 'pointer';
       el.onclick = openAccount;
     });
+  }
+
+  function refreshAccountButton() {
+    const controls = document.querySelector('.top-controls');
+    if (!controls) return;
+    let button = document.getElementById('tiinAccountButton');
+    if (!button) {
+      button = document.createElement('button');
+      button.id = 'tiinAccountButton';
+      button.type = 'button';
+      button.className = 'tiin-account-button';
+      button.onclick = openAccount;
+      controls.appendChild(button);
+    }
+    const signedIn = Boolean(state.user);
+    const initial = signedIn ? (state.user.email || '?').charAt(0).toUpperCase() : '';
+    button.classList.toggle('is-signed-in', signedIn);
+    button.setAttribute('aria-label', signedIn ? text('Аккаунт и синхронизация', 'Аккаунт және синхрондау') : text('Войти или создать аккаунт', 'Кіру немесе аккаунт ашу'));
+    button.title = button.getAttribute('aria-label');
+    button.innerHTML = signedIn
+      ? '<span class="tiin-account-avatar" aria-hidden="true">' + initial + '</span>'
+      : '<span class="tiin-account-icon" aria-hidden="true">⌁</span><span>' + text('Войти', 'Кіру') + '</span>';
+  }
+  function hasExistingFinanceData() {
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (!key || !isDataKey(key) || key === 'lang' || key === 'theme') continue;
+      const value = localStorage.getItem(key);
+      if (value && value !== '[]' && value !== '{}') return true;
+    }
+    return false;
+  }
+  function continueWithoutAccount() {
+    localStorage.setItem(authIntroKey, '1');
+    close();
+  }
+  function renderWelcome() {
+    modal('<div class="tiin-auth tiin-welcome"><div class="tiin-auth-kicker">TIIN</div><h3>' + text('Деньги — под контролем', 'Қаржыңыз — бақылауда') + '</h3><p>' + text('Войдите, чтобы безопасно синхронизировать данные между телефоном и компьютером.', 'Телефон мен компьютер арасындағы деректерді қауіпсіз синхрондау үшін кіріңіз.') + '</p><button class="btn tiin-google-button" onclick="TIINCloud.signInWithGoogle()"><span>G</span>' + text('Продолжить с Google', 'Google арқылы жалғастыру') + '</button><button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="TIINCloud.openEmailLogin()">' + text('Войти по email', 'Email арқылы кіру') + '</button><button class="tx-action-cancel" onclick="TIINCloud.continueWithoutAccount()">' + text('Пока без аккаунта', 'Әзірге аккаунтсыз') + '</button></div>');
   }
 
   async function getClient() {
@@ -263,22 +302,27 @@
       const client = await getClient();
       const { data: { user } } = await client.auth.getUser();
       state.user = user;
+      refreshAccountButton();
       if (!user) {
         setStatus(text('Данные на устройстве', 'Құрылғыдағы деректер'), 'local');
+        if (!localStorage.getItem(authIntroKey) && !hasExistingFinanceData()) {
+          requestAnimationFrame(renderWelcome);
+        }
       } else if (localStorage.getItem(CONFIG.migrationKey)) {
         setStatus(text('Синхронизировано', 'Синхрондалды'), 'ok');
         flush();
       } else {
         setStatus(text('Нужен перенос данных', 'Деректерді көшіру керек'), 'pending');
       }
-      client.auth.onAuthStateChange((_event, session) => {
+      client.auth.onAuthStateChange((event, session) => {
         state.user = session?.user || null;
-        if (state.user) openAccount();
+        refreshAccountButton();
+        if (state.user && event === 'SIGNED_IN') openAccount();
       });
     } catch (_) {
       setStatus(text('Нет сети', 'Желі жоқ'), 'offline');
     }
   }
-  window.TIINCloud = { open: openAccount, signInWithGoogle, sendMagicLink, confirmMigration, syncNow, signOut };
+  window.TIINCloud = { open: openAccount, openEmailLogin: renderLogin, signInWithGoogle, sendMagicLink, confirmMigration, syncNow, signOut, continueWithoutAccount };
   document.addEventListener('DOMContentLoaded', boot);
 })();
