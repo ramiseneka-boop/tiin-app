@@ -374,3 +374,5 @@ html.light .tiin-account-button { background:rgba(255,252,246,.94); border-color
   .tiin-account-button { min-height:38px; padding:0 10px; }
 }
 html.light .currency-select { background:var(--surface); border-color:rgba(32,36,45,.14); }
+
+.tiin-account-button svg.tiin-account-icon { width:17px; height:17px; transform:none; }
