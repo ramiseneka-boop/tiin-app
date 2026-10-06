@@ -139,7 +139,11 @@
     button.onclick = open;
     templates.appendChild(button);
   }
-  window.TIINCurrency = { open, refresh, swap, updateConversion };
+  async function getRateSnapshot(force) {
+    const info = await getRates(Boolean(force));
+    return { rates: { ...rates }, updatedAt: sourceTime, cached: Boolean(info.cached) };
+  }
+  window.TIINCurrency = { open, refresh, swap, updateConversion, getRateSnapshot };
   document.addEventListener('DOMContentLoaded', ensureAccess);
   const previousRender = window.render;
   if (typeof previousRender === 'function') {
