@@ -376,3 +376,16 @@ html.light .tiin-account-button { background:rgba(255,252,246,.94); border-color
 html.light .currency-select { background:var(--surface); border-color:rgba(32,36,45,.14); }
 
 .tiin-account-button svg.tiin-account-icon { width:17px; height:17px; transform:none; }
+
+
+/* Foreign-currency transactions: the original amount stays prominent; KZT remains the accounting base. */
+.tx-currency-group { margin-top: 2px; }
+.tx-currency-row { display:flex; align-items:center; gap:10px; }
+.tx-currency-row .currency-select { flex:1; min-width:0; }
+.currency-refresh { width:46px; height:46px; border:1px solid var(--border, #283553); border-radius:13px; background:var(--surface-active, #1d2740); color:var(--gold, #d4af5a); font-size:23px; line-height:1; cursor:pointer; }
+.currency-refresh:active { transform:scale(.96); }
+.tx-currency-preview { margin-top:10px; font-variant-numeric:tabular-nums; color:var(--green, #30c48d); font-weight:750; font-size:17px; }
+.tx-currency-rate { margin-top:3px; color:var(--text-muted, #6f7a8e); font-size:12px; line-height:1.35; }
+.tx-actions { min-width:108px; }
+.tx-base-amount { margin-top:3px; color:var(--text-secondary, #9da7ba); font-size:12px; font-weight:650; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+@media (max-width: 430px) { .tx-actions { min-width:96px; } .tx-base-amount { font-size:11px; } }
