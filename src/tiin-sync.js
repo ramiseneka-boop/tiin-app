@@ -116,6 +116,56 @@
     }
     return docs;
   }
+  const recoveryKey = 'tiin_local_recovery_backup_v1';
+
+  function hasMeaningfulValue(value) {
+    if (!value || value === '[]' || value === '{}') return false;
+    return true;
+  }
+  function meaningfulDocuments(docs) {
+    return (docs || []).filter(doc => doc.key !== 'lang' && doc.key !== 'theme' && hasMeaningfulValue(doc.value));
+  }
+  // A single local snapshot is kept before any cloud read or migration. It is never synced.
+  function createRecoveryBackup(reason) {
+    const docs = collectLocalDocuments();
+    if (!meaningfulDocuments(docs).length) return false;
+    try {
+      localStorage.setItem(recoveryKey, JSON.stringify({ created_at: new Date().toISOString(), reason, docs }));
+      return true;
+    } catch (error) {
+      console.warn('TIIN recovery snapshot unavailable:', error.message);
+      return false;
+    }
+  }
+  function readRecoveryBackup() {
+    const backup = safeJson(localStorage.getItem(recoveryKey), null);
+    return Array.isArray(backup?.docs) ? backup : null;
+  }
+  function restoreRecoveryBackup() {
+    const backup = readRecoveryBackup();
+    if (!backup) { alert(text('Локальная копия не найдена', 'Жергілікті көшірме табылмады')); return; }
+    // Do not write a recovery restore to the cloud automatically; the user must review it first.
+    localStorage.removeItem(CONFIG.migrationKey);
+    backup.docs.forEach(doc => {
+      if (isDataKey(doc.key) && typeof doc.value === 'string') localStorage.setItem(doc.key, doc.value);
+    });
+    saveQueue([]);
+    close();
+    setStatus(text('Локальная копия восстановлена', 'Жергілікті көшірме қалпына келтірілді'), 'local');
+    if (typeof window.render === 'function') window.render();
+  }
+  function mergeDocumentValues(localValue, remoteValue) {
+    const local = safeJson(localValue, null), remote = safeJson(remoteValue, null);
+    if (Array.isArray(local) && Array.isArray(remote)) {
+      const seen = new Map();
+      remote.forEach((item, index) => seen.set(item && item.id != null ? 'id:' + item.id : 'raw:' + JSON.stringify(item) + ':' + index, item));
+      local.forEach((item, index) => seen.set(item && item.id != null ? 'id:' + item.id : 'raw:' + JSON.stringify(item) + ':' + index, item));
+      return JSON.stringify(Array.from(seen.values()));
+    }
+    if (local && remote && typeof local === 'object' && typeof remote === 'object') return JSON.stringify({ ...remote, ...local });
+    return localValue;
+  }
+
   function migrationSummary(docs) {
     let transactions = 0, templates = 0, payments = 0, goals = 0, lists = 0;
     docs.forEach(doc => {
@@ -233,10 +283,18 @@
   async function confirmMigration() {
     const docs = collectLocalDocuments();
     try {
+      createRecoveryBackup('before_first_cloud_migration');
       setStatus(text('Синхронизация…', 'Синхрондау…'), 'busy');
       await ensureProfile();
-      await uploadDocuments(docs);
       const client = await getClient();
+      // Merge per document first: a pre-existing cloud document must never erase a different local operation.
+      const { data: cloudDocs, error: cloudError } = await client.from('sync_documents').select('document_key,payload');
+      if (cloudError) throw cloudError;
+      const remoteByKey = new Map((cloudDocs || []).map(doc => [doc.document_key, doc.payload?.value]));
+      const mergedDocs = docs.map(doc => remoteByKey.has(doc.key)
+        ? { ...doc, value: mergeDocumentValues(doc.value, remoteByKey.get(doc.key)) }
+        : doc);
+      await uploadDocuments(mergedDocs);
       await client.from('profiles').update({
         migration_completed_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -245,6 +303,7 @@
       saveQueue([]);
       close();
       setStatus(text('Синхронизировано', 'Синхрондалды'), 'ok');
+      if (typeof window.render === 'function') window.render();
     } catch (error) {
       setStatus(text('Есть несинхронизированные изменения', 'Синхрондалмаған өзгерістер бар'), 'pending');
       alert(text('Копия не создана. Локальные данные остались на устройстве. ', 'Көшірме жасалмады. Жергілікті деректер құрылғыда қалды. ') + error.message);
@@ -252,7 +311,7 @@
   }
   function renderMigration(docs) {
     const c = migrationSummary(docs);
-    modal(`<div class="tiin-auth"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>${text('Найдены локальные данные TIIN', 'TIIN жергілікті деректері табылды')}</h3><p>${text('На устройстве: ', 'Құрылғыда: ')}${c.transactions} ${text('операций', 'операция')}, ${c.templates} ${text('шаблонов', 'үлгі')}, ${c.payments} ${text('платежей', 'төлем')}, ${c.goals} ${text('целей', 'мақсат')}, ${c.lists} ${text('списков', 'тізім')}.</p><p class="tiin-auth-note">${text('Перенос создаёт копию в аккаунте. Локальные данные не удаляются.', 'Көшіру аккаунтта көшірме жасайды. Жергілікті деректер жойылмайды.')}</p><button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="TIINCloud.confirmMigration()">${text('Перенести в аккаунт', 'Аккаунтқа көшіру')}</button><button class="tx-action-cancel" onclick="closeModal()">${text('Позже', 'Кейін')}</button></div>`);
+    modal(`<div class="tiin-auth"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>${text('Найдены локальные данные TIIN', 'TIIN жергілікті деректері табылды')}</h3><p>${text('На устройстве: ', 'Құрылғыда: ')}${c.transactions} ${text('операций', 'операция')}, ${c.templates} ${text('шаблонов', 'үлгі')}, ${c.payments} ${text('платежей', 'төлем')}, ${c.goals} ${text('целей', 'мақсат')}, ${c.lists} ${text('списков', 'тізім')}.</p><p class="tiin-auth-note">${text('Перенос создаёт копию в аккаунте. Локальные данные не удаляются.', 'Көшіру аккаунтта көшірме жасайды. Жергілікті деректер жойылмайды.')}</p><button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="TIINCloud.confirmMigration()">${text('Перенести в аккаунт', 'Аккаунтқа көшіру')}</button>${readRecoveryBackup() ? '<button class="tx-action-cancel" onclick="TIINCloud.restoreBackup()">' + text('Восстановить локальную копию', 'Жергілікті көшірмені қалпына келтіру') + '</button>' : ''}<button class="tx-action-cancel" onclick="closeModal()">${text('Позже', 'Кейін')}</button></div>`);
   }
   async function openAccount() {
     try {
@@ -263,8 +322,14 @@
       const localDocs = collectLocalDocuments();
       const { data: remote, error } = await client.from('sync_documents').select('document_key').limit(1);
       if (error) throw error;
-      if (!remote?.length && localDocs.length && !localStorage.getItem(CONFIG.migrationKey)) {
+      // Never replace device data with the cloud merely because a person just signed in.
+      if (!localStorage.getItem(CONFIG.migrationKey) && meaningfulDocuments(localDocs).length) {
+        createRecoveryBackup('before_migration_prompt');
         renderMigration(localDocs);
+        return;
+      }
+      if (!localStorage.getItem(CONFIG.migrationKey) && !remote?.length) {
+        modal('<div class="tiin-auth"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>' + text('В аккаунте пока нет данных', 'Аккаунтта әзірге деректер жоқ') + '</h3><p>' + text('На этом устройстве тоже не найдено финансовых записей. Ничего не будет перезаписано.', 'Бұл құрылғыда да қаржылық жазбалар табылмады. Ештеңе қайта жазылмайды.') + '</p><button class="tx-action-cancel" onclick="closeModal()">' + text('Закрыть', 'Жабу') + '</button></div>');
         return;
       }
       modal(`<div class="tiin-auth"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>${text('Синхронизация включена', 'Синхрондау қосулы')}</h3><p>${user.email || ''}</p><button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="TIINCloud.syncNow()">${text('Синхронизировать сейчас', 'Қазір синхрондау')}</button><button class="tx-action-cancel" onclick="TIINCloud.signOut()">${text('Выйти из аккаунта', 'Аккаунттан шығу')}</button><button class="tx-action-cancel" onclick="closeModal()">${text('Закрыть', 'Жабу')}</button></div>`);
@@ -275,10 +340,24 @@
   async function syncNow() {
     if (!state.user) return;
     try {
+      const localDocs = collectLocalDocuments();
+      // First device: require the explicit migration screen. A cloud read cannot wipe local records.
+      if (!localStorage.getItem(CONFIG.migrationKey) && meaningfulDocuments(localDocs).length) {
+        createRecoveryBackup('before_sync_migration_prompt');
+        renderMigration(localDocs);
+        return;
+      }
       await ensureProfile();
+      // New/empty device: download only if the account really contains cloud data.
+      createRecoveryBackup('before_cloud_download');
       const remote = await pullCloudDocuments();
-      if (remote.length) localStorage.setItem(CONFIG.migrationKey, '1');
-      queueDocument('templates'); // schedules a harmless, current-state verification write
+      if (!remote.length) {
+        setStatus(text('В аккаунте пока нет данных', 'Аккаунтта әзірге деректер жоқ'), 'local');
+        close();
+        return;
+      }
+      localStorage.setItem(CONFIG.migrationKey, '1');
+      queueDocument('templates');
       await flush();
       close();
       if (typeof window.render === 'function') window.render();
@@ -292,6 +371,8 @@
     setStatus(text('Данные на устройстве', 'Құрылғыдағы деректер'), 'local');
   }
   async function boot() {
+    // Snapshot existing financial data before the authentication state can trigger any cloud action.
+    createRecoveryBackup('app_start');
     const nativeSetItem = Storage.prototype.setItem;
     Storage.prototype.setItem = function (key, value) {
       nativeSetItem.call(this, key, value);
@@ -323,6 +404,6 @@
       setStatus(text('Нет сети', 'Желі жоқ'), 'offline');
     }
   }
-  window.TIINCloud = { open: openAccount, openEmailLogin: renderLogin, signInWithGoogle, sendMagicLink, confirmMigration, syncNow, signOut, continueWithoutAccount };
+  window.TIINCloud = { open: openAccount, openEmailLogin: renderLogin, signInWithGoogle, sendMagicLink, confirmMigration, syncNow, signOut, continueWithoutAccount, restoreBackup: restoreRecoveryBackup };
   document.addEventListener('DOMContentLoaded', boot);
 })();
