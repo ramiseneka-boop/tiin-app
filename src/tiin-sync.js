@@ -374,9 +374,13 @@
     if (!email || !/^\S+@\S+\.\S+$/.test(email)) { alert(text('Введите корректный email', 'Дұрыс email енгізіңіз')); return; }
     try {
       const client = await getClient();
+      const handoffId = makeHandoffId();
+      localStorage.setItem(handoffStorageKey, JSON.stringify({ id: handoffId, createdAt: Date.now() }));
+      const redirect = new URL(window.location.origin + window.location.pathname);
+      redirect.searchParams.set('tiin_handoff', handoffId);
       const { error } = await client.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: window.location.origin + window.location.pathname }
+        options: { emailRedirectTo: redirect.toString() }
       });
       if (error) throw error;
       renderLogin(text('Ссылка отправлена. Откройте письмо на этом устройстве и вернитесь в TIIN.', 'Сілтеме жіберілді. Осы құрылғыда хатты ашып, TIIN-ге оралыңыз.'));
