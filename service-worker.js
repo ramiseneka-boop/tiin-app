@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tiin-v2-31';
+const CACHE_NAME = 'tiin-v2-32';
 const APP_SHELL = [
   './', './index.html', './manifest.json', './styles/tiin-v2.css',
   './src/tiin-v2.js', './src/tiin-currency.js',
