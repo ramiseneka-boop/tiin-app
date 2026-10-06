@@ -81,9 +81,22 @@
       });
     }
     state.client = window.supabase.createClient(CONFIG.url, CONFIG.publishableKey, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      // Use durable browser storage and restore the local session before any network request.
+      // This is important for installed iPhone PWAs after the app has been closed.
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: window.localStorage
+      }
     });
     return state.client;
+  }
+
+  async function getPersistedUser(client) {
+    const { data, error } = await client.auth.getSession();
+    if (error) throw error;
+    return data.session?.user || null;
   }
 
   function safeJson(value, fallback) {
@@ -316,7 +329,9 @@
   async function openAccount() {
     try {
       const client = await getClient();
-      const { data: { user } } = await client.auth.getUser();
+      // getSession reads the saved session locally. getUser performs a network validation
+      // and could wrongly make an offline/returning PWA look signed out.
+      const user = await getPersistedUser(client);
       if (!user) { renderLogin(); return; }
       state.user = user;
       const localDocs = collectLocalDocuments();
@@ -381,7 +396,8 @@
     window.addEventListener('online', flush);
     try {
       const client = await getClient();
-      const { data: { user } } = await client.auth.getUser();
+      // Restore the stored session immediately, including when the phone starts offline.
+      const user = await getPersistedUser(client);
       state.user = user;
       refreshAccountButton();
       if (!user) {
@@ -398,7 +414,19 @@
       client.auth.onAuthStateChange((event, session) => {
         state.user = session?.user || null;
         refreshAccountButton();
+        // Only open the migration dialog after a real new sign-in, not after every app relaunch.
         if (state.user && event === 'SIGNED_IN') openAccount();
+      });
+      // iOS may suspend a PWA completely. Re-read the persisted session when it returns.
+      document.addEventListener('visibilitychange', async () => {
+        if (document.hidden) return;
+        try {
+          const returningUser = await getPersistedUser(client);
+          if (returningUser) {
+            state.user = returningUser;
+            refreshAccountButton();
+          }
+        } catch (_) { /* Keep the existing UI while offline. */ }
       });
     } catch (_) {
       setStatus(text('Нет сети', 'Желі жоқ'), 'offline');
