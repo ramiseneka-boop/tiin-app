@@ -156,6 +156,16 @@
     hero.setAttribute('data-daypart', daypart);
   }
 
+  function refreshTimeAwareBalanceArtwork() {
+    const hero = document.querySelector('.balance-hero');
+    if (hero) applyTimeAwareBalanceArtwork(hero);
+  }
+  // Update after returning from the background and at minute boundaries; device local time is used.
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) refreshTimeAwareBalanceArtwork();
+  });
+  window.setInterval(refreshTimeAwareBalanceArtwork, 60 * 1000);
+
   function upgradeDashboard() {
     const balance = document.getElementById('totalBalance');
     const summary = document.querySelector('.summary');
