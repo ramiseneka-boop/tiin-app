@@ -14,11 +14,20 @@
     'payment_items', 'custom_categories', 'planning_lists', 'lang', 'theme'
   ]);
   const DATA_KEY_RE = /^(txns_\d{4}_\d{1,2}|payment_status_\d{4}_\d{1,2})$/;
-  const state = { client: null, user: null, timer: null, syncing: false };
+  const state = { client: null, user: null, timer: null, syncing: false, handoffCompleting: false };
   const authIntroKey = 'tiin_auth_intro_seen_v1';
-  const HANDOFF_PREFIX = 'TIIN_AUTH_V1:';
-  const HANDOFF_TTL_MS = 5 * 60 * 1000;
-
+  const handoffStorageKey = 'tiin_google_handoff_v2';
+  const handoffTtlMs = 5 * 60 * 1000;
+  let callbackHandoffId = null;
+  try { callbackHandoffId = new URL(window.location.href).searchParams.get('tiin_handoff'); } catch (_) {}
+  function makeHandoffId() {
+    const bytes = new Uint8Array(32);
+    if (window.crypto?.getRandomValues) {
+      window.crypto.getRandomValues(bytes);
+      return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+    return (crypto.randomUUID?.() || String(Date.now())) + (crypto.randomUUID?.() || String(Math.random())).replace(/-/g, '');
+  }
   function isDataKey(key) { return DATA_KEYS.has(key) || DATA_KEY_RE.test(key); }
   function locale() { return window.currentLang === 'kz' ? 'kk' : 'ru'; }
   function text(ru, kk) { return locale() === 'kk' ? (kk || ru) : ru; }
@@ -270,71 +279,90 @@
     box.innerHTML = html;
     overlay.classList.add('open');
   }
-  function encodeHandoff(session) {
-    const body = JSON.stringify({ expiresAt: Date.now() + HANDOFF_TTL_MS, accessToken: session.access_token, refreshToken: session.refresh_token });
-    return HANDOFF_PREFIX + btoa(unescape(encodeURIComponent(body)));
-  }
-  function decodeHandoff(raw) {
-    if (!raw || !raw.startsWith(HANDOFF_PREFIX)) throw new Error('invalid handoff');
-    const data = JSON.parse(decodeURIComponent(escape(atob(raw.slice(HANDOFF_PREFIX.length)))));
-    if (!data.accessToken || !data.refreshToken || !data.expiresAt || Date.now() > Number(data.expiresAt)) throw new Error('expired handoff');
+  async function invokeHandoff(action, payload, accessToken) {
+    const headers = { 'Content-Type': 'application/json', apikey: CONFIG.publishableKey };
+    if (accessToken) headers.Authorization = 'Bearer ' + accessToken;
+    const response = await fetch(CONFIG.url + '/functions/v1/tiin-auth-handoff', {
+      method: 'POST', headers, body: JSON.stringify({ action, ...payload })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'handoff_failed');
     return data;
   }
-  async function copyText(value) {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(value);
-      return;
+  function pendingHandoff() {
+    const record = safeJson(localStorage.getItem(handoffStorageKey), null);
+    if (!record?.id || !record?.createdAt || Date.now() - record.createdAt > handoffTtlMs) {
+      localStorage.removeItem(handoffStorageKey);
+      return null;
     }
-    const field = document.createElement('textarea');
-    field.value = value; field.style.position = 'fixed'; field.style.opacity = '0';
-    document.body.appendChild(field); field.focus(); field.select();
-    const copied = document.execCommand('copy'); field.remove();
-    if (!copied) throw new Error('copy unavailable');
-  }
-  async function copyGoogleHandoff() {
-    try {
-      const client = await getClient();
-      const { data, error } = await client.auth.getSession();
-      if (error) throw error;
-      if (!data.session?.access_token || !data.session?.refresh_token) throw new Error('session unavailable');
-      await copyText(encodeHandoff(data.session));
-      modal('<div class="tiin-auth tiin-welcome"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>' + text('Вход подготовлен', 'Кіру дайын') + '</h3><p>' + text('Код входа скопирован на это устройство. Он действует 5 минут и нужен только, чтобы передать вход из Safari в установленный TIIN.', 'Кіру коды осы құрылғыға көшірілді. Ол 5 минут жарамды және Safari-ден орнатылған TIIN-ге кіруді беру үшін ғана қажет.') + '</p><p class="tiin-auth-note">' + text('Теперь нажмите ✕ сверху слева, вернитесь в TIIN, откройте круглый значок аккаунта и нажмите «Завершить вход после Google».', 'Енді жоғары сол жақтағы ✕ басыңыз, TIIN-ге оралыңыз, дөңгелек аккаунт белгішесін ашып, «Google-ден кейін кіруді аяқтау» түймесін басыңыз.') + '</p></div>');
-    } catch (error) {
-      alert(text('Не удалось подготовить вход: ', 'Кіруді дайындау мүмкін болмады: ') + error.message);
-    }
+    return record;
   }
   function renderIosReturnToApp() {
-    modal('<div class="tiin-auth tiin-welcome"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>' + text('Вход через Google выполнен', 'Google арқылы кіру аяқталды') + '</h3><p>' + text('Safari и установленный TIIN используют отдельные хранилища. Скопируйте защищённый временный код, чтобы завершить вход внутри TIIN.', 'Safari және орнатылған TIIN бөлек қоймаларды пайдаланады. TIIN ішіндегі кіруді аяқтау үшін қорғалған уақытша кодты көшіріңіз.') + '</p><button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="TIINCloud.copyGoogleHandoff()">' + text('Скопировать вход и вернуться в TIIN', 'Кіруді көшіріп, TIIN-ге оралу') + '</button></div>');
+    modal('<div class="tiin-auth tiin-welcome"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>' + text('Вход через Google выполнен', 'Google арқылы кіру аяқталды') + '</h3><p>' + text('Вернитесь в установленный TIIN: вход завершится автоматически. Ничего копировать или вставлять не нужно.', 'Орнатылған TIIN-ге оралыңыз: кіру автоматты аяқталады. Ештеңе көшіру немесе қою қажет емес.') + '</p><button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="TIINCloud.returnToApp()">' + text('Вернуться в TIIN', 'TIIN-ге оралу') + '</button></div>');
   }
   function returnToApp() {
     try { window.close(); } catch (_) {}
   }
-  async function acceptGoogleHandoff() {
+  async function completeCallbackHandoff(client, user) {
+    if (!callbackHandoffId || !user || state.handoffCompleting) return false;
+    state.handoffCompleting = true;
     try {
-      let raw = document.getElementById('tiinHandoffCode')?.value.trim() || '';
-      if (!raw && navigator.clipboard?.readText) raw = await navigator.clipboard.readText();
-      const handoff = decodeHandoff(raw);
-      const client = await getClient();
-      const { data, error } = await client.auth.setSession({ access_token: handoff.accessToken, refresh_token: handoff.refreshToken });
+      const { data, error } = await client.auth.getSession();
+      if (error || !data.session?.access_token || !data.session?.refresh_token) throw error || new Error('session_unavailable');
+      await invokeHandoff('complete', {
+        handoffId: callbackHandoffId,
+        accessToken: data.session.access_token,
+        refreshToken: data.session.refresh_token
+      }, data.session.access_token);
+      try { history.replaceState({}, document.title, window.location.pathname); } catch (_) {}
+      callbackHandoffId = null;
+      renderIosReturnToApp();
+      return true;
+    } catch (error) {
+      console.warn('TIIN Google return pending:', error.message);
+      return false;
+    } finally {
+      state.handoffCompleting = false;
+    }
+  }
+  async function consumePendingGoogleHandoff(client) {
+    const pending = pendingHandoff();
+    if (!pending || state.handoffCompleting) return false;
+    state.handoffCompleting = true;
+    try {
+      const result = await invokeHandoff('consume', { handoffId: pending.id });
+      if (result.pending || !result.session?.access_token || !result.session?.refresh_token) return false;
+      const { data, error } = await client.auth.setSession({
+        access_token: result.session.access_token,
+        refresh_token: result.session.refresh_token
+      });
       if (error) throw error;
+      localStorage.removeItem(handoffStorageKey);
       state.user = data.user || data.session?.user || await getPersistedUser(client);
-      try { await navigator.clipboard?.writeText(''); } catch (_) {}
       refreshAccountButton();
       await openAccount();
-    } catch (_) {
-      renderLogin(text('Не удалось завершить вход. Вернитесь к окну Google, нажмите «Скопировать вход и вернуться в TIIN», затем попробуйте снова.', 'Кіруді аяқтау мүмкін болмады. Google терезесіне оралып, «Кіруді көшіріп, TIIN-ге оралу» түймесін басып, қайта көріңіз.'));
+      return true;
+    } catch (error) {
+      console.warn('TIIN Google handoff deferred:', error.message);
+      return false;
+    } finally {
+      state.handoffCompleting = false;
     }
   }
 
   function renderLogin(message) {
-    modal(`<div class="tiin-auth"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>${text('Синхронизация между устройствами', 'Құрылғылар арасындағы синхрондау')}</h3><p>${message || text('Войдите по email. После входа вы сами подтвердите перенос локальных данных.', 'Email арқылы кіріңіз. Кейін жергілікті деректерді көшіруді өзіңіз растайсыз.')}</p><button class="btn" style="width:100%;margin-top:14px;border:1px solid rgba(255,255,255,.18);background:#fff;color:#182033" onclick="TIINCloud.signInWithGoogle()">G&nbsp; ${text('Войти через Google', 'Google арқылы кіру')}</button><button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="TIINCloud.acceptGoogleHandoff()">${text('Завершить вход после Google', 'Google-ден кейін кіруді аяқтау')}</button><input id="tiinHandoffCode" class="form-input" style="margin-top:8px" autocomplete="off" autocapitalize="off" placeholder="${text('или вставьте код входа', 'немесе кіру кодын қойыңыз')}"><div style="display:flex;align-items:center;gap:10px;margin:16px 0;color:#8f9bb2;font-size:12px"><span style="height:1px;background:currentColor;flex:1"></span>${text('или по email', 'немесе email арқылы')}<span style="height:1px;background:currentColor;flex:1"></span></div><label>${text('Email', 'Email')}</label><input id="tiinAuthEmail" class="form-input" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com"><button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="TIINCloud.sendMagicLink()">${text('Получить ссылку для входа', 'Кіру сілтемесін алу')}</button><button class="tx-action-cancel" onclick="closeModal()">${text('Отмена', 'Бас тарту')}</button></div>`);
+    modal('<div class="tiin-auth"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>' + text('Синхронизация между устройствами', 'Құрылғылар арасындағы синхрондау') + '</h3><p>' + (message || text('Войдите через Google или email. После входа вы сами подтвердите перенос локальных данных.', 'Google немесе email арқылы кіріңіз. Кейін жергілікті деректерді көшіруді өзіңіз растайсыз.')) + '</p><button class="btn" style="width:100%;margin-top:14px;border:1px solid rgba(255,255,255,.18);background:#fff;color:#182033" onclick="TIINCloud.signInWithGoogle()">G&nbsp; ' + text('Войти через Google', 'Google арқылы кіру') + '</button><div style="display:flex;align-items:center;gap:10px;margin:16px 0;color:#8f9bb2;font-size:12px"><span style="height:1px;background:currentColor;flex:1"></span>' + text('или по email', 'немесе email арқылы') + '<span style="height:1px;background:currentColor;flex:1"></span></div><label>' + text('Email', 'Email') + '</label><input id="tiinAuthEmail" class="form-input" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com"><button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="TIINCloud.sendMagicLink()">' + text('Получить ссылку для входа', 'Кіру сілтемесін алу') + '</button><button class="tx-action-cancel" onclick="closeModal()">' + text('Отмена', 'Бас тарту') + '</button></div>');
   }
   async function signInWithGoogle() {
     try {
       const client = await getClient();
+      const handoffId = makeHandoffId();
+      localStorage.setItem(handoffStorageKey, JSON.stringify({ id: handoffId, createdAt: Date.now() }));
+      const redirect = new URL(window.location.origin + window.location.pathname);
+      redirect.searchParams.set('tiin_handoff', handoffId);
       const { error } = await client.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: window.location.origin + window.location.pathname }
+        options: { redirectTo: redirect.toString() }
       });
       if (error) throw error;
     } catch (error) {
@@ -356,6 +384,7 @@
       renderLogin(text('Не удалось отправить ссылку: ', 'Сілтемені жіберу мүмкін болмады: ') + error.message);
     }
   }
+
   async function confirmMigration() {
     const docs = collectLocalDocuments();
     try {
@@ -466,6 +495,8 @@
       // Restore the stored session immediately, including when the phone starts offline.
       const user = await getPersistedUser(client);
       state.user = user;
+      if (await completeCallbackHandoff(client, user)) return;
+      if (await consumePendingGoogleHandoff(client)) return;
       refreshAccountButton();
       if (!user) {
         setStatus(text('Данные на устройстве', 'Құрылғыдағы деректер'), 'local');
@@ -482,7 +513,9 @@
         state.user = session?.user || null;
         refreshAccountButton();
         // Only open the migration dialog after a real new sign-in, not after every app relaunch.
-        if (state.user && event === 'SIGNED_IN') openAccount();
+        if (state.user && event === 'SIGNED_IN') {
+          completeCallbackHandoff(client, state.user).then(done => { if (!done) openAccount(); });
+        }
       });
       // iOS may suspend a PWA completely. Re-read the persisted session when it returns.
       document.addEventListener('visibilitychange', async () => {
@@ -492,6 +525,8 @@
           if (returningUser) {
             state.user = returningUser;
             refreshAccountButton();
+          } else if (await consumePendingGoogleHandoff(client)) {
+            return;
           }
         } catch (_) { /* Keep the existing UI while offline. */ }
       });
@@ -499,6 +534,6 @@
       setStatus(text('Нет сети', 'Желі жоқ'), 'offline');
     }
   }
-  window.TIINCloud = { open: openAccount, openEmailLogin: renderLogin, signInWithGoogle, sendMagicLink, confirmMigration, syncNow, signOut, continueWithoutAccount, restoreBackup: restoreRecoveryBackup, returnToApp, copyGoogleHandoff, acceptGoogleHandoff };
+  window.TIINCloud = { open: openAccount, openEmailLogin: renderLogin, signInWithGoogle, sendMagicLink, confirmMigration, syncNow, signOut, continueWithoutAccount, restoreBackup: restoreRecoveryBackup, returnToApp };
   document.addEventListener('DOMContentLoaded', boot);
 })();
