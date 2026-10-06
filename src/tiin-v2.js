@@ -7,7 +7,7 @@
     const styles = document.createElement('link');
     styles.id = 'tiinV2FinalStyles';
     styles.rel = 'stylesheet';
-    styles.href = 'styles/tiin-v2.css?v=5';
+    styles.href = 'styles/tiin-v2.css?v=6';
     document.head.appendChild(styles);
   }
 
@@ -49,7 +49,7 @@
         const wallet = tx.wallet === 'business' ? '💼 ' : '';
         // Keeping the id in a data attribute avoids invalid nested quotes in inline handlers.
         const txId = encodeURIComponent(String(tx.id));
-        html += `<article class="tx-item" data-tx-id="${txId}" onclick="editTx(decodeURIComponent(this.dataset.txId))"><div class="tx-icon">${cat.icon}</div><div class="tx-info"><div class="tx-cat">${wallet}${cat.name}</div><div class="tx-comment">${tx.comment || ''}</div>${tags}</div><div class="tx-actions"><div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '−'}${fmt(tx.amount)}</div><button class="tx-menu" type="button" aria-label="Действия с операцией" onclick="event.stopPropagation();openTxActions('${txId}')">⋮</button></div></article>`;
+        html += `<article class="tx-item" data-tx-id="${txId}" onclick="editTx(decodeURIComponent(this.dataset.txId))"><div class="tx-icon">${cat.icon}</div><div class="tx-info"><div class="tx-cat">${wallet}${cat.name}</div><div class="tx-comment">${tx.comment || ''}</div>${tags}</div><div class="tx-actions"><div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '−'}${tx.currency && tx.currency !== 'KZT' && Number.isFinite(Number(tx.originalAmount)) ? new Intl.NumberFormat(currentLang === 'kz' ? 'kk-KZ' : 'ru-RU', { maximumFractionDigits: tx.currency === 'USD' || tx.currency === 'EUR' || tx.currency === 'RUB' ? 2 : 0 }).format(Number(tx.originalAmount)) + ' ' + ({ USD:'$', VND:'₫', EUR:'€', RUB:'₽' }[tx.currency] || tx.currency) : fmt(tx.amount)}</div>${tx.currency && tx.currency !== 'KZT' && Number.isFinite(Number(tx.originalAmount)) ? '<div class="tx-base-amount">≈ ' + (isIncome ? '+' : '−') + fmt(tx.amount) + '</div>' : ''}<button class="tx-menu" type="button" aria-label="Действия с операцией" onclick="event.stopPropagation();openTxActions('${txId}')">⋮</button></div></article>`;
       });
       html += '</section>';
     });
