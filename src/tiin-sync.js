@@ -298,10 +298,10 @@
     return record;
   }
   function renderIosReturnToApp() {
-    modal('<div class="tiin-auth tiin-welcome"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>' + text('Вход через Google выполнен', 'Google арқылы кіру аяқталды') + '</h3><p>' + text('Вернитесь в установленный TIIN: вход завершится автоматически. Ничего копировать или вставлять не нужно.', 'Орнатылған TIIN-ге оралыңыз: кіру автоматты аяқталады. Ештеңе көшіру немесе қою қажет емес.') + '</p><button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="TIINCloud.returnToApp()">' + text('Вернуться в TIIN', 'TIIN-ге оралу') + '</button></div>');
+    modal('<div class="tiin-auth tiin-welcome"><div class="tiin-auth-kicker">TIIN Cloud</div><h3>' + text('Вход подтверждён', 'Кіру расталды') + '</h3><p>' + text('iPhone не позволяет сайту закрыть окно Gmail и открыть PWA сам. Нажмите «Вернуться в Gmail» или кнопку Gmail сверху слева, затем откройте TIIN с домашнего экрана. Аккаунт подключится автоматически.', 'iPhone сайтке Gmail терезесін жауып, PWA-ны өзі ашуға рұқсат бермейді. «Gmail-ге оралу» батырмасын немесе жоғары сол жақтағы Gmail батырмасын басып, TIIN-ді басты экраннан ашыңыз. Аккаунт автоматты қосылады.') + '</p><button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="TIINCloud.returnToApp()">' + text('Вернуться в Gmail', 'Gmail-ге оралу') + '</button></div>');
   }
   function returnToApp() {
-    try { window.close(); } catch (_) {}
+    try { history.back(); } catch (_) { try { window.close(); } catch (__) {} }
   }
   async function completeCallbackHandoff(client, user) {
     if (!callbackHandoffId || !user || state.handoffCompleting) return false;
