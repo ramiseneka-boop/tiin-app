@@ -640,3 +640,5 @@ html.light .btn-income { color:#126B4E !important; background:#ECFAF3 !important
 @media (min-width: 768px) {
   .summary { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
 }
+
+.summary > #balanceKpi { grid-column:auto !important; width:auto !important; max-width:none !important; margin:0 !important; }
