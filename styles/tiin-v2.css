@@ -389,3 +389,234 @@ html.light .currency-select { background:var(--surface); border-color:rgba(32,36
 .tx-actions { min-width:108px; }
 .tx-base-amount { margin-top:3px; color:var(--text-secondary, #9da7ba); font-size:12px; font-weight:650; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
 @media (max-width: 430px) { .tx-actions { min-width:96px; } .tx-base-amount { font-size:11px; } }
+
+
+Warning: truncated output (original token count: 5171)
+Total output lines: 226
+
+/* Lean balance card and a high-contrast warm light theme. */
+@media (max-width:767px) {
+  .balance-hero { min-height:0!important; margin:4px 0 10px!important; padding:16px!important; border-radius:18px!important; }
+  .balance-hero-top { align-items:flex-start!important; }
+  .balance-hero-label { font-size:16px!important; }
+  .balance-hero .value.balance { margin:26px 0 3px!important; font-size:clamp(32px,10vw,44px)!important; }
+  .balance-hero-period { font-size:13px!important; }
+  .sync-status { max-width:52%; padding:4px 7px!important; font-size:10px!important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+}
+html.light {
+  --bg-primary:#F4EBDC;
+  --bg-secondary:#E9DCC7;
+  --surface:#FFFDF8;
+  --surface-active:#F4E3C4;
+  --text-primary:#272016;
+  --text-secondary:#5F5648;
+  --text-muted:#766D5F;
+}
+html.light .balance-hero {
+  background-image:linear-gradient(104deg,rgba(255,249,234,.98) 0%,rgba(251,235,194,.91) 58%,rgba(231,202,134,.66) 100%),url('../assets/tiin-balance-day.png')!important;
+  border-color:#B58A39!important;
+}
+html.light .balance-hero-label { color:#2A2115!important; font-weight:700!important; }
+html.light .balance-hero .value.balance { color:#5A3907!important; -webkit-text-fill-color:#5A3907!important; font-weight:850!important; text-shadow:0 1px 0 rgba(255,255,255,.75)!important; }
+html.light .balance-hero-period { color:#4E4030!important; font-weight:600!important; }
+html.light .sync-status { color:#3E3529!important; background:rgba(255,253,248,.86)!important; border-color:rgba(104,75,22,.34)!important; }
+html.light .summary-item .label { color:#5B5143!important; font-weight:700!important; }
+html.light .summary-item:nth-child(1) .value { color:#167657!important; }
+html.light .summary-item:nth-child(2) .value { color:#B13F4B!important; }
+html.light .summary-item.balance-kpi .value { color:#76500D!important; }
+
+/* Keep financial values intact on narrow phones, including the ₸ symbol. */
+@media (max-width:767px) {
+  .summary-item { min-width:0!important; padding:14px 10px!important; }
+  .summary-item:before { left:10px!important; width:36px!important; height:36px!important; font-size:18px!important; }
+  .summary-item .label,.summary-item .value { padding-left:45px!important; }
+  .summary-item .label { font-size:9px!important; letter-spacing:.1px!important; }
+  .summary-item .value { font-size:clamp(14px,3.95vw,19px)!important; letter-spacing:-.55px!important; white-space:nowrap!important; }
+  .summary-item:after { width:48px!important; right:9px!important; bottom:8px!important; }
+}
+@media (max-width:390px) {
+  .summary-item .value { font-size:14px!important; letter-spacing:-.75px!important; }
+}
+
+/* The landscape is present in the dark card, without covering the balance. */
+html:not(.light) .balance-hero {
+  background-image:
+    linear-gradient(90deg,rgba(7,13,25,.74) 0%,rgba(8,16,30,.48) 54%,rgba(8,16,30,.14) 100%),
+    linear-gradient(0deg,rgba(7,13,25,.25),transparent 58%),
+    url('../assets/tiin-balance-mountains.jpeg')!important;
+}
+
+
+/* Transaction action menu */
+.tx-actions { position:relative; }
+.tx-menu-wrap { position:relative; flex:0 0 auto; }
+.tx-menu { touch-action:manipulation; }
+.tx-popover {
+  display:none;
+  position:absolute;
+  z-index:60;
+  top:calc(100% - 4px);
+  right:0;
+  min-width:142px;
+  overflow:hidden;
+  padding:5px;
+  border:1px solid rgba(157,167,186,.22);
+  border-radius:12px;
+  background:#1B2740;
+  box-shadow:0 14px 30px rgba(0,0,0,.32);
+}
+.tx-popover.open { display:block; }
+.tx-popover button {
+  display:block;
+  width:100%;
+  border:0;
+  border-radius:8px;
+  padding:10px 11px;
+  background:transparent;
+  color:var(--text-primary);
+  font:600 13px Inter,sans-serif;
+  text-align:left;
+  cursor:pointer;
+}
+.tx-popover button:active,.tx-popover button:hover { background:rgba(157,167,186,.12); }
+.tx-popover button.danger { color:var(--red); }
+html.light .tx-popover { background:#FFFCF6; border-color:rgba(91,70,30,.18); box-shadow:0 12px 25px rgba(83,61,19,.14); }
+html.light .tx-popover button { color:#303238; }
+html.light .tx-popover button.danger { color:#B44650; }
+
+
+/* Transaction actions use the existing modal: never clip inside a list card. */
+.tx-action-sheet { padding:4px 0 2px; }
+.tx-action-title { overflow:hidden; color:var(--text-primary); font-size:18px; font-weight:750; line-height:1.25; text-overflow:ellipsis; white-space:nowrap; }
+.tx-action-subtitle { margin:6px 0 20px; color:var(--text-secondary); font-size:13px; }
+.tx-action-sheet .btn { min-height:52px!important; font-size:16px!important; }
+.tx-action-cancel { width:100%; margin-top:14px; padding:12px; border:0; background:transparent; color:var(--text-secondary); font:600 15px Inter,sans-serif; }
+
+
+/* Action sheet must sit above the persistent mobile navigation. */
+.modal-overlay { z-index:10000!important; padding-bottom:0!important; }
+.modal-overlay .modal {
+  position:relative;
+  z-index:10001!important;
+  margin-bottom:0!important;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px))!important;
+}
+@media (max-width:767px) {
+  .modal-overlay .modal { max-height:calc(100dvh - 18px)!important; }
+}
+
+
+/* Planning lists */
+.planning-screen{margin-top:4px;padding-bottom:10px}.planning-header,.planning-detail-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 16px}.planning-eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold,#d4af5a);margin-bottom:4px}.planning-screen h2{font-size:26px;line-height:1.1;margin:0}.planning-add{border:1px solid rgba(212,175,90,.45);background:rgba(212,175,90,.12);color:var(--gold-light,#e7c978);border-radius:14px;padding:11px 13px;font:inherit;font-size:13px;font-weight:700;white-space:nowrap}.planning-add.small{padding:9px 11px}.planning-filters{display:flex;gap:8px;overflow:auto;padding-bottom:12px;margin-bottom:3px;scrollbar-width:none}.planning-filters::-webkit-scrollbar{display:none}.planning-filters button{border:1px solid var(--card-border,rgba(255,255,255,.1));border-radius:999px;background:var(--surface,#161f34);color:var(--text-secondary,#9da7ba);padding:9px 13px;font:inherit;font-size:12px;white-space:nowrap}.planning-filters button.active{color:var(--gold-light,#e7c978);border-color:rgba(212,175,90,.6);background:rgba(212,175,90,.12)}.planning-list-grid{display:grid;gap:12px}.planning-card,.planning-item,.planning-summary{background:var(--surface,#161f34);border:1px solid var(--card-border,rgba(255,255,255,.1));box-shadow:0 5px 22px rgba(0,0,0,.16)}.planning-card{border-radius:18px;padding:16px;cursor:pointer}.planning-card-top{display:flex;justify-content:space-between;gap:10px}.planning-card h3{font-size:16px;margin:9px 0 4px}.planning-card p,.planning-detail-head p{margin:0;color:var(--text-secondary,#9da7ba);font-size:12px}.planning-type{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:800}.planning-type.expense{background:rgba(255,107,107,.12);color:var(--red,#ff6b6b)}.planning-type.income{background:rgba(48,196,141,.12);color:var(--green,#30c48d)}.planning-menu{border:0;background:transparent;color:var(--text-secondary,#9da7ba);font-size:24px;line-height:1;padding:0 5px;min-width:36px;cursor:pointer}.planning-menu.large{font-size:28px}.planning-progress{height:6px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;margin-top:16px}.planning-progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--gold,#d4af5a),var(--gold-light,#e7c978))}.planning-progress-label{font-size:11px;color:var(--text-secondary,#9da7ba);margin-top:6px}.planning-metrics,.planning-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.planning-metrics{margin-top:14px}.planning-metrics small,.planning-summary small{display:block;color:var(--text-muted,#6f7a8e);font-size:10px;text-transform:uppercase;line-height:1.25}.planning-metrics b,.planning-summary b{display:block;margin-top:5px;color:var(--text-primary,#f5f7fb);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}.planning-metrics b.expense{color:var(--red,#ff6b6b)}.planning-metrics b.income,.planning-summary b.income{color:var(--green,#30c48d)}.planning-detail-head{align-items:flex-start}.planning-back{width:40px;height:40px;border-radius:13px;border:1px solid var(--card-border,rgba(255,255,255,.1));background:var(--surface,#161f34);color:var(--text-primary,#f5f7fb);font-size:22px}.planning-title-wrap{flex:1;min-width:0}.planning-title-wrap h2{margin:7px 0 5px;font-size:22px}.planning-summary{padding:15px;border-radius:17px;margin-bottom:18px}.planning-detail-subhead{display:flex;align-items:center;justify-content:space-between;color:var(--text-secondary,#9da7ba);font-size:12px;margin-bottom:10px}.planning-items{display:grid;gap:8px}.planning-item{display:flex;gap:11px;align-items:center;border-radius:16px;padding:12px}.planning-item.is-completed{opacity:.82}.planning-item.is-cancelled{opacity:.45}.planning-check{width:28px;height:28px;border-radius:9px;border:1px solid rgba(212,175,90,.55);background:transparent;color:#0b1020;font-weight:900;flex:none}.planning-item.is-completed .planning-check{background:var(--green,#30c48d);border-color:var(--green,#30c48d)}.planning-item-main{flex:1;min-width:0;cursor:pointer}.planning-item-title{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.planning-item-meta,.planning-item-actual{display:block;font-size:11px;color:var(--text-secondary,#9da7ba);margin-top:3px}.planning-item-actual{color:var(--gold-light,#e7c978)}.planning-item-right{display:flex;align-items:center;gap:2px}.planning-item-right b{font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}.planning-item-right b.expense{color:var(--red,#ff6b6b)}.planning-item-right b.income{color:var(--green,#30c48d)}.planning-empty{text-align:center;padding:44px 20px;border:1px dashed rgba(212,175,90,.32);border-radius:20px;background:…171 tokens truncated…peat(2,minmax(0,1fr))}.planning-screen{max-width:920px}.planning-card{min-height:190px}}@media(max-width:390px){.planning-metrics b,.planning-summary b{font-size:11px}.planning-add{padding:10px}.planning-screen h2{font-size:23px}}
+
+
+/* Sheet usability and custom categories */
+.modal{width:min(100%,640px);max-width:100vw;overscroll-behavior:contain;touch-action:pan-y}.modal::before{cursor:grab;touch-action:none}.modal:active::before{cursor:grabbing}.modal .form-group,.modal .planning-dual>*,.modal .chips{min-width:0;max-width:100%}.modal input,.modal .form-input,.modal input[type="date"]{width:100%;max-width:100%;min-width:0}.modal .chips{overflow:hidden}.modal .chip{max-width:100%;overflow:hidden;text-overflow:ellipsis}.planning-dual{min-width:0}.custom-category-row{display:grid;grid-template-columns:56px minmax(0,1fr) 48px;gap:8px;margin-top:10px;min-width:0}.custom-category-icon{text-align:center;padding-left:7px!important;padding-right:7px!important}.custom-category-hint{font-size:11px;color:var(--text-muted,#6f7a8e);margin-top:6px}.template-existing{margin-top:16px}.template-existing h4{font-size:14px;color:var(--text-secondary,#9da7ba);margin-bottom:8px}.template-existing>div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}.template-existing span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+
+/* Time-aware balance artwork: declared last so it wins over legacy hero skin. */
+.balance-hero[data-daypart="night"]{background-image:linear-gradient(110deg,rgba(8,14,29,.82) 0%,rgba(8,14,29,.55) 52%,rgba(8,14,29,.34) 100%),url('../assets/tiin-balance-mountains.jpeg')!important}
+.balance-hero[data-daypart="morning"]{background-image:linear-gradient(110deg,rgba(8,14,29,.78) 0%,rgba(8,14,29,.50) 54%,rgba(8,14,29,.24) 100%),url('../assets/tiin-balance-morning.png')!important}
+.balance-hero[data-daypart="day"]{background-image:linear-gradient(110deg,rgba(8,14,29,.76) 0%,rgba(8,14,29,.48) 54%,rgba(8,14,29,.25) 100%),url('../assets/tiin-balance-day.png')!important}
+.balance-hero[data-daypart="evening"]{background-image:linear-gradient(110deg,rgba(8,14,29,.80) 0%,rgba(8,14,29,.54) 54%,rgba(8,14,29,.26) 100%),url('../assets/tiin-balance-evening.png')!important}
+
+
+/* Account entry is explicit: new users see onboarding, returning users have a clear control. */
+.tiin-account-button {
+  min-height:40px;
+  border:1px solid rgba(157,167,186,.18);
+  border-radius:999px;
+  padding:0 12px;
+  background:rgba(22,31,52,.92);
+  color:var(--text-primary);
+  font:600 12px/1 Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  cursor:pointer;
+  white-space:nowrap;
+  box-shadow:0 4px 12px rgba(0,0,0,.16);
+}
+.tiin-account-button:active { transform:scale(.97); }
+.tiin-account-icon { color:var(--gold-light); font-size:19px; line-height:1; transform:rotate(-25deg); }
+.tiin-account-button.is-signed-in { width:40px; padding:3px; border-color:rgba(212,175,90,.42); }
+.tiin-account-avatar { width:30px; height:30px; display:grid; place-items:center; border-radius:50%; background:linear-gradient(135deg,var(--gold),var(--gold-dark)); color:#101625; font-size:13px; font-weight:800; }
+.tiin-google-button { width:100%; margin-top:14px; background:#fff; color:#182033; border:1px solid rgba(0,0,0,.08); }
+.tiin-google-button span { font-weight:800; color:#4285F4; font-size:18px; }
+.tiin-welcome h3 { margin-bottom:10px; }
+.tiin-welcome p { text-align:center; color:var(--text-secondary); line-height:1.5; }
+html.light .tiin-account-button { background:rgba(255,252,246,.94); border-color:rgba(32,36,45,.14); color:var(--text-primary); }
+
+/* Force each local-time artwork, including night, after a stale PWA cache update. */
+.balance-hero[data-daypart="night"] {
+  background-image:linear-gradient(110deg,rgba(8,14,29,.82) 0%,rgba(8,14,29,.55) 52%,rgba(8,14,29,.34) 100%),url('../assets/tiin-balance-mountains.jpeg');
+}
+
+
+/* Currency Center */
+.currency-access { color:var(--gold-light); border-color:rgba(212,175,90,.32); }
+.currency-modal h3 { margin-bottom:6px; }
+.currency-kicker { color:var(--gold-light); font-size:11px; letter-spacing:1.4px; text-align:center; font-weight:800; }
+.currency-status { color:var(--text-muted); font-size:11px; text-align:center; line-height:1.45; margin-bottom:18px; }
+.currency-fields { display:grid; gap:12px; }
+.currency-amount { font-size:28px; font-weight:750; text-align:center; font-variant-numeric:tabular-nums; }
+.currency-pair { display:grid; grid-template-columns:1fr 40px 1fr; align-items:end; gap:8px; }
+.currency-pair label { display:block; margin:0 0 6px; color:var(--text-secondary); font-size:11px; font-weight:650; text-transform:uppercase; letter-spacing:.45px; }
+.currency-select { width:100%; height:48px; padding:0 9px; border-radius:13px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid rgba(157,167,186,.2); font:600 13px Inter,-apple-system,BlinkMacSystemFont,sans-serif; }
+.currency-swap { width:40px; height:40px; margin-bottom:4px; border-radius:50%; border:1px solid rgba(212,175,90,.32); background:var(--surface-active); color:var(--gold-light); font-size:19px; cursor:pointer; }
+.currency-result { margin-top:14px; padding:16px; border:1px solid rgba(212,175,90,.28); border-radius:16px; background:linear-gradient(135deg,rgba(212,175,90,.12),rgba(22,31,52,.3)); text-align:center; }
+.currency-result span,.currency-result small { display:block; color:var(--text-secondary); font-size:11px; }
+.currency-result strong { display:block; color:var(--gold-light); font-size:28px; margin:6px 0; font-variant-numeric:tabular-nums; }
+.currency-list { margin-top:12px; border-top:1px solid rgba(157,167,186,.12); }
+.currency-list div { display:flex; justify-content:space-between; padding:10px 2px; border-bottom:1px solid rgba(157,167,186,.1); font-size:13px; }
+.currency-list span { color:var(--text-secondary); }.currency-list b { color:var(--text-primary); font-variant-numeric:tabular-nums; }
+@media (max-width:767px) {
+  .top-controls { top:8px; right:16px; gap:10px; }
+  #app > div:first-child { margin-top:38px; }
+  .tiin-account-button { min-height:38px; padding:0 10px; }
+}
+html.light .currency-select { background:var(--surface); border-color:rgba(32,36,45,.14); }
+
+.tiin-account-button svg.tiin-account-icon { width:17px; height:17px; transform:none; }
+
+/* Spending limits */
+.limits-card { border-color:rgba(212,175,90,.24); }
+.limits-title { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px; }
+.limits-title h3 { margin:0;font-size:16px; }
+.limits-empty,.limits-help { color:var(--text2);font-size:13px;line-height:1.5;margin:0; }
+.limits-summary { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+.limit-row { padding:10px 0; }
+.limit-row-top { display:flex;justify-content:space-between;gap:8px;font-size:12px;align-items:baseline; }
+.limit-row-top span { color:var(--text2); }
+.limit-track { height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin:7px 0 4px; }
+.limit-track i { display:block;height:100%;border-radius:inherit; }
+.limit-row small { color:var(--text2);font-size:11px; }
+.limit-row small.limit-over { color:#F87171;font-weight:700; }
+.limits-overview { display:flex;justify-content:space-between;gap:10px;margin:8px 0 2px;padding:10px 12px;border-radius:12px;background:rgba(52,211,153,.08);color:#6ee7b7;font-size:12px; }
+.limits-overview.has-over { background:rgba(248,113,113,.12);color:#fca5a5; }
+.limits-category-title { margin-top:14px;padding-top:12px;border-top:1px solid var(--border);color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.06em; }
+.limit-category { padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px; }
+.limit-category > b { display:block;margin-bottom:2px; }
+.limits-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+.limits-grid label { display:grid;gap:6px;color:var(--text2);font-size:12px; }
+.limits-modal h4 { margin:18px 0 8px;font-size:14px;color:var(--gold1); }
+.limit-input-row { display:grid;grid-template-columns:minmax(0,1fr) 92px 92px;gap:8px;align-items:center;margin:8px 0; }
+.limit-input-row span { font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.limit-input-row .form-input { min-width:0;padding:10px 8px;text-align:right;font-size:13px; }
+.limit-exceeded-tx { border:1px solid rgba(248,113,113,.72)!important;box-shadow:0 0 0 1px rgba(248,113,113,.1),0 8px 20px rgba(248,113,113,.1)!important; }
+.limit-tx-badge { color:#fca5a5;font-size:10px;font-weight:700;margin-top:4px; }
+@media(max-width:480px){.limits-summary{grid-template-columns:1fr}.limit-input-row{grid-template-columns:minmax(0,1fr) 78px 78px;gap:6px}.limits-grid{gap:8px}}
+
+
+/* Foreign-currency transactions: the original amount stays prominent; KZT remains the accounting base. */
+.tx-currency-group { margin-top: 2px; }
+.tx-currency-row { display:flex; align-items:center; gap:10px; }
+.tx-currency-row .currency-select { flex:1; min-width:0; }
+.currency-refresh { width:46px; height:46px; border:1px solid var(--border, #283553); border-radius:13px; background:var(--surface-active, #1d2740); color:var(--gold, #d4af5a); font-size:23px; line-height:1; cursor:pointer; }
+.currency-refresh:active { transform:scale(.96); }
+.tx-currency-preview { margin-top:10px; font-variant-numeric:tabular-nums; color:var(--green, #30c48d); font-weight:750; font-size:17px; }
+.tx-currency-rate { margin-top:3px; color:var(--text-muted, #6f7a8e); font-size:12px; line-height:1.35; }
+.tx-actions { min-width:108px; }
+.tx-base-amount { margin-top:3px; color:var(--text-secondary, #9da7ba); font-size:12px; font-weight:650; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+@media (max-width: 430px) { .tx-actions { min-width:96px; } .tx-base-amount { font-size:11px; } }
