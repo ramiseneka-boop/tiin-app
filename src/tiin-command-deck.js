@@ -1,6 +1,12 @@
 /* TIIN Command Deck — non-destructive layout controller. */
 (function () {
   'use strict';
+  if (!document.getElementById('tiinLimitsScript')) {
+    const limits = document.createElement('script');
+    limits.id = 'tiinLimitsScript';
+    limits.src = 'src/tiin-limits.js?v=1';
+    document.head.appendChild(limits);
+  }
 
   var STYLE_ID = 'tiinCommandDeckStyles';
   var refreshTimer = null;
