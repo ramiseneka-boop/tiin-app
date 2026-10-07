@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tiin-command-deck-5';
+const CACHE_NAME = 'tiin-command-deck-6';
 const APP_SHELL = [
   './', './index.html', './manifest.json', './styles/tiin-v2.css', './styles/tiin-command-deck.css',
   './src/tiin-v2.js', './src/tiin-currency.js',
