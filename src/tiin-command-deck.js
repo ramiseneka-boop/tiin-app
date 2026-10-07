@@ -22,7 +22,7 @@
     var link = document.createElement('link');
     link.id = STYLE_ID;
     link.rel = 'stylesheet';
-    link.href = 'styles/tiin-command-deck.css?v=3';
+    link.href = 'styles/tiin-command-deck.css?v=4';
     document.head.appendChild(link);
   }
 
@@ -116,6 +116,14 @@
     }
   }
 
+  function composeKpis() {
+    var summary = document.querySelector('.summary');
+    var balance = document.getElementById('balanceKpi');
+    if (!summary || !balance || balance.parentElement === summary) return;
+    // Visual regrouping only: the existing balance calculation and values stay unchanged.
+    summary.appendChild(balance);
+  }
+
   function updateDesktopContext() {
     var panel = document.getElementById('desktopContext');
     if (!panel) return;
@@ -142,6 +150,7 @@
     refreshTimer = null;
     setupHeader();
     setupDock();
+    composeKpis();
     updateDesktopContext();
   }
 
