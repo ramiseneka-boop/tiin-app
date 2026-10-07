@@ -745,3 +745,55 @@ html.light .btn-income { color:#126B4E !important; background:#ECFAF3 !important
   .tab svg { width:21px !important; height:21px !important; }
   .tab .command-nav-label { font-size:9px !important; }
 }
+
+
+/* iPhone header and compact tools polish. */
+.balance-hero.tiin-daypart-fade { animation:tiinDaypartFade .52s ease both; }
+@keyframes tiinDaypartFade { from { opacity:.74; filter:saturate(.86); } to { opacity:1; filter:saturate(1); } }
+
+@media (max-width: 767px) {
+  .command-header {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    position:sticky !important;
+    min-height:66px !important;
+    padding-left:14px !important;
+    padding-right:14px !important;
+  }
+  .command-header .command-date-slot { flex:0 0 auto !important; width:72px !important; }
+  .command-header .command-logo-slot {
+    position:absolute !important;
+    left:50% !important;
+    top:50% !important;
+    z-index:1 !important;
+    transform:translate(-50%,-50%) !important;
+    width:86px !important;
+    pointer-events:none !important;
+  }
+  .command-header .command-logo-slot > div { width:100% !important; }
+  .command-header .command-logo-slot img { width:86px !important; max-width:86px !important; height:auto !important; max-height:34px !important; }
+  .command-header .command-control-slot { z-index:2 !important; margin-left:auto !important; min-width:max-content !important; }
+  .top-controls { display:flex !important; align-items:center !important; gap:4px !important; }
+  .lang-toggle { display:flex !important; align-items:center !important; justify-content:center !important; }
+  .lang-toggle span { display:flex !important; align-items:center !important; justify-content:center !important; line-height:1 !important; transform:translateY(0) !important; }
+
+  .templates-scroll {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:8px !important;
+    overflow-x:auto !important;
+    padding:0 0 12px !important;
+  }
+  .template-chip {
+    flex:0 0 auto !important;
+    width:auto !important;
+    min-width:0 !important;
+    min-height:40px !important;
+    padding:9px 12px !important;
+    border-radius:12px !important;
+    white-space:nowrap !important;
+    font-size:12px !important;
+  }
+}
