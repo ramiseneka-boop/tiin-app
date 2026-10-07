@@ -146,14 +146,22 @@
 
 
   // Balance artwork follows the device's local time, without using UTC.
+  // Morning stays visible through 10:59; this matches how people experience the day.
   function applyTimeAwareBalanceArtwork(hero) {
     const hour = new Date().getHours();
-    const daypart = hour >= 5 && hour < 10 ? 'morning'
-      : hour >= 10 && hour < 17 ? 'day'
+    const daypart = hour >= 5 && hour < 11 ? 'morning'
+      : hour >= 11 && hour < 17 ? 'day'
       : hour >= 17 && hour < 21 ? 'evening'
       : 'night';
+    const previousDaypart = hero.dataset.daypart;
     hero.dataset.daypart = daypart;
     hero.setAttribute('data-daypart', daypart);
+
+    if (previousDaypart && previousDaypart !== daypart) {
+      hero.classList.remove('tiin-daypart-fade');
+      void hero.offsetWidth;
+      hero.classList.add('tiin-daypart-fade');
+    }
   }
 
   function refreshTimeAwareBalanceArtwork() {
