@@ -38,6 +38,7 @@ body {
 
 /* One compact, sticky command bar. */
 .command-header {
+  height: auto !important;
   position: sticky !important;
   top: 0 !important;
   z-index: 90 !important;
