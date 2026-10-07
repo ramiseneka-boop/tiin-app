@@ -4,14 +4,22 @@
   const PLAN_KEY = 'financial_plan';
   const today = () => localDateString();
   const num = v => Math.max(0, Number(v) || 0);
-  const current = () => ({ year: window.currentYear, month: window.currentMonth });
-  const language = () => window.currentLang === 'kz' ? 'kz' : 'ru';
+  const language = () => document.getElementById('langKz')?.classList.contains('active') ? 'kz' : 'ru';
   const words = () => language() === 'kz' ? {
     plan:'Қаржы жоспары', settings:'Жоспарды баптау', expected:'Күтілетін кіріс', mandatory:'Міндетті төлемдер', auto:'Мақсаттарға автоматты жинақ', spent:'Жұмсалды', available:'Шығынға қалды', daily:'Күніне қауіпсіз сома', days:'күн қалды', reminders:'Назар аудару керек', notify:'Хабарламаларды қосу', notificationsOn:'Хабарламалар қосулы', save:'Сақтау', insight:'Ақша қайда кетіп жатыр', noData:'Қорытынды үшін шығындар қосыңыз', top:'Ең көп шығын', saving:'Осы санатты 20% қысқартсаңыз, сақтайсыз', compared:'Өткен аймен салыстырғанда', more:'көбірек', less:'азырақ', autoSave:'Автожинақ', percent:'Әр кірістен пайыз', allocated:'мақсатқа аударылды', due:'жақында төленеді', limit:'күндік лимиттің 80%-ы жұмсалды'
   } : {
     plan:'Финансовый план', settings:'Настроить план', expected:'Ожидаемый доход', mandatory:'Обязательные платежи', auto:'Автокопилка в цели', spent:'Потрачено', available:'Осталось на расходы', daily:'Безопасно тратить в день', days:'дн. осталось', reminders:'Требует внимания', notify:'Включить уведомления', notificationsOn:'Уведомления включены', save:'Сохранить', insight:'Куда уходят деньги', noData:'Добавь расходы — TIIN подготовит выводы', top:'Больше всего уходит на', saving:'Если сократить эту категорию на 20%, сохранишь', compared:'К прошлому месяцу', more:'больше', less:'меньше', autoSave:'Автокопилка', percent:'Процент с каждого дохода', allocated:'отправлено в цель', due:'скоро платёж', limit:'потрачено 80% дневного лимита'
   };
   function plan() { try { return JSON.parse(localStorage.getItem(PLAN_KEY) || '{}') || {}; } catch (_) { return {}; } }
+  function selectedMonth() {
+    const title = document.getElementById('monthTitle')?.textContent || '';
+    const match = title.match(/(\d{4})/);
+    const names = ['январ','феврал','март','апрел','ма','июн','июл','август','сентябр','октябр','ноябр','декабр'];
+    const lowered = title.toLowerCase();
+    const index = names.findIndex(name => lowered.includes(name));
+    const now = new Date();
+    return { year:match ? Number(match[1]) : now.getFullYear(), month:index >= 0 ? index : now.getMonth() };
+  }
   function savePlan(value) { localStorage.setItem(PLAN_KEY, JSON.stringify({ expectedIncome:num(value.expectedIncome) })); }
   function txns(year, month) { return filterTxnsByWallet(getTxns(year, month)); }
   function sum(list) { return list.reduce((total, item) => total + num(item.amount), 0); }
@@ -26,7 +34,7 @@
   }
   function totalAutoRate() { return Math.min(100, getGoals().reduce((total, goal) => total + Math.max(0, Math.min(100, Number(goal.autoPercent) || 0)), 0)); }
   function metrics() {
-    const { year, month } = current(), p = plan(), now = new Date();
+    const { year, month } = selectedMonth(), p = plan(), now = new Date();
     const isCurrent = now.getFullYear() === year && now.getMonth() === month;
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const daysLeft = isCurrent ? Math.max(1, daysInMonth - now.getDate() + 1) : daysInMonth;
@@ -49,7 +57,7 @@
     render();
   };
   function reminderItems() {
-    const { year, month } = current(), c = words(), items = [], now = new Date();
+    const { year, month } = selectedMonth(), c = words(), items = [], now = new Date();
     const all = getTxns(year, month).filter(item => item.type === 'expense');
     const raw = (() => { try { return JSON.parse(localStorage.getItem('budgets') || '{}'); } catch (_) { return {}; } })();
     const dailyLimit = num(raw?.global?.daily);
@@ -80,7 +88,7 @@
   }
   function insertHome() { const el = document.getElementById('tab-transactions'); if (!el) return; el.querySelector('.finance-plan-card')?.remove(); el.insertAdjacentHTML('afterbegin', planCard()); }
   function analyticsCard() {
-    const { year, month } = current(), c = words(), list = txns(year, month).filter(item => item.type === 'expense');
+    const { year, month } = selectedMonth(), c = words(), list = txns(year, month).filter(item => item.type === 'expense');
     if (!list.length) return `<section class="card finance-insight-card"><h3 class="gold">✨ ${c.insight}</h3><p>${c.noData}</p></section>`;
     const grouped = {}; list.forEach(item => grouped[item.category] = (grouped[item.category] || 0) + num(item.amount));
     const [category, amount] = Object.entries(grouped).sort((a,b)=>b[1]-a[1])[0];
