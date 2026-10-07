@@ -636,3 +636,7 @@ html.light .btn-income { color:#126B4E !important; background:#ECFAF3 !important
   .tab .command-nav-label { font-size:10px !important; }
   .tab.active { background:rgba(212,175,90,.14) !important; }
 }
+
+@media (min-width: 768px) {
+  .summary { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
+}
