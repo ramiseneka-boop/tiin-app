@@ -1089,27 +1089,6 @@ function renderAnalytics() {
   } else { html += t('noDataLastMonth'); }
   html += '</div></div>';
 
-  // Budgets
-  const budgets = getBudgets();
-  const hasBudgets = Object.keys(budgets).length > 0;
-  html += `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <h3 class="gold" style="font-size:16px">💰 ${t('budgets')}</h3>
-    <button class="btn btn-ghost btn-sm" onclick="openBudgetModal()">${t('setBudgets')}</button></div>`;
-  if (hasBudgets) {
-    EXPENSE_CATS.forEach(cat => {
-      const limit = budgets[cat.id];
-      if (!limit) return;
-      const spent = byCat[cat.id] || 0;
-      const pct = Math.min((spent / limit) * 100, 150);
-      const color = pct > 100 ? '#FF6B6B' : pct > 80 ? '#FBBF24' : CAT_COLORS[cat.id] || '#34D399';
-      html += `<div class="budget-bar"><div class="budget-bar-header"><span>${cat.icon} ${cat.name}</span><span style="color:${color}">${fmt(spent)} / ${fmt(limit)}</span></div>
-        <div class="budget-bar-track"><div class="budget-bar-fill" style="width:${Math.min(pct,100)}%;background:${color}"></div></div>
-        ${pct > 100 ? `<div class="budget-warn">${t('budgetExceeded')}</div>` : ''}</div>`;
-    });
-  } else {
-    html += `<p style="color:var(--text2);font-size:13px">${t('setBudgetLimits')}</p>`;
-  }
-  html += '</div>';
 
   // Line chart
   html += `<div class="card"><h3 class="gold" style="font-size:16px;margin-bottom:12px">📈 ${t('expenseHistory')}</h3><div class="chart-wrap"><canvas id="lineCanvas"></canvas></div></div>`;
