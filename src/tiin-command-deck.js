@@ -22,7 +22,7 @@
     var link = document.createElement('link');
     link.id = STYLE_ID;
     link.rel = 'stylesheet';
-    link.href = 'styles/tiin-command-deck.css?v=1';
+    link.href = 'styles/tiin-command-deck.css?v=2';
     document.head.appendChild(link);
   }
 
@@ -42,27 +42,34 @@
     var app = document.getElementById('app');
     var date = document.getElementById('todayDate');
     if (!app || !date) return;
+
+    // Rendering happens often in the legacy app. Once the command bar exists,
+    // never derive its parent from the logo again: that would nest the header.
+    var readyHeader = app.querySelector(':scope > .command-header[data-command-deck="true"]');
+    if (readyHeader) {
+      commandDate();
+      return;
+    }
+
     var logo = app.querySelector('img[alt="TIIN"]');
     if (!logo) return;
-    var header = logo.parentElement && logo.parentElement.parentElement;
+    var logoWrap = logo.parentElement;
+    var header = logoWrap && logoWrap.parentElement;
     if (!header) return;
 
-    if (!header.dataset.commandDeck) {
-      var controls = document.querySelector('.top-controls');
-      var logoWrap = logo.parentElement;
-      var left = document.createElement('div');
-      var center = document.createElement('div');
-      var right = document.createElement('div');
-      left.className = 'command-date-slot';
-      center.className = 'command-logo-slot';
-      right.className = 'command-control-slot';
-      left.appendChild(date);
-      center.appendChild(logoWrap);
-      if (controls) right.appendChild(controls);
-      header.replaceChildren(left, center, right);
-      header.classList.add('command-header');
-      header.dataset.commandDeck = 'true';
-    }
+    var controls = document.querySelector('.top-controls');
+    var left = document.createElement('div');
+    var center = document.createElement('div');
+    var right = document.createElement('div');
+    left.className = 'command-date-slot';
+    center.className = 'command-logo-slot';
+    right.className = 'command-control-slot';
+    left.appendChild(date);
+    center.appendChild(logoWrap);
+    if (controls) right.appendChild(controls);
+    header.replaceChildren(left, center, right);
+    header.classList.add('command-header');
+    header.dataset.commandDeck = 'true';
     commandDate();
   }
 
