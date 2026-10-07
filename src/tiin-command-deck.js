@@ -22,7 +22,7 @@
     var link = document.createElement('link');
     link.id = STYLE_ID;
     link.rel = 'stylesheet';
-    link.href = 'styles/tiin-command-deck.css?v=6';
+    link.href = 'styles/tiin-command-deck.css?v=7';
     document.head.appendChild(link);
   }
 
