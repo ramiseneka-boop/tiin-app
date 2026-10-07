@@ -229,7 +229,7 @@ body {
 /* Three equally legible KPIs. */
 .summary {
   display: grid !important;
-  grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  grid-template-columns: repeat(2, minmax(0,1fr)) !important;
   gap: 8px !important;
   max-width: none !important;
   margin: 0 0 14px !important;
@@ -527,13 +527,27 @@ html.light .btn-income { color:#126B4E !important; background:#ECFAF3 !important
 }
 
 @media (max-width: 430px) {
-  .command-header { grid-template-columns: 82px auto minmax(134px,1fr) !important; gap: 5px !important; }
-  .command-header .command-logo-slot img { height: 32px !important; max-width: 106px !important; }
-  .top-controls { gap: 4px !important; }
-  .lang-toggle span { min-width: 30px !important; padding-left: 5px !important; padding-right: 5px !important; }
-  .ctrl-btn,.tiin-account-button { min-width: 34px !important; min-height:34px !important; padding:0 7px !important; }
-  .summary { gap: 6px !important; }
-  .summary-item,#balanceKpi { min-height: 88px !important; padding: 11px 8px !important; }
-  .summary-item .value,#balanceKpi .value { font-size: 13px !important; letter-spacing: -.8px !important; }
+  /* Keep every header control in its own grid cell: no overlap with the original logo. */
+  .command-header {
+    grid-template-columns: minmax(60px,auto) minmax(0,1fr) auto !important;
+    gap: 4px !important;
+    margin-left: -16px !important;
+    margin-right: -16px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+  .command-header .command-date-slot { min-width: 0 !important; }
+  .command-date { gap: 3px !important; font-size: 11px !important; letter-spacing: -.15px !important; }
+  .command-header .command-logo-slot { justify-content: center !important; overflow: hidden; }
+  .command-header .command-logo-slot img { height: 30px !important; max-width: 92px !important; }
+  .command-header .command-control-slot { justify-content: flex-end !important; min-width: max-content !important; }
+  .top-controls { gap: 3px !important; white-space: nowrap; }
+  .lang-toggle { min-height: 32px !important; }
+  .lang-toggle span { min-width: 27px !important; padding: 6px 4px !important; font-size: 9px !important; }
+  .ctrl-btn,.tiin-account-button { min-width: 32px !important; min-height:32px !important; padding:0 7px !important; }
+  .tiin-account-button:not(.is-signed-in)::before { font-size: 11px !important; }
+  .summary { gap: 8px !important; }
+  .summary-item,#balanceKpi { min-height: 88px !important; padding: 11px 9px !important; }
+  .summary-item .value,#balanceKpi .value { font-size: 14px !important; letter-spacing: -.7px !important; }
   .balance-hero { min-height: 186px !important; }
 }
