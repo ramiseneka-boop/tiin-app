@@ -796,4 +796,68 @@ html.light .btn-income { color:#126B4E !important; background:#ECFAF3 !important
     white-space:nowrap !important;
     font-size:12px !important;
   }
+
+  /* Mobile KPI cards: hierarchy instead of decorative pseudo-graphs. */
+  .command-date {
+    font-size:15px !important;
+    font-weight:720 !important;
+    letter-spacing:-.12px !important;
+  }
+  .command-date strong { font-weight:800 !important; }
+  .command-date i { margin:0 5px !important; }
+
+  .summary-item,
+  #balanceKpi {
+    min-height:116px !important;
+    padding:16px !important;
+    border-radius:18px !important;
+  }
+  .summary-item .label,
+  .summary-item .value,
+  #balanceKpi .label,
+  #balanceKpi .value {
+    padding-left:0 !important;
+    text-align:left !important;
+  }
+  .summary-item .label,
+  #balanceKpi .label {
+    max-width:calc(100% - 48px) !important;
+    min-height:0 !important;
+    font-size:10px !important;
+    letter-spacing:.42px !important;
+  }
+  .summary-item .value,
+  #balanceKpi .value {
+    margin-top:16px !important;
+    font-size:clamp(19px,5.2vw,24px) !important;
+    letter-spacing:-.85px !important;
+  }
+  .summary-item:before,
+  #balanceKpi:before {
+    left:auto !important;
+    right:15px !important;
+    top:15px !important;
+    width:36px !important;
+    height:36px !important;
+    transform:none !important;
+  }
+  .summary-item:after,
+  #balanceKpi:after {
+    content:'' !important;
+    left:16px !important;
+    right:auto !important;
+    bottom:14px !important;
+    width:34px !important;
+    height:3px !important;
+    border:0 !important;
+    border-radius:99px !important;
+    background:currentColor !important;
+    opacity:.62 !important;
+  }
+  .summary > #balanceKpi {
+    min-height:102px !important;
+  }
+  #balanceKpi .value.balance {
+    font-size:clamp(22px,6.2vw,28px) !important;
+  }
 }
