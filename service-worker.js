@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tiin-limits-2';
+const CACHE_NAME = 'tiin-limits-3';
 const APP_SHELL = [
   './', './index.html', './manifest.json', './styles/tiin-v2.css', './styles/tiin-command-deck.css',
   './src/tiin-v2.js', './src/tiin-currency.js',
