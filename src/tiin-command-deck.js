@@ -5,7 +5,15 @@
     const limits = document.createElement('script');
     limits.id = 'tiinLimitsScript';
     limits.src = 'src/tiin-limits.js?v=1';
+    limits.async = false;
     document.head.appendChild(limits);
+  }
+  if (!document.getElementById('tiinFinanceCoachScript')) {
+    const coach = document.createElement('script');
+    coach.id = 'tiinFinanceCoachScript';
+    coach.src = 'src/tiin-finance-coach.js?v=1';
+    coach.async = false;
+    document.head.appendChild(coach);
   }
 
   var STYLE_ID = 'tiinCommandDeckStyles';
