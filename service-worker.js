@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tiin-premium-polish-12';
+const CACHE_NAME = 'tiin-ux-flow-daypart-13';
 const APP_SHELL = [
   './', './index.html', './manifest.json', './styles/tiin-v2.css', './styles/tiin-command-deck.css', './styles/tiin-polish.css',
   './src/tiin-v2.js', './src/tiin-currency.js',
