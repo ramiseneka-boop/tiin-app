@@ -43,7 +43,7 @@
       const polish = document.createElement('link');
       polish.id = 'tiinPolishStyles';
       polish.rel = 'stylesheet';
-    polish.href = 'styles/tiin-polish.css?v=4';
+    polish.href = 'styles/tiin-polish.css?v=5';
       document.head.appendChild(polish);
     }
   }
