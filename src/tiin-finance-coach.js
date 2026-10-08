@@ -10,7 +10,7 @@
   } : {
     plan:'Финансовый план', settings:'Настроить план', expected:'Ожидаемый доход', mandatory:'Обязательные платежи', auto:'Автокопилка в целях', spent:'Потрачено', available:'Осталось на расходы', daily:'Безопасно тратить в день', days:'дн. осталось', reminders:'Требует внимания', notify:'Включить уведомления', notificationsOn:'Уведомления включены', save:'Сохранить', insight:'Куда уходят деньги', noData:'Добавь расходы — TIIN подготовит выводы', top:'Больше всего уходит на', saving:'Если сократить эту категорию на 20%, сохранишь', compared:'К прошлому месяцу', more:'больше', less:'меньше', autoSave:'Автокопилка', percent:'Процент с каждого дохода', allocated:'отправлено в цель', due:'скоро платёж', limit:'потрачено 80% дневного лимита', life:'Выделено на жизнь', savings:'Накопления в целях', reserve:'Свободный резерв', allocationHelp:'Выдели из общего баланса сумму на жизнь. Накопления и автокопилка настраиваются в целях.', balance:'Общий баланс', freeBalance:'Свободный баланс', remaining:'Осталось', allocationTooHigh:'Сумма конвертов больше общего баланса', openGoals:'Открыть цели', savingsHint:'Сумму и автокопилку настраивай внутри каждой цели'
   };
-  function plan() { try { return JSON.parse(localStorage.getItem(PLAN_KEY) || '{}') || {}; } catch (_) { return {}; } }
+  function monthKey(year, month) { return `${year}-${String(month + 1).padStart(2, '0')}`; }
   function selectedMonth() {
     const title = document.getElementById('monthTitle')?.textContent || '';
     const match = title.match(/(\d{4})/);
@@ -20,7 +20,20 @@
     const now = new Date();
     return { year:match ? Number(match[1]) : now.getFullYear(), month:index >= 0 ? index : now.getMonth() };
   }
-  function savePlan(value) { localStorage.setItem(PLAN_KEY, JSON.stringify({ expectedIncome:num(value.expectedIncome), lifeAllocated:num(value.lifeAllocated), savingsAllocated:0 })); }
+  function planBook() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(PLAN_KEY) || '{}') || {};
+      if (stored.months) return stored;
+      const current = selectedMonth();
+      return { months: { [monthKey(current.year, current.month)]: { expectedIncome:num(stored.expectedIncome), lifeAllocated:num(stored.lifeAllocated) } } };
+    } catch (_) { return { months:{} }; }
+  }
+  function plan() { const current=selectedMonth(), book=planBook(); return book.months[monthKey(current.year,current.month)] || {}; }
+  function savePlan(value, year, month) {
+    const current=selectedMonth(), targetYear=year ?? current.year, targetMonth=month ?? current.month, book=planBook(), key=monthKey(targetYear,targetMonth);
+    book.months[key] = { ...(book.months[key] || {}), ...value, expectedIncome:num(value.expectedIncome ?? book.months[key]?.expectedIncome), lifeAllocated:num(value.lifeAllocated ?? book.months[key]?.lifeAllocated) };
+    localStorage.setItem(PLAN_KEY, JSON.stringify(book));
+  }
   function savingsTotal() { return getGoals().reduce((total, goal) => total + num(goal.saved), 0); }
   function migrateLegacySavings() {
     const p=plan(), legacy=num(p.savingsAllocated); if(!legacy) return;
@@ -56,12 +69,38 @@
     return { expected, mandatory, auto, spent, budget, lifeAllocated, lifeRemaining, savingsAllocated, balance, reserve, available, daily:available / daysLeft, daysLeft };
   }
   function setModal(html) { document.getElementById('modal').innerHTML = html; document.getElementById('modalOverlay').classList.add('open'); }
+  function monthTitle(year, month) { return new Intl.DateTimeFormat(language()==='ru'?'ru-RU':'kk-KZ',{month:'long',year:'numeric'}).format(new Date(year,month,1)); }
+  function nextMonth(year, month) { return month === 11 ? {year:year+1,month:0} : {year,month:month+1}; }
   window.openFinancialPlan = function () {
     const p = plan(), c = words();
     const balance=overallBalance(), saved=savingsTotal();
     setModal(`<h3>🧭 ${c.plan}</h3><p style="font-size:13px;color:var(--text2);line-height:1.5">${c.allocationHelp}</p><div class="finance-modal-balance">${c.balance}: <b>${fmt(balance)}</b><br><span>${c.savings}: <b>${fmt(saved)}</b></span></div><div class="form-group"><label>${c.life}</label><input type="number" class="form-input big" id="financeLifeAllocated" value="${p.lifeAllocated || ''}" placeholder="0" inputmode="numeric"></div><button class="finance-goals-button" onclick="closeModal();switchTab('goals')">🎯 ${c.openGoals}</button><p class="finance-goals-hint">${c.savingsHint}</p><div class="form-group"><label>${c.expected} (${language()==='ru'?'для будущих месяцев':'келесі айларға'})</label><input type="number" class="form-input" id="financeExpectedIncome" value="${p.expectedIncome || ''}" placeholder="0" inputmode="numeric"></div><button class="btn btn-gold" onclick="saveFinancialPlan()" style="width:100%;margin-top:8px">${c.save}</button>`);
   };
   window.saveFinancialPlan = function () { const next={expectedIncome:document.getElementById('financeExpectedIncome').value,lifeAllocated:document.getElementById('financeLifeAllocated').value}; if(num(next.lifeAllocated)+savingsTotal()>overallBalance()){toast('⚠️ '+words().allocationTooHigh);return;} savePlan(next); closeModal(); toast(words().save + ' ✓'); render(); };
+  function closeMonthSummary() {
+    const {year,month}=selectedMonth(), p=plan(), m=metrics(), variance=Math.round(m.lifeAllocated-m.spent), next=nextMonth(year,month);
+    return {year,month,p,m,variance,next};
+  }
+  window.openMonthClose = function () {
+    const {year,month,p,m,variance,next}=closeMonthSummary();
+    if(p.closed){toast(language()==='ru'?'Этот месяц уже закрыт':'Бұл ай жабылған');return;}
+    const positive=variance>=0;
+    const title=monthTitle(year,month);
+    const summary=positive ? `Сэкономлено <b>${fmt(variance)}</b>. Эта сумма уже остаётся в общем балансе.` : `Перерасход <b>${fmt(Math.abs(variance))}</b>. Он уже учтён в реальном общем балансе — повторно ничего не списываем.`;
+    const actions=positive && variance ? `<div class="month-close-actions"><button class="btn btn-ghost" onclick="closeMonth('free')">Оставить свободными</button><button class="btn btn-ghost" onclick="closeMonth('next')">В бюджет ${monthTitle(next.year,next.month)}</button>${getGoals().length?`<button class="btn btn-gold" onclick="openMonthCloseGoalPicker()">Перевести в цель</button>`:''}</div>` : `<button class="btn btn-gold" onclick="closeMonth('free')" style="width:100%">Закрыть месяц</button>`;
+    setModal(`<h3>✓ Закрыть ${title}</h3><div class="month-close-summary"><span>Выделено на жизнь</span><b>${fmt(m.lifeAllocated)}</b><span>Потрачено</span><b>${fmt(m.spent)}</b><hr><p>${summary}</p></div><p class="month-close-note">Новый месяц начнётся с нового плана. Общий баланс и накопления не обнуляются.</p>${actions}`);
+  };
+  window.openMonthCloseGoalPicker=function(){
+    const {variance}=closeMonthSummary();
+    setModal(`<h3>🎯 Куда перевести ${fmt(variance)}?</h3><p class="month-close-note">Сумма станет частью накоплений выбранной цели.</p><div class="month-goal-picker">${getGoals().map((goal,index)=>`<button onclick="closeMonth('goal',${index})"><span>${goal.name}</span><b>${fmt(goal.saved)} / ${fmt(goal.target)}</b></button>`).join('')}</div>`);
+  };
+  window.closeMonth=function(destination,goalIndex){
+    const {year,month,p,variance,next}=closeMonthSummary(); if(p.closed)return;
+    if(destination==='goal' && variance>0 && getGoals()[goalIndex]) { const goals=getGoals(); goals[goalIndex].saved=Math.min(num(goals[goalIndex].target),num(goals[goalIndex].saved)+variance); saveGoals(goals); }
+    if(destination==='next' && variance>0) { const nextPlan=planBook().months[monthKey(next.year,next.month)] || {}; savePlan({ ...nextPlan, lifeAllocated:num(nextPlan.lifeAllocated)+variance },next.year,next.month); }
+    savePlan({ ...p, closed:true, closedAt:new Date().toISOString(), closingVariance:variance, closingDestination:destination });
+    closeModal(); toast(language()==='ru'?'Месяц закрыт ✓':'Ай жабылды ✓'); render();
+  };
   window.enableFinanceNotifications = async function () {
     if (!('Notification' in window)) { toast(language()==='ru'?'На этом устройстве уведомления недоступны':'Бұл құрылғыда хабарламалар қолжетімсіз'); return; }
     const result = await Notification.requestPermission();
@@ -93,10 +132,12 @@
     localStorage.setItem('tiin_finance_notice_seen', JSON.stringify(seen));
   }
   function planCard() {
-    const c = words(), m = metrics(), reminders = reminderItems();
+    const c = words(), m = metrics(), reminders = reminderItems(), p=plan(), current=selectedMonth(), now=new Date();
     const notify = ('Notification' in window && Notification.permission === 'granted');
     const expectedText = m.expected ? fmt(m.expected) : (language()==='ru'?'Укажи доход':'Кірісті көрсетіңіз');
-    return `<section class="card finance-plan-card"><div class="finance-head"><div><h3 class="gold">🧭 ${c.plan}</h3><p>${c.balance}: <b>${fmt(m.balance)}</b></p></div><button class="btn btn-ghost btn-sm" onclick="openFinancialPlan()">${c.settings}</button></div><div class="finance-envelopes"><div><span>🏠 ${c.life}</span><b>${fmt(m.lifeAllocated)}</b><small>${c.remaining}: ${fmt(m.lifeRemaining)}</small></div><div><span>🎯 ${c.savings}</span><b>${fmt(m.savingsAllocated)}</b></div><div><span>◌ ${c.reserve}</span><b>${fmt(m.reserve)}</b></div></div><div class="finance-plan-grid"><div><span>${c.mandatory}</span><b>${fmt(m.mandatory)}</b></div><div><span>${c.spent}</span><b>${fmt(m.spent)}</b></div><div class="finance-safe"><span>${c.daily}</span><b>${fmt(m.daily)}</b><small>${fmt(m.available)} · ${m.daysLeft} ${c.days}</small></div><div><span>${c.auto}</span><b>${fmt(m.auto)}</b></div></div>${reminders.length ? `<div class="finance-reminders"><div><b>🔔 ${c.reminders}</b>${reminders.map(item=>`<p class="${item.urgent?'urgent':''}">${item.text}</p>`).join('')}</div>${!notify?`<button class="finance-notify" onclick="enableFinanceNotifications()">${c.notify}</button>`:''}</div>` : ''}</section>`;
+    const canClose=current.year<now.getFullYear() || (current.year===now.getFullYear() && current.month<=now.getMonth());
+    const closeControl=p.closed ? `<span class="month-closed">✓ ${language()==='ru'?'Месяц закрыт':'Ай жабылды'}</span>` : canClose ? `<button class="finance-close" onclick="openMonthClose()">${language()==='ru'?'Закрыть месяц':'Айды жабу'}</button>` : '';
+    return `<section class="card finance-plan-card"><div class="finance-head"><div><h3 class="gold">🧭 ${c.plan}</h3><p>${c.balance}: <b>${fmt(m.balance)}</b></p></div><div class="finance-actions"><button class="btn btn-ghost btn-sm" onclick="openFinancialPlan()">${c.settings}</button>${closeControl}</div></div><div class="finance-envelopes"><div><span>🏠 ${c.life}</span><b>${fmt(m.lifeAllocated)}</b><small>${c.remaining}: ${fmt(m.lifeRemaining)}</small></div><div><span>🎯 ${c.savings}</span><b>${fmt(m.savingsAllocated)}</b></div><div><span>◌ ${c.reserve}</span><b>${fmt(m.reserve)}</b></div></div><div class="finance-plan-grid"><div><span>${c.mandatory}</span><b>${fmt(m.mandatory)}</b></div><div><span>${c.spent}</span><b>${fmt(m.spent)}</b></div><div class="finance-safe"><span>${c.daily}</span><b>${fmt(m.daily)}</b><small>${fmt(m.available)} · ${m.daysLeft} ${c.days}</small></div><div><span>${c.auto}</span><b>${fmt(m.auto)}</b></div></div>${reminders.length ? `<div class="finance-reminders"><div><b>🔔 ${c.reminders}</b>${reminders.map(item=>`<p class="${item.urgent?'urgent':''}">${item.text}</p>`).join('')}</div>${!notify?`<button class="finance-notify" onclick="enableFinanceNotifications()">${c.notify}</button>`:''}</div>` : ''}</section>`;
   }
   function insertHome() { const el = document.getElementById('tab-transactions'); if (!el) return; el.querySelector('.finance-plan-card')?.remove(); el.insertAdjacentHTML('afterbegin', planCard()); }
   function analyticsCard() {
