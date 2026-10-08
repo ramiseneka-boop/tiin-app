@@ -11,7 +11,7 @@
   if (!document.getElementById('tiinFinanceCoachScript')) {
     const coach = document.createElement('script');
     coach.id = 'tiinFinanceCoachScript';
-    coach.src = 'src/tiin-finance-coach.js?v=3';
+    coach.src = 'src/tiin-finance-coach.js?v=4';
     coach.async = false;
     document.head.appendChild(coach);
   }
