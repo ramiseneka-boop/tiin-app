@@ -1089,7 +1089,6 @@ function renderAnalytics() {
   } else { html += t('noDataLastMonth'); }
   html += '</div></div>';
 
-
   // Line chart
   html += `<div class="card"><h3 class="gold" style="font-size:16px;margin-bottom:12px">📈 ${t('expenseHistory')}</h3><div class="chart-wrap"><canvas id="lineCanvas"></canvas></div></div>`;
 
@@ -1258,11 +1257,11 @@ function renderGoals() {
   const exp = txns.filter(tx=>tx.type==='expense').reduce((s,tx)=>s+tx.amount,0);
   const free = inc - exp;
 
-  let html = `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center">
-    <h3 class="gold" style="font-size:16px">🎯 ${t('goalTitle')}</h3>
+  let html = `<div class="card goals-overview"><div class="goals-overview-head">
+    <h3 class="gold">🎯 ${t('goalTitle')}</h3>
     <button class="btn btn-gold btn-sm" onclick="openGoalModal()">${t('addGoal')}</button>
   </div>
-  <div style="margin-top:12px;font-size:13px;color:var(--text2)">${t('freeFunds')}: <span style="color:${free>=0?'var(--green)':'var(--red)'}; font-weight:700">${fmt(free)}</span></div></div>`;
+  <div class="goals-free-funds">${t('freeFunds')}<span style="color:${free>=0?'var(--green)':'var(--red)'}">${fmt(free)}</span></div></div>`;
 
   if (!goals.length) {
     html += `<div class="empty"><div class="emoji">🎯</div><p>${t('addFirstGoal')}</p></div>`;
@@ -2044,7 +2043,7 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=40', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=41', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
@@ -2054,6 +2053,7 @@ init();
   <script src="src/tiin-multicurrency.js?v=1"></script>
 <script src="src/tiin-auth-handoff.js?v=1"></script>
 <script src="src/tiin-sync.js?v=14"></script>
+<script src="src/tiin-limits.js?v=1"></script>
 <script src="src/tiin-command-deck.js?v=7"></script>
 </body>
 </html>
