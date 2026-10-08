@@ -940,6 +940,12 @@ function switchTab(tab) {
   document.querySelectorAll('.tab').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
   document.querySelectorAll('.tab-content').forEach(el => el.classList.toggle('active', el.id === 'tab-' + tab));
   renderTab();
+  // A tab change must reveal its content immediately; otherwise mobile users think the tap did nothing.
+  requestAnimationFrame(() => {
+    const panel = document.getElementById('tab-' + tab);
+    const top = tab === 'transactions' ? 0 : Math.max(0, panel.getBoundingClientRect().top + window.scrollY - 78);
+    window.scrollTo({ top, behavior:'smooth' });
+  });
 }
 
 function renderTab() {
@@ -2043,7 +2049,7 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=41', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=42', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
