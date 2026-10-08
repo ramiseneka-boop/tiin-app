@@ -1,6 +1,6 @@
-const CACHE_NAME = 'tiin-month-close-layout-11';
+const CACHE_NAME = 'tiin-premium-polish-12';
 const APP_SHELL = [
-  './', './index.html', './manifest.json', './styles/tiin-v2.css', './styles/tiin-command-deck.css',
+  './', './index.html', './manifest.json', './styles/tiin-v2.css', './styles/tiin-command-deck.css', './styles/tiin-polish.css',
   './src/tiin-v2.js', './src/tiin-currency.js',
   './src/tiin-multicurrency.js', './src/tiin-auth-handoff.js', './src/tiin-sync.js', './src/tiin-limits.js', './src/tiin-finance-coach.js', './src/tiin-command-deck.js', './icon-192.png', './assets/tiin-balance-mountains.jpeg', './assets/tiin-balance-morning.png', './assets/tiin-balance-day.png', './assets/tiin-balance-evening.png', './icon-512.png',
   './assets/tiin-balance-mountains.jpeg'
