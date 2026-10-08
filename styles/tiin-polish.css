@@ -1,0 +1,31 @@
+/* TIIN visual system — one deliberate geometry for every screen. */
+:root{--ui-r-sm:12px;--ui-r-md:16px;--ui-r-lg:20px;--ui-border:rgba(157,167,186,.15);--ui-surface:#161F34;--ui-surface-soft:#1B2740}
+
+button{font-family:Inter,-apple-system,BlinkMacSystemFont,sans-serif}
+.card,.goal-card,.payment-card,.day-group,.planning-card,.planning-summary{border-radius:var(--ui-r-lg)!important}
+.tx-item,.planning-item{border-radius:var(--ui-r-md)!important}
+.btn{border-radius:var(--ui-r-md)!important;box-shadow:none!important;font-weight:700!important;letter-spacing:-.15px}
+.btn.btn-sm{min-height:40px!important;padding:9px 13px!important;border-radius:var(--ui-r-sm)!important;font-size:13px!important;line-height:1!important}
+.template-chip,.planning-add,.planning-back,.currency-refresh{border-radius:var(--ui-r-sm)!important}
+.templates-scroll .template-chip{min-height:42px!important}
+.actions .btn{border-radius:var(--ui-r-lg)!important}
+
+/* A single scale for financial cards: quiet labels, strong values, no decorative collisions. */
+.summary-item,.finance-envelopes>div,.finance-plan-grid>div{border-radius:var(--ui-r-md)!important}
+.summary-item .label,.finance-envelopes span,.finance-plan-grid span{letter-spacing:.02em}
+.summary-item .value,.finance-envelopes b,.finance-plan-grid b,.goal-amounts b{font-variant-numeric:tabular-nums}
+
+/* Goals: header and every amount use a predictable grid. */
+.goals-overview{padding:18px!important}.goals-overview-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.goals-overview h3{margin:0;font-size:18px;line-height:1.2}.goals-overview-head .btn{flex:0 0 auto}.goals-free-funds{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:15px;padding-top:13px;border-top:1px solid rgba(157,167,186,.1);color:var(--text2);font-size:12px}.goals-free-funds span{font-size:17px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+.goal-card{padding:18px!important;background:#161F34!important;box-shadow:0 8px 22px rgba(0,0,0,.17)!important}.goal-header{margin-bottom:13px!important}.goal-title{font-size:18px!important;letter-spacing:-.18px}.goal-header .btn-danger{width:40px;min-width:40px;height:40px;min-height:40px!important;padding:0!important;border-radius:var(--ui-r-sm)!important}
+.goal-amounts{display:grid!important;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px!important;font-size:11px!important}.goal-amounts span{display:block;padding:10px 11px;border:1px solid rgba(157,167,186,.1);border-radius:var(--ui-r-sm);background:rgba(255,255,255,.035);line-height:1.35}.goal-amounts b{display:block;margin-top:3px;color:var(--text);font-size:14px}
+.goal-bar-track{height:7px!important;border-radius:999px!important;margin:0 0 14px!important}.goal-bar-fill{border-radius:999px!important}.goal-plan-details{grid-template-columns:1fr 1fr!important;gap:8px!important;margin:0 0 14px!important}.goal-plan-details>div{min-height:72px;padding:11px!important;border-radius:var(--ui-r-md)!important}.goal-plan-details .goal-daily{min-height:0!important}.goal-actions{display:grid!important;grid-template-columns:1fr 1fr;gap:9px!important;margin-top:0!important}.goal-actions .btn{width:100%;min-height:48px!important;border-radius:var(--ui-r-md)!important;font-size:15px!important}.goal-auto-row{margin-top:14px!important;padding-top:13px!important}.goal-auto-row button{min-height:36px;padding:8px 10px!important;border-radius:var(--ui-r-sm)!important;font-size:11px!important}
+
+/* Finance plan header: two controls are a quiet, aligned action group. */
+.finance-head{align-items:center!important}.finance-head h3{font-size:18px!important}.finance-head p{font-size:12px!important}.finance-actions{min-width:132px!important;gap:7px!important}.finance-actions .btn,.finance-close,.month-closed{height:36px;min-height:36px!important;border-radius:var(--ui-r-sm)!important;padding:0 10px!important;display:flex;align-items:center;justify-content:center}.finance-actions .btn{font-size:11px!important}.finance-close{font-size:10px!important}.finance-envelopes{gap:8px!important}.finance-envelopes>div{padding:11px 9px!important}.finance-plan-grid{gap:9px!important}.finance-plan-grid>div{padding:12px!important}
+
+/* Modal sheets follow the same rhythm as the app, including monthly closing. */
+.modal{border-radius:24px 24px 0 0!important}.modal h3{letter-spacing:-.35px}.form-input{border-radius:var(--ui-r-md)!important}.month-close-heading h3{font-size:24px!important}.month-close-summary>div,.month-close-result,.month-close-action,.month-goal-picker button{border-radius:var(--ui-r-md)!important}.month-close-action{min-height:62px!important}.month-close-action-goal{box-shadow:0 8px 22px rgba(212,175,90,.18)!important}
+
+html.light .goal-card{background:#FFFCF6!important}.goals-free-funds{border-color:rgba(91,70,30,.13)}html.light .goal-amounts span{background:#FFF8E9;border-color:rgba(91,70,30,.13)}
+@media(max-width:390px){.goals-overview h3{font-size:16px}.goals-overview-head .btn{padding:9px 10px!important}.goal-card{padding:16px!important}.goal-amounts{gap:6px}.goal-amounts span{padding:9px}.finance-actions{min-width:118px!important}.finance-envelopes>div{padding:9px 6px!important}}
