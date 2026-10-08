@@ -32,12 +32,20 @@
   }
 
   function injectStyles() {
-    if (document.getElementById(STYLE_ID)) return;
-    var link = document.createElement('link');
-    link.id = STYLE_ID;
-    link.rel = 'stylesheet';
-    link.href = 'styles/tiin-command-deck.css?v=7';
-    document.head.appendChild(link);
+    if (!document.getElementById(STYLE_ID)) {
+      var link = document.createElement('link');
+      link.id = STYLE_ID;
+      link.rel = 'stylesheet';
+      link.href = 'styles/tiin-command-deck.css?v=8';
+      document.head.appendChild(link);
+    }
+    if (!document.getElementById('tiinPolishStyles')) {
+      const polish = document.createElement('link');
+      polish.id = 'tiinPolishStyles';
+      polish.rel = 'stylesheet';
+      polish.href = 'styles/tiin-polish.css?v=1';
+      document.head.appendChild(polish);
+    }
   }
 
   function commandDate() {
