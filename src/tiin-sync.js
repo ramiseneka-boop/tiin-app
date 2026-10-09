@@ -11,7 +11,7 @@
   };
   const DATA_KEYS = new Set([
     'goals', 'templates', 'recurring', 'budgets', 'spending_limits_v2', 'financial_plan', 'payday',
-    'payment_items', 'custom_categories', 'planning_lists', 'lang', 'theme'
+    'payment_items', 'custom_categories', 'planning_lists', 'tiin_deals_v1', 'lang', 'theme'
   ]);
   const DATA_KEY_RE = /^(txns_\d{4}_\d{1,2}|payment_status_\d{4}_\d{1,2}|tiin_balance_anchor_v2_(all|personal|business))$/;
   const state = { client: null, clientPromise: null, user: null, timer: null, syncing: false, applyingCloud: false, pollingAuth: false };
