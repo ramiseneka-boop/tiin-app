@@ -15,6 +15,8 @@
   function id() { return 'deal-' + Date.now() + '-' + Math.random().toString(36).slice(2,7); }
   function n(v) { return Math.max(0, Number(v) || 0); }
   function fixedCost(d) { return n(d.cost) + n(d.labour) + n(d.other); }
+  // Contract amount includes VAT. All percentage deductions use the amount left after VAT.
+  function revenueWithoutVat(d) { return Math.max(0, n(d.amount) - vat(d)); }
   function deductions(d) { return [
     { label:tx('tax'), amount:tax(d), category:'taxes' },
     { label:tx('vat'), amount:vat(d), category:'taxes' },
@@ -23,10 +25,10 @@
     { label:tx('labour'), amount:n(d.labour), category:'other_exp' },
     { label:tx('other'), amount:n(d.other), category:'other_exp' }
   ].filter(row => row.amount > 0); }
-  function tax(d) { return n(d.amount) * n(d.taxRate) / 100; }
   function vat(d) { const rate=n(d.vatRate); return rate ? n(d.amount) * rate / (100 + rate) : 0; }
-  function commission(d) { return n(d.amount) * n(d.commissionRate) / 100; }
-  function net(d) { return n(d.amount) - tax(d) - vat(d) - commission(d) - fixedCost(d); }
+  function tax(d) { return revenueWithoutVat(d) * n(d.taxRate) / 100; }
+  function commission(d) { return revenueWithoutVat(d) * n(d.commissionRate) / 100; }
+  function net(d) { return revenueWithoutVat(d) - tax(d) - commission(d) - fixedCost(d); }
   function paid(d) { return (d.payments || []).reduce((s,p) => s + n(p.amount), 0); }
   function remaining(d) { return Math.max(0, n(d.amount) - paid(d)); }
   function status(d) { return paid(d) >= n(d.amount) && n(d.amount) > 0 ? 'paid' : d.status || 'lead'; }
