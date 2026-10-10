@@ -973,11 +973,12 @@ function renderTransactions() {
 
   if (!txns.length) { el.innerHTML = filterHtml + `<div class="empty"><div class="emoji">📭</div><p>${t('noTransactions')}</p></div>`; return; }
   const grouped = {};
-  txns.sort((a,b) => a.date.localeCompare(b.date) || a.id - b.id);
+  // Recent days first: new activity is always visible without scrolling through the month.
+  txns.sort((a,b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
   txns.forEach(tx => { if (!grouped[tx.date]) grouped[tx.date] = []; grouped[tx.date].push(tx); });
   let html = filterHtml;
   const allCats = [...EXPENSE_CATS, ...INCOME_CATS];
-  for (const date of Object.keys(grouped).sort()) {
+  for (const date of Object.keys(grouped).sort().reverse()) {
     const d = new Date(date + 'T00:00:00');
     const dayStr = d.toLocaleDateString(currentLang==='kz'?'kk-KZ':'ru-RU', {day:'numeric',month:'long',weekday:'short'});
     const today = new Date(); today.setHours(0,0,0,0);
@@ -2049,7 +2050,7 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=51', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=52', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
