@@ -11,7 +11,7 @@
   if (!document.getElementById('tiinFinanceCoachScript')) {
     const coach = document.createElement('script');
     coach.id = 'tiinFinanceCoachScript';
-    coach.src = 'src/tiin-finance-coach.js?v=9';
+    coach.src = 'src/tiin-finance-coach.js?v=10';
     coach.async = false;
     document.head.appendChild(coach);
   }
@@ -43,7 +43,7 @@
       const polish = document.createElement('link');
       polish.id = 'tiinPolishStyles';
       polish.rel = 'stylesheet';
-    polish.href = 'styles/tiin-polish.css?v=8';
+    polish.href = 'styles/tiin-polish.css?v=9';
       document.head.appendChild(polish);
     }
   }
