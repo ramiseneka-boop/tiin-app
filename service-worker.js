@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tiin-navigation-15';
+const CACHE_NAME = 'tiin-navigation-16';
 const APP_SHELL = [
   './', './index.html', './refresh.html', './manifest.json', './styles/tiin-v2.css', './styles/tiin-command-deck.css', './styles/tiin-polish.css',
   './src/tiin-v2.js', './src/tiin-currency.js',
