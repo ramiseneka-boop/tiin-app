@@ -137,7 +137,8 @@
   };
 
   const nativeRenderAnalytics = window.renderAnalytics;
-  window.renderAnalytics = function () { nativeRenderAnalytics(); };\n  // Limits are configured from Settings; Analytics contains outcomes only.
+  window.renderAnalytics = function () { nativeRenderAnalytics(); };
+  // Limits are configured from Settings; Analytics contains outcomes only.
   const nativeRenderTransactions = window.renderTransactions;
   window.renderTransactions = function () { nativeRenderTransactions(); flagVisibleTransactions(); };
   const nativeSaveTx = window.saveTx;
