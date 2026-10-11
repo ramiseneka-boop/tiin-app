@@ -805,6 +805,8 @@ function checkRecurring(forYear, forMonth) {
   const txns = getTxns(y, m);
   let changed = false;
   recurring.forEach(r => {
+    // Migrated schedules are confirmed manually from the unified Payments screen.
+    if (r.manual) return;
     // Skip if startMonth is set and current month is before it
     if (r.startMonth) {
       const [sy, sm] = r.startMonth.split('-').map(Number);
@@ -2063,6 +2065,6 @@ init();
 <script id="tiinLimitsScript" src="src/tiin-limits.js?v=2"></script>
 <script src="src/tiin-command-deck.js?v=13"></script>
 <script src="src/tiin-deals.js?v=6"></script>
-<script src="src/tiin-settings.js?v=1"></script>
+<script src="src/tiin-settings.js?v=2"></script>
 </body>
 </html>
