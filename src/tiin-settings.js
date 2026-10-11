@@ -208,8 +208,10 @@
     const automatic=h>=5&&h<11?'morning':h>=11&&h<17?'day':h>=17&&h<21?'evening':'night';
     const choice=p.daypart==='auto'?automatic:p.daypart;
     document.body.dataset.tiinDaypart=choice;
-    document.querySelectorAll('.balance-hero').forEach(hero=>{ hero.dataset.daypart=choice; hero.setAttribute('data-daypart',choice); });
+    document.querySelectorAll('.balance-hero').forEach(hero=>{ const changed=hero.dataset.daypart!==choice; hero.dataset.daypart=choice; hero.setAttribute('data-daypart',choice); if(changed){hero.classList.remove('tiin-daypart-transition');void hero.offsetWidth;hero.classList.add('tiin-daypart-transition');setTimeout(()=>hero.classList.remove('tiin-daypart-transition'),650);} });
   }
+  setInterval(()=>{if(prefs().daypart==='auto')applyMode();},60000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)applyMode();});
   const baseTxRender=window.renderTransactions;
   window.renderTransactions=function(){baseTxRender();onboarding();applyMode();};
   const baseAnalytics=window.renderAnalytics;
