@@ -102,6 +102,7 @@
       goals: copy().goals,
       payments: copy().payments,
       payment_tracker: copy().more,
+      settings: window.currentLang === 'kz' ? 'Баптаулар' : 'Настройки',
       planning: copy().lists
     };
     document.querySelectorAll('.tabs .tab').forEach(function (tab) {
