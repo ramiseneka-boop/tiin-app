@@ -4,7 +4,7 @@
   if (!document.getElementById('tiinLimitsScript')) {
     const limits = document.createElement('script');
     limits.id = 'tiinLimitsScript';
-    limits.src = 'src/tiin-limits.js?v=1';
+    limits.src = 'src/tiin-limits.js?v=2';
     limits.async = false;
     document.head.appendChild(limits);
   }
