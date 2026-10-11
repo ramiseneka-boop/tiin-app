@@ -32,8 +32,9 @@
     const grouped = txns.reduce((groups, tx) => ((groups[tx.date] ||= []).push(tx), groups), {});
     const allCats = [...EXPENSE_CATS, ...INCOME_CATS];
     let html = filters;
-    Object.keys(grouped).sort().forEach(date => {
-      const items = grouped[date].sort((a, b) => Number(a.id) - Number(b.id));
+    // Newest dates and latest entries first, so current activity stays at the top.
+    Object.keys(grouped).sort().reverse().forEach(date => {
+      const items = grouped[date].sort((a, b) => String(b.id).localeCompare(String(a.id)));
       const d = new Date(date + 'T00:00:00');
       const label = d.toLocaleDateString(currentLang === 'kz' ? 'kk-KZ' : 'ru-RU', { weekday:'short', day:'numeric', month:'long' });
       const totals = dayTotals(items);
