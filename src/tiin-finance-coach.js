@@ -5,6 +5,7 @@
   const today = () => localDateString();
   const num = v => Math.max(0, Number(v) || 0);
   const language = () => window.currentLang === 'kz' ? 'kz' : window.currentLang === 'en' ? 'en' : 'ru';
+  const tr = (ru, kz, en) => window.tiinText ? window.tiinText(ru, kz, en) : ru;
   const words = () => language() === 'kz' ? {
     plan:'Айлық қаржы жоспары', settings:'Жоспарды баптау', expected:'Күтілетін кіріс', mandatory:'Міндетті төлемдер', auto:'Автожинақ мақсаттарда', spent:'Жұмсалды', available:'Шығынға қалды', daily:'Күніне қауіпсіз сома', days:'күн қалды', reminders:'Назар аудару керек', notify:'Хабарламаларды қосу', notificationsOn:'Хабарламалар қосулы', save:'Сақтау', insight:'Ақша қайда кетіп жатыр', noData:'Қорытынды үшін шығындар қосыңыз', top:'Ең көп шығын', saving:'Осы санатты 20% қысқартсаңыз, сақтайсыз', compared:'Өткен аймен салыстырғанда', more:'көбірек', less:'азырақ', autoSave:'Автожинақ', percent:'Әр кірістен пайыз', allocated:'мақсатқа аударылды', due:'жақында төленеді', limit:'күндік лимиттің 80%-ы жұмсалды', life:'Өмірге арналған бюджет', savings:'Мақсаттардағы жинақ', reserve:'Бос резерв', allocationHelp:'Жалпы баланстан өмірге арналған соманы бөліңіз. Жинақты «Мақсаттарда» басқарыңыз.', balance:'Жалпы баланс', freeBalance:'Бос баланс', remaining:'Қалды', allocationTooHigh:'Бөлу жалпы баланстан асады', openGoals:'Мақсаттарды ашу', savingsHint:'Жинақ пен автожинақ әр мақсатта бапталады'
   } : language() === 'en' ? {
@@ -39,7 +40,7 @@
   function savingsTotal() { return getGoals().reduce((total, goal) => total + num(goal.saved), 0); }
   function migrateLegacySavings() {
     const p=plan(), legacy=num(p.savingsAllocated); if(!legacy) return;
-    const goals=getGoals(); goals.push({ name:language()==='ru'?'Накопления':'Жинақ', target:Math.max(legacy*2,1000000), saved:legacy, deadline:null, autoPercent:0, autoTxIds:[] });
+    const goals=getGoals(); goals.push({ name:tr('Накопления','Жинақ','Savings'), target:Math.max(legacy*2,1000000), saved:legacy, deadline:null, autoPercent:0, autoTxIds:[] });
     saveGoals(goals); savePlan({ expectedIncome:p.expectedIncome, lifeAllocated:p.lifeAllocated });
   }
   function overallBalance() { const value=document.getElementById('totalBalance'); return num(value?.dataset.financeGrossBalance || (document.querySelector('.balance-hero .value.balance')?.textContent || value?.textContent || '0').replace(/[^0-9.,-]/g, '').replace(/,/g, '')); }
@@ -76,7 +77,7 @@
   window.openFinancialPlan = function () {
     const p = plan(), c = words();
     const balance=overallBalance(), saved=savingsTotal();
-    setModal(`<h3>🧭 ${c.plan}</h3><p style="font-size:13px;color:var(--text2);line-height:1.5">${c.allocationHelp}</p><div class="finance-modal-balance">${c.balance}: <b>${fmt(balance)}</b><br><span>${c.savings}: <b>${fmt(saved)}</b></span></div><div class="form-group"><label>${c.life}</label><input type="number" class="form-input big" id="financeLifeAllocated" value="${p.lifeAllocated || ''}" placeholder="0" inputmode="numeric"></div><button class="finance-goals-button" onclick="closeModal();switchTab('goals')">🎯 ${c.openGoals}</button><p class="finance-goals-hint">${c.savingsHint}</p><div class="form-group"><label>${c.expected} (${language()==='ru'?'для будущих месяцев':'келесі айларға'})</label><input type="number" class="form-input" id="financeExpectedIncome" value="${p.expectedIncome || ''}" placeholder="0" inputmode="numeric"></div><button class="btn btn-gold" onclick="saveFinancialPlan()" style="width:100%;margin-top:8px">${c.save}</button>`);
+    setModal(`<h3>🧭 ${c.plan}</h3><p style="font-size:13px;color:var(--text2);line-height:1.5">${c.allocationHelp}</p><div class="finance-modal-balance">${c.balance}: <b>${fmt(balance)}</b><br><span>${c.savings}: <b>${fmt(saved)}</b></span></div><div class="form-group"><label>${c.life}</label><input type="number" class="form-input big" id="financeLifeAllocated" value="${p.lifeAllocated || ''}" placeholder="0" inputmode="numeric"></div><button class="finance-goals-button" onclick="closeModal();switchTab('goals')">🎯 ${c.openGoals}</button><p class="finance-goals-hint">${c.savingsHint}</p><div class="form-group"><label>${c.expected} (${tr('для будущих месяцев','келесі айларға','for future months')})</label><input type="number" class="form-input" id="financeExpectedIncome" value="${p.expectedIncome || ''}" placeholder="0" inputmode="numeric"></div><button class="btn btn-gold" onclick="saveFinancialPlan()" style="width:100%;margin-top:8px">${c.save}</button>`);
   };
   window.saveFinancialPlan = function () { const next={expectedIncome:document.getElementById('financeExpectedIncome').value,lifeAllocated:document.getElementById('financeLifeAllocated').value}; if(num(next.lifeAllocated)+savingsTotal()>overallBalance()){toast('⚠️ '+words().allocationTooHigh);return;} savePlan(next); closeModal(); toast(words().save + ' ✓'); render(); };
   function closeMonthSummary() {
@@ -85,7 +86,7 @@
   }
   window.openMonthClose = function () {
     const {year,month,p,m,variance,next}=closeMonthSummary();
-    if(p.closed){toast(language()==='ru'?'Этот месяц уже закрыт':'Бұл ай жабылған');return;}
+    if(p.closed){toast(tr('Этот месяц уже закрыт','Бұл ай жабылған','This month is already closed'));return;}
     const positive=variance>=0;
     const title=monthTitle(year,month);
     const summary=positive ? `Сэкономлено <b>${fmt(variance)}</b>. Эта сумма уже остаётся в общем балансе.` : `Перерасход <b>${fmt(Math.abs(variance))}</b>. Он уже учтён в реальном общем балансе — повторно ничего не списываем.`;
@@ -101,12 +102,12 @@
     if(destination==='goal' && variance>0 && getGoals()[goalIndex]) { const goals=getGoals(); goals[goalIndex].saved=Math.min(num(goals[goalIndex].target),num(goals[goalIndex].saved)+variance); saveGoals(goals); }
     if(destination==='next' && variance>0) { const nextPlan=planBook().months[monthKey(next.year,next.month)] || {}; savePlan({ ...nextPlan, lifeAllocated:num(nextPlan.lifeAllocated)+variance },next.year,next.month); }
     savePlan({ ...p, closed:true, closedAt:new Date().toISOString(), closingVariance:variance, closingDestination:destination });
-    closeModal(); toast(language()==='ru'?'Месяц закрыт ✓':'Ай жабылды ✓'); render();
+    closeModal(); toast(tr('Месяц закрыт ✓','Ай жабылды ✓','Month closed ✓')); render();
   };
   window.enableFinanceNotifications = async function () {
-    if (!('Notification' in window)) { toast(language()==='ru'?'На этом устройстве уведомления недоступны':'Бұл құрылғыда хабарламалар қолжетімсіз'); return; }
+    if (!('Notification' in window)) { toast(tr('На этом устройстве уведомления недоступны','Бұл құрылғыда хабарламалар қолжетімсіз','Notifications are unavailable on this device')); return; }
     const result = await Notification.requestPermission();
-    toast(result === 'granted' ? words().notificationsOn + ' ✓' : (language()==='ru'?'Разрешение не выдано':'Рұқсат берілмеді'));
+    toast(result === 'granted' ? words().notificationsOn + ' ✓' : tr('Разрешение не выдано','Рұқсат берілмеді','Permission was not granted'));
     render();
   };
   function reminderItems() {
@@ -136,9 +137,9 @@
   function planCard() {
     const c = words(), m = metrics(), reminders = reminderItems(), p=plan(), current=selectedMonth(), now=new Date();
     const notify = ('Notification' in window && Notification.permission === 'granted');
-    const expectedText = m.expected ? fmt(m.expected) : (language()==='ru'?'Укажи доход':'Кірісті көрсетіңіз');
+    const expectedText = m.expected ? fmt(m.expected) : tr('Укажи доход','Кірісті көрсетіңіз','Enter income');
     const canClose=current.year<now.getFullYear() || (current.year===now.getFullYear() && current.month<=now.getMonth());
-    const closeControl=p.closed ? `<span class="month-closed">✓ ${language()==='ru'?'Месяц закрыт':'Ай жабылды'}</span>` : canClose ? `<button class="finance-close" onclick="openMonthClose()">${language()==='ru'?'Закрыть месяц':'Айды жабу'}</button>` : '';
+    const closeControl=p.closed ? `<span class="month-closed">✓ ${tr('Месяц закрыт','Ай жабылды','Month closed')}</span>` : canClose ? `<button class="finance-close" onclick="openMonthClose()">${tr('Закрыть месяц','Айды жабу','Close month')}</button>` : '';
     return `<section class="card finance-plan-card"><div class="finance-head"><div><h3 class="gold">🧭 ${c.plan}</h3><p>${c.balance}: <b>${fmt(m.balance)}</b></p></div><div class="finance-actions"><button class="btn btn-ghost btn-sm" onclick="openFinancialPlan()">${c.settings}</button>${closeControl}</div></div><div class="finance-envelopes"><div><span>🏠 ${c.life}</span><b>${fmt(m.lifeAllocated)}</b><small>${c.remaining}: ${fmt(m.lifeRemaining)}</small></div><div><span>🎯 ${c.savings}</span><b>${fmt(m.savingsAllocated)}</b></div><div><span>◌ ${c.reserve}</span><b>${fmt(m.reserve)}</b></div></div><div class="finance-plan-grid"><div><span>${c.mandatory}</span><b>${fmt(m.mandatory)}</b></div><div><span>${c.spent}</span><b>${fmt(m.spent)}</b></div><div class="finance-safe"><span>${c.daily}</span><b>${fmt(m.daily)}</b><small>${fmt(m.available)} · ${m.daysLeft} ${c.days}</small></div><div><span>${c.auto}</span><b>${fmt(m.auto)}</b></div></div>${reminders.length ? `<div class="finance-reminders"><div><b>🔔 ${c.reminders}</b>${reminders.map(item=>`<p class="${item.urgent?'urgent':''}">${item.text}</p>`).join('')}</div>${!notify?`<button class="finance-notify" onclick="enableFinanceNotifications()">${c.notify}</button>`:''}</div>` : ''}</section>`;
   }
   function insertHome() { const el = document.getElementById('tab-transactions'); if (!el) return; el.querySelector('.finance-plan-card')?.remove(); el.insertAdjacentHTML('afterbegin', planCard()); }
@@ -155,7 +156,7 @@
   function insertAnalytics() { const el = document.getElementById('tab-analytics'); if (!el) return; el.querySelector('.finance-insight-card')?.remove(); el.insertAdjacentHTML('afterbegin', analyticsCard()); }
   window.openGoalAutomation = function (index) {
     const goal = getGoals()[index], c = words(); if (!goal) return;
-    setModal(`<h3>🎯 ${goal.name}</h3><div class="form-group"><label>${c.percent}</label><input type="number" class="form-input big" id="goalAutoPercent" min="0" max="100" value="${num(goal.autoPercent) || ''}" placeholder="0" inputmode="numeric"></div><p style="font-size:12px;color:var(--text2);line-height:1.45">${language()==='ru'?'После каждого нового дохода TIIN автоматически добавит эту долю в цель.':'Әр жаңа кірістен кейін TIIN осы үлесті мақсатқа автоматты түрде қосады.'}</p><button class="btn btn-gold" onclick="saveGoalAutomation(${index})" style="width:100%;margin-top:8px">${c.save}</button>`);
+    setModal(`<h3>🎯 ${goal.name}</h3><div class="form-group"><label>${c.percent}</label><input type="number" class="form-input big" id="goalAutoPercent" min="0" max="100" value="${num(goal.autoPercent) || ''}" placeholder="0" inputmode="numeric"></div><p style="font-size:12px;color:var(--text2);line-height:1.45">${tr('После каждого нового дохода TIIN автоматически добавит эту долю в цель.','Әр жаңа кірістен кейін TIIN осы үлесті мақсатқа автоматты түрде қосады.','After each new income, TIIN automatically adds this share to the goal.')}</p><button class="btn btn-gold" onclick="saveGoalAutomation(${index})" style="width:100%;margin-top:8px">${c.save}</button>`);
   };
   window.saveGoalAutomation = function (index) { const goals=getGoals(), rate=Math.min(100,num(document.getElementById('goalAutoPercent').value)); if(!goals[index])return; goals[index].autoPercent=rate; saveGoals(goals); closeModal(); toast(words().autoSave + ' ✓'); render(); };
   function decorateGoals() { const el=document.getElementById('tab-goals'), goals=getGoals(); if(!el) return; el.querySelectorAll('.goal-card').forEach((card,index)=>{ const goal=goals[index]; if(!goal || card.querySelector('.goal-auto-row')) return; const rate=num(goal.autoPercent); card.insertAdjacentHTML('beforeend', `<div class="goal-auto-row"><span>⚡ ${words().autoSave}: <b>${rate ? rate+'%' : '—'}</b></span><button onclick="openGoalAutomation(${index})">${rate ? words().settings : words().autoSave}</button></div>`); }); }
@@ -164,38 +165,38 @@
     if (!goal.deadline) return { left, days:0, daily:0, date:'' };
     const end=new Date(goal.deadline+'T23:59:59'), now=new Date(); now.setHours(0,0,0,0);
     const days=Math.max(0,Math.ceil((end-now)/86400000));
-    return { left, days, daily:days ? left/days : left, date:new Intl.DateTimeFormat(language()==='ru'?'ru-RU':'kk-KZ',{day:'numeric',month:'long',year:'numeric'}).format(end) };
+    return { left, days, daily:days ? left/days : left, date:new Intl.DateTimeFormat(language()==='ru'?'ru-RU':language()==='en'?'en-GB':'kk-KZ',{day:'numeric',month:'long',year:'numeric'}).format(end) };
   }
   function enhanceGoalCards() {
     const el=document.getElementById('tab-goals'), goals=getGoals(), c=words(); if(!el) return;
     el.querySelectorAll('.goal-card').forEach((card,index)=>{
       const goal=goals[index]; if(!goal) return;
       const plan=goalPlan(goal), old=card.querySelector('.goal-amounts');
-      if(old) old.innerHTML=`<span>Цель: <b>${fmt(goal.target)}</b></span><span>Отложено: <b>${fmt(goal.saved)}</b></span>`;
+      if(old) old.innerHTML=`<span>${tr('Цель','Мақсат','Goal')}: <b>${fmt(goal.target)}</b></span><span>${tr('Отложено','Жиналған','Saved')}: <b>${fmt(goal.saved)}</b></span>`;
       card.querySelector('.goal-eta')?.remove();
       card.querySelector('.goal-plan-details')?.remove();
       const progress=card.querySelector('.goal-bar-track');
-      if(progress) progress.insertAdjacentHTML('afterend', `<div class="goal-plan-details"><div><span>Осталось накопить</span><b>${fmt(plan.left)}</b></div>${plan.date ? `<div><span>Срок</span><b>до ${plan.date}</b></div><div class="goal-daily"><span>Чтобы успеть</span><b>${fmt(plan.daily)} / день</b><small>${plan.days} дн.</small></div>` : `<div class="goal-daily missing"><span>Срок не задан</span><b>Настрой план</b></div>`}</div>`);
-      const row=card.querySelector('.goal-auto-row'); if(row) row.querySelector('button').textContent='Настроить план';
+      if(progress) progress.insertAdjacentHTML('afterend', `<div class="goal-plan-details"><div><span>${tr('Осталось накопить','Жинауға қалды','Still to save')}</span><b>${fmt(plan.left)}</b></div>${plan.date ? `<div><span>${tr('Срок','Мерзім','Deadline')}</span><b>${tr('до ','дейін ','by ')}${plan.date}</b></div><div class="goal-daily"><span>${tr('Чтобы успеть','Үлгеру үшін','To stay on track')}</span><b>${fmt(plan.daily)} / ${tr('день','күн','day')}</b><small>${plan.days} ${tr('дн.','күн','days')}</small></div>` : `<div class="goal-daily missing"><span>${tr('Срок не задан','Мерзім көрсетілмеген','No deadline set')}</span><b>${tr('Настроить план','Жоспарды баптау','Set up plan')}</b></div>`}</div>`);
+      const row=card.querySelector('.goal-auto-row'); if(row) row.querySelector('button').textContent=tr('Настроить план','Жоспарды баптау','Set up plan');
     });
   }
   window.openGoalModal=function(){
     const c=words();
-    setModal(`<h3>🎯 Новая цель накоплений</h3><p class="goal-form-note">На что копим, сколько нужно и к какой дате?</p><div class="form-group"><label>Название цели</label><input type="text" class="form-input" id="goalName" placeholder="Например, автомобиль, ипотека или резерв"></div><div class="form-group"><label>Нужно накопить</label><input type="number" class="form-input big" id="goalTarget" placeholder="0" inputmode="numeric"></div><div class="form-group"><label>Дата завершения</label><input type="date" class="form-input" id="goalDeadline"></div><div class="form-group"><label>${c.percent}</label><input type="number" class="form-input" id="goalAutoPercent" min="0" max="100" placeholder="0" inputmode="numeric"></div><button class="btn btn-gold" onclick="saveGoal()" style="width:100%;margin-top:8px">Создать цель</button>`);
+    setModal(`<h3>🎯 ${tr('Новая цель накоплений','Жаңа жинақ мақсаты','New savings goal')}</h3><p class="goal-form-note">${tr('На что копим, сколько нужно и к какой дате?','Неге жинаймыз, қанша керек және қай күнге?','What are you saving for, how much, and by when?')}</p><div class="form-group"><label>${tr('Название цели','Мақсат атауы','Goal name')}</label><input type="text" class="form-input" id="goalName" placeholder="${tr('Например, автомобиль, ипотека или резерв','Мысалы, көлік, ипотека немесе қор','For example, a car, mortgage or reserve')}"></div><div class="form-group"><label>${tr('Нужно накопить','Жинау керек','Target amount')}</label><input type="number" class="form-input big" id="goalTarget" placeholder="0" inputmode="numeric"></div><div class="form-group"><label>${tr('Дата завершения','Аяқталу күні','Target date')}</label><input type="date" class="form-input" id="goalDeadline"></div><div class="form-group"><label>${c.percent}</label><input type="number" class="form-input" id="goalAutoPercent" min="0" max="100" placeholder="0" inputmode="numeric"></div><button class="btn btn-gold" onclick="saveGoal()" style="width:100%;margin-top:8px">${tr('Создать цель','Мақсат құру','Create goal')}</button>`);
   };
   window.saveGoal=function(){
     const name=document.getElementById('goalName').value.trim(), target=num(document.getElementById('goalTarget').value), deadline=document.getElementById('goalDeadline').value, rate=Math.min(100,num(document.getElementById('goalAutoPercent').value));
-    if(!name){toast(language()==='ru'?'Напиши, на что копим':'Не үшін жинайтыныңызды жазыңыз');return;} if(!target){toast(language()==='ru'?'Укажи сумму цели':'Мақсат сомасын көрсетіңіз');return;}
-    const goals=getGoals(); goals.push({name,target,saved:0,deadline:deadline||null,autoPercent:rate,autoTxIds:[]}); saveGoals(goals); closeModal(); toast(language()==='ru'?'Цель создана ✓':'Мақсат құрылды ✓'); render();
+    if(!name){toast(tr('Напиши, на что копим','Неге жинайтыныңызды жазыңыз','Enter what you are saving for'));return;} if(!target){toast(tr('Укажи сумму цели','Мақсат сомасын көрсетіңіз','Enter the goal amount'));return;}
+    const goals=getGoals(); goals.push({name,target,saved:0,deadline:deadline||null,autoPercent:rate,autoTxIds:[]}); saveGoals(goals); closeModal(); toast(tr('Цель создана ✓','Мақсат құрылды ✓','Goal created ✓')); render();
   };
   window.openGoalAutomation=function(index){
     const goal=getGoals()[index]; if(!goal) return; const p=goalPlan(goal), c=words();
-    setModal(`<h3>🎯 План цели</h3><div class="form-group"><label>На что копим</label><input type="text" class="form-input" id="editGoalName" value="${goal.name}"></div><div class="form-group"><label>Итоговая сумма</label><input type="number" class="form-input big" id="editGoalTarget" value="${num(goal.target)}" inputmode="numeric"></div><div class="form-group"><label>Дата завершения</label><input type="date" class="form-input" id="editGoalDeadline" value="${goal.deadline||''}"></div><div class="form-group"><label>${c.percent}</label><input type="number" class="form-input" id="editGoalAutoPercent" min="0" max="100" value="${num(goal.autoPercent)||''}" placeholder="0" inputmode="numeric"></div><div class="goal-plan-preview">Уже отложено: <b>${fmt(goal.saved)}</b><br>Осталось: <b>${fmt(p.left)}</b>${p.days?`<br>Нужно откладывать: <b>${fmt(p.daily)} в день</b>`:''}</div><button class="btn btn-gold" onclick="saveGoalAutomation(${index})" style="width:100%;margin-top:8px">${c.save}</button>`);
+    setModal(`<h3>🎯 ${tr('План цели','Мақсат жоспары','Goal plan')}</h3><div class="form-group"><label>${tr('На что копим','Неге жинаймыз','What are you saving for')}</label><input type="text" class="form-input" id="editGoalName" value="${goal.name}"></div><div class="form-group"><label>${tr('Итоговая сумма','Мақсат сомасы','Target amount')}</label><input type="number" class="form-input big" id="editGoalTarget" value="${num(goal.target)}" inputmode="numeric"></div><div class="form-group"><label>${tr('Дата завершения','Аяқталу күні','Target date')}</label><input type="date" class="form-input" id="editGoalDeadline" value="${goal.deadline||''}"></div><div class="form-group"><label>${c.percent}</label><input type="number" class="form-input" id="editGoalAutoPercent" min="0" max="100" value="${num(goal.autoPercent)||''}" placeholder="0" inputmode="numeric"></div><div class="goal-plan-preview">${tr('Уже отложено','Жиналған','Already saved')}: <b>${fmt(goal.saved)}</b><br>${tr('Осталось','Қалды','Remaining')}: <b>${fmt(p.left)}</b>${p.days?`<br>${tr('Нужно откладывать','Күніне жинау керек','Need to save')}: <b>${fmt(p.daily)} ${tr('в день','күніне','per day')}</b>`:''}</div><button class="btn btn-gold" onclick="saveGoalAutomation(${index})" style="width:100%;margin-top:8px">${c.save}</button>`);
   };
   window.saveGoalAutomation=function(index){
     const goals=getGoals(), goal=goals[index]; if(!goal)return;
     const name=document.getElementById('editGoalName').value.trim(), target=num(document.getElementById('editGoalTarget').value), deadline=document.getElementById('editGoalDeadline').value, rate=Math.min(100,num(document.getElementById('editGoalAutoPercent').value));
-    if(!name||!target){toast(language()==='ru'?'Заполни название и сумму':'Атауы мен сомасын толтырыңыз');return;}
+    if(!name||!target){toast(tr('Заполни название и сумму','Атауы мен сомасын толтырыңыз','Enter a name and amount'));return;}
     Object.assign(goal,{name,target,deadline:deadline||null,autoPercent:rate}); saveGoals(goals); closeModal(); toast(words().save+' ✓'); render();
   };
   function allocateIncome(transaction) {
