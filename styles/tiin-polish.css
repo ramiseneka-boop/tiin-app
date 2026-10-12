@@ -67,3 +67,46 @@ html:not(.light) .balance-hero[data-daypart="evening"]{
 }
 @keyframes tiinHeroFade{from{opacity:.72;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
 .balance-hero.tiin-daypart-transition{animation:tiinHeroFade .55s ease both!important}
+
+
+/* Final isolated artwork layer: avoids legacy hero backgrounds masking the image. */
+html:not(.light) .balance-hero{
+  position:relative!important;
+  isolation:isolate;
+  overflow:hidden!important;
+  background:#09111F!important;
+  background-image:none!important;
+}
+html:not(.light) .balance-hero::before{
+  content:''!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  display:block!important;
+  border-radius:inherit!important;
+  background-repeat:no-repeat!important;
+  background-size:cover!important;
+  background-position:center center!important;
+  opacity:1!important;
+  transform:scale(1.01);
+  transition:opacity .55s ease!important;
+}
+html:not(.light) .balance-hero::after{
+  content:''!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:1!important;
+  height:auto!important;
+  background:linear-gradient(90deg,rgba(5,12,23,.48) 0%,rgba(7,18,31,.20) 58%,rgba(7,18,31,.05) 100%)!important;
+  pointer-events:none!important;
+}
+html:not(.light) .balance-hero .balance-hero-top,
+html:not(.light) .balance-hero .value,
+html:not(.light) .balance-hero .balance-hero-period{
+  position:relative!important;
+  z-index:2!important;
+}
+html:not(.light) .balance-hero[data-daypart="morning"]::before{background-image:url('../assets/tiin-balance-morning.png')!important}
+html:not(.light) .balance-hero[data-daypart="day"]::before{background-image:url('../assets/tiin-balance-day.png')!important}
+html:not(.light) .balance-hero[data-daypart="evening"]::before{background-image:url('../assets/tiin-balance-evening.png')!important}
+html:not(.light) .balance-hero[data-daypart="night"]::before{background-image:url('../assets/tiin-balance-mountains.jpeg')!important}
