@@ -99,15 +99,15 @@
 
   function help(topic) {
     const map = {
-      balance:['Свободный баланс','Это деньги, которые ещё не выделены на жизнь, цели и обязательства. Именно ими можно распоряжаться без нарушения плана.'],
-      plan:['Финансовый план','Помогает разложить текущие деньги: на жизнь, накопления и свободный резерв. Расходы на жизнь уменьшают только выделенную часть.'],
-      limits:['Лимиты','Лимит — это ориентир, а не блокировка. TIIN предупредит на 80% и пометит расходы сверх заданной суммы.'],
-      goals:['Цели и автокопилка','Отложенные деньги лежат в цели отдельно. Автокопилка переводит заданный процент из новых доходов в выбранную цель.'],
-      deals:['Сделки','До оплаты сделка — прогноз. После «Получить оплату» создаётся реальный доход, а чистая прибыль показывает экономику сделки.'],
-      payments:['Платежи','После «Оплатить» создаётся реальный расход, уменьшается баланс и операция попадает в историю и аналитику.']
+      balance:[tr('Свободный баланс','Бос баланс','Free balance'),tr('Это деньги, которые ещё не выделены на жизнь, цели и обязательства. Именно ими можно распоряжаться без нарушения плана.','Бұл өмірге, мақсаттарға және міндеттемелерге әлі бөлінбеген ақша. Оны жоспарды бұзбай пайдалануға болады.','Money not yet allocated to living costs, goals or obligations. You can use it without breaking your plan.')],
+      plan:[tr('Ежемесячный финансовый план','Айлық қаржы жоспары','Monthly financial plan'),tr('Помогает разложить текущие деньги: на жизнь, накопления и свободный резерв. Расходы на жизнь уменьшают только выделенную часть.','Қазіргі ақшаны өмірге, жинаққа және бос қорға бөлуге көмектеседі. Өмір шығындары тек бөлінген бөлікті азайтады.','Helps allocate current money between living costs, savings and free reserve. Living expenses reduce only the allocated share.')],
+      limits:[tr('Лимиты','Лимиттер','Limits'),tr('Лимит — это ориентир, а не блокировка. TIIN предупредит на 80% и пометит расходы сверх заданной суммы.','Лимит — тыйым емес, бағдар. TIIN 80%-да ескертеді және белгіленген сомадан асқан шығындарды көрсетеді.','A limit is guidance, not a block. TIIN warns at 80% and marks spending above the chosen amount.')],
+      goals:[tr('Цели и автокопилка','Мақсаттар және автожинақ','Goals and autosave'),tr('Отложенные деньги лежат в цели отдельно. Автокопилка переводит заданный процент из новых доходов в выбранную цель.','Жиналған ақша мақсатта бөлек сақталады. Автожинақ жаңа кірістің белгіленген пайызын таңдалған мақсатқа аударады.','Set-aside money is kept separately in a goal. Autosave transfers a chosen percentage of new income to that goal.')],
+      deals:[tr('Сделки','Мәмілелер','Deals'),tr('До оплаты сделка — прогноз. После «Получить оплату» создаётся реальный доход, а чистая прибыль показывает экономику сделки.','Төленгенге дейін мәміле — болжам. «Төлемді алу» нақты кіріс жасайды, ал таза пайда мәміле экономикасын көрсетеді.','Before payment, a deal is a forecast. “Receive payment” creates real income, while net profit shows the deal economics.')],
+      payments:[tr('Платежи','Төлемдер','Payments'),tr('После «Оплатить» создаётся реальный расход, уменьшается баланс и операция попадает в историю и аналитику.','«Төлеу» басылғаннан кейін нақты шығын жасалады, баланс азаяды және операция тарих пен аналитикаға түседі.','After “Pay”, a real expense is created, the balance decreases, and the transaction appears in history and analytics.')]
     };
     const x = map[topic] || map.balance;
-    document.getElementById('modal').innerHTML = '<div class="tiin-sheet"><div class="tiin-sheet-handle"></div><h2>💡 '+x[0]+'</h2><p>'+x[1]+'</p><button class="btn btn-gold" onclick="closeModal()">Понятно</button></div>';
+    document.getElementById('modal').innerHTML = '<div class="tiin-sheet"><div class="tiin-sheet-handle"></div><h2>💡 '+x[0]+'</h2><p>'+x[1]+'</p><button class="btn btn-gold" onclick="closeModal()">'+tr('Понятно','Түсінікті','Got it')+'</button></div>';
     document.getElementById('modalOverlay').classList.add('open');
   }
   window.openTIINTemplates = function () {
@@ -184,17 +184,17 @@
 
   function FAQ() {
     const rows=[
-      ['С чего начать','Укажи стартовый баланс, добавь первую операцию и ближайший платёж. Затем создай цель или лимит.','transactions'],
-      ['Почему общий и свободный баланс отличаются?','Общий баланс — все фактические деньги. Свободный — деньги, ещё не выделенные на жизнь, накопления и обязательства.','transactions'],
-      ['Как работают лимиты?','Они предупреждают на 80% и показывают траты сверх лимита. Деньги не блокируются.','settings'],
-      ['Как работают цели и автокопилка?','В цели лежат отдельно отложенные деньги. Процент автокопилки переводится из новых доходов.','goals'],
-      ['Как работают платежи?','Отметь платёж оплаченным — появится реальный расход в истории, аналитике и балансе.','payments'],
-      ['Как работают сделки, НДС и чистая прибыль?','До оплаты сделка — прогноз. После оплаты в баланс попадает фактическая операция, а НДС и расходы остаются в расчёте экономики.','transactions'],
-      ['Как разделить личные и бизнес-деньги?','У каждой операции, сделки и платежа выбирается личный или бизнес-кошелёк.','transactions'],
-      ['Как работает синхронизация и резервная копия?','Войди в аккаунт — TIIN синхронизирует данные. Резервная копия сохраняет их отдельно на устройстве.','settings'],
-      ['Как учитывать валюты в поездках?','Добавь валюту в настройках. TIIN покажет пересчёт в основной валюте.','settings']
+      [tr('С чего начать','Қайдан бастау керек','Where to start'),tr('Укажи стартовый баланс, добавь первую операцию и ближайший платёж. Затем создай цель или лимит.','Бастапқы балансты көрсетіңіз, бірінші операцияны және жақын төлемді қосыңыз. Кейін мақсат не лимит жасаңыз.','Enter your starting balance, add your first transaction and upcoming payment. Then create a goal or limit.'),'transactions'],
+      [tr('Почему общий и свободный баланс отличаются?','Неге жалпы және бос баланс әртүрлі?','Why are total and free balance different?'),tr('Общий баланс — все фактические деньги. Свободный — деньги, ещё не выделенные на жизнь, накопления и обязательства.','Жалпы баланс — барлық нақты ақша. Бос баланс — өмірге, жинаққа және міндеттемелерге әлі бөлінбеген ақша.','Total balance is all real money. Free balance is money not yet allocated to living costs, savings or obligations.'),'transactions'],
+      [tr('Как работают лимиты?','Лимиттер қалай жұмыс істейді?','How do limits work?'),tr('Они предупреждают на 80% и показывают траты сверх лимита. Деньги не блокируются.','Олар 80%-да ескертеді және лимиттен асқан шығындарды көрсетеді. Ақша бұғатталмайды.','They warn at 80% and show spending above the limit. Your money is never blocked.'),'settings'],
+      [tr('Как работают цели и автокопилка?','Мақсаттар мен автожинақ қалай жұмыс істейді?','How do goals and autosave work?'),tr('В цели лежат отдельно отложенные деньги. Процент автокопилки переводится из новых доходов.','Мақсатта бөлек жиналған ақша сақталады. Автожинақ пайызы жаңа кірістен аударылады.','A goal holds set-aside money separately. The autosave percentage is transferred from new income.'),'goals'],
+      [tr('Как работают платежи?','Төлемдер қалай жұмыс істейді?','How do payments work?'),tr('Отметь платёж оплаченным — появится реальный расход в истории, аналитике и балансе.','Төлемді төленген деп белгілеңіз — тарихта, аналитикада және баланста нақты шығын пайда болады.','Mark a payment as paid to create a real expense in history, analytics and balance.'),'payments'],
+      [tr('Как работают сделки, НДС и чистая прибыль?','Мәмілелер, ҚҚС және таза пайда қалай жұмыс істейді?','How do deals, VAT and net profit work?'),tr('До оплаты сделка — прогноз. После оплаты в баланс попадает фактическая операция, а НДС и расходы остаются в расчёте экономики.','Төлемге дейін мәміле — болжам. Төлемнен кейін балансқа нақты операция түседі, ал ҚҚС мен шығындар экономика есебінде қалады.','Before payment, a deal is a forecast. After payment, the actual transaction enters the balance while VAT and costs remain in the economics calculation.'),'transactions'],
+      [tr('Как разделить личные и бизнес-деньги?','Жеке және бизнес ақшаны қалай бөлуге болады?','How do I separate personal and business money?'),tr('У каждой операции, сделки и платежа выбирается личный или бизнес-кошелёк.','Әр операция, мәміле және төлем үшін жеке не бизнес әмияны таңдалады.','Choose a personal or business wallet for every transaction, deal and payment.'),'transactions'],
+      [tr('Как работает синхронизация и резервная копия?','Синхрондау мен резервтік көшірме қалай жұмыс істейді?','How do sync and backup work?'),tr('Войди в аккаунт — TIIN синхронизирует данные. Резервная копия сохраняет их отдельно на устройстве.','Аккаунтқа кіріңіз — TIIN деректерді синхрондайды. Резервтік көшірме оларды құрылғыда бөлек сақтайды.','Sign in and TIIN syncs your data. A backup stores it separately on your device.'),'settings'],
+      [tr('Как учитывать валюты в поездках?','Сапарларда валютаны қалай есепке алу керек?','How do I track currencies while travelling?'),tr('Добавь валюту в настройках. TIIN покажет пересчёт в основной валюте.','Баптауларда валютаны қосыңыз. TIIN негізгі валютаға қайта есептеуді көрсетеді.','Add a currency in Settings. TIIN will show its conversion to your base currency.'),'settings']
     ];
-    return '<div class="tiin-faq">'+rows.map((x,i)=>'<details><summary>'+x[0]+'</summary><p>'+x[1]+'</p><button class="btn btn-ghost btn-sm" onclick="TIINGoTo(\''+x[2]+'\')">Открыть раздел</button></details>').join('')+'</div>';
+    return '<div class="tiin-faq">'+rows.map(x=>'<details><summary>'+x[0]+'</summary><p>'+x[1]+'</p><button class="btn btn-ghost btn-sm" onclick="TIINGoTo(\''+x[2]+'\')">'+tr('Открыть раздел','Бөлімді ашу','Open section')+'</button></details>').join('')+'</div>';
   }
   window.TIINGoTo=function(tab){switchTab(tab); setTimeout(()=>document.getElementById('tab-'+tab)?.scrollIntoView({behavior:'smooth',block:'start'}),80);};
   function setMode(value){savePrefs({mode:value});applyMode();renderSettings();}
