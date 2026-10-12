@@ -11,7 +11,7 @@
   if (!document.getElementById('tiinFinanceCoachScript')) {
     const coach = document.createElement('script');
     coach.id = 'tiinFinanceCoachScript';
-    coach.src = 'src/tiin-finance-coach.js?v=10';
+    coach.src = 'src/tiin-finance-coach.js?v=11';
     coach.async = false;
     document.head.appendChild(coach);
   }
@@ -20,11 +20,12 @@
   var refreshTimer = null;
   var labels = {
     ru: { home: 'Главная', analytics: 'Аналитика', goals: 'Цели', payments: 'Платежи', more: 'Ещё', month: 'Этот месяц', income: 'Доход', expense: 'Расход', operations: 'Операции', lists: 'Списки', currencies: 'Валюты', openAnalytics: 'Аналитика' },
-    kz: { home: 'Басты', analytics: 'Талдау', goals: 'Мақсаттар', payments: 'Төлемдер', more: 'Тағы', month: 'Осы ай', income: 'Кіріс', expense: 'Шығыс', operations: 'Операциялар', lists: 'Тізімдер', currencies: 'Валюталар', openAnalytics: 'Талдау' }
+    kz: { home: 'Басты', analytics: 'Талдау', goals: 'Мақсаттар', payments: 'Төлемдер', more: 'Баптаулар', month: 'Осы ай', income: 'Кіріс', expense: 'Шығыс', operations: 'Операциялар', lists: 'Тізімдер', currencies: 'Валюталар', openAnalytics: 'Талдау' },
+    en: { home: 'Home', analytics: 'Analytics', goals: 'Goals', payments: 'Payments', more: 'Settings', month: 'This month', income: 'Income', expense: 'Expense', operations: 'Transactions', lists: 'Lists', currencies: 'Currencies', openAnalytics: 'Analytics' }
   };
 
   function getLang() {
-    return window.currentLang === 'kz' ? 'kz' : 'ru';
+    return window.currentLang === 'kz' ? 'kz' : window.currentLang === 'en' ? 'en' : 'ru';
   }
 
   function copy() {
@@ -52,7 +53,7 @@
     var date = document.getElementById('todayDate');
     if (!date) return;
     var now = new Date();
-    var locale = getLang() === 'kz' ? 'kk-KZ' : 'ru-RU';
+    var locale = getLang() === 'kz' ? 'kk-KZ' : getLang() === 'en' ? 'en-GB' : 'ru-RU';
     var weekday = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(now).replace('.', '');
     var month = new Intl.DateTimeFormat(locale, { month: 'short' }).format(now).replace('.', '');
     weekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
@@ -102,7 +103,7 @@
       goals: copy().goals,
       payments: copy().payments,
       payment_tracker: copy().more,
-      settings: window.currentLang === 'kz' ? 'Баптаулар' : 'Настройки',
+      settings: window.currentLang === 'kz' ? 'Баптаулар' : window.currentLang === 'en' ? 'Settings' : 'Настройки',
       planning: copy().lists
     };
     document.querySelectorAll('.tabs .tab').forEach(function (tab) {
@@ -120,7 +121,7 @@
   function amount(value) {
     if (typeof window.fmt === 'function') return window.fmt(value);
     if (typeof fmt === 'function') return fmt(value);
-    return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(Number(value || 0)) + ' ₸';
+    return new Intl.NumberFormat(getLang() === 'kz' ? 'kk-KZ' : getLang() === 'en' ? 'en-GB' : 'ru-RU', { maximumFractionDigits: 0 }).format(Number(value || 0)) + ' ₸';
   }
 
   function metrics() {
