@@ -1,6 +1,7 @@
 /* TIIN 2.0 behavior layer. It deliberately reads the legacy localStorage schema. */
 (function () {
   'use strict';
+  const text = (ru, kz, en) => window.tiinText ? window.tiinText(ru, kz, en) : ru;
 
   // Load v2 CSS after the legacy inline stylesheet so the new desktop layer wins.
   if (!document.getElementById('tiinV2FinalStyles')) {
@@ -63,8 +64,8 @@
     const txns = getTxns(currentYear, currentMonth);
     const tx = txns.find(item => String(item.id) === String(id));
     if (!tx) return;
-    const label = tx.comment || (currentLang === 'kz' ? 'Операция' : 'Операция');
-    document.getElementById('modal').innerHTML = `<div class="tx-action-sheet"><div class="tx-action-title">${label}</div><div class="tx-action-subtitle">${currentLang === 'kz' ? 'Әрекетті таңдаңыз' : 'Выберите действие'}</div><button class="btn btn-gold" onclick="editTx('${String(tx.id).replace(/'/g, "\\'")}')">${currentLang === 'kz' ? 'Өзгерту' : 'Изменить'}</button><button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="deleteTx('${String(tx.id).replace(/'/g, "\\'")}')">${currentLang === 'kz' ? 'Жою' : 'Удалить'}</button><button class="tx-action-cancel" onclick="closeModal()">${currentLang === 'kz' ? 'Бас тарту' : 'Отмена'}</button></div>`;
+    const label = tx.comment || text('Операция', 'Операция', 'Transaction');
+    document.getElementById('modal').innerHTML = `<div class="tx-action-sheet"><div class="tx-action-title">${label}</div><div class="tx-action-subtitle">${text('Выберите действие', 'Әрекетті таңдаңыз', 'Choose an action')}</div><button class="btn btn-gold" onclick="editTx('${String(tx.id).replace(/'/g, "\\'")}')">${text('Изменить', 'Өзгерту', 'Edit')}</button><button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="deleteTx('${String(tx.id).replace(/'/g, "\\'")}')">${text('Удалить', 'Жою', 'Delete')}</button><button class="tx-action-cancel" onclick="closeModal()">${text('Отмена', 'Бас тарту', 'Cancel')}</button></div>`;
     document.getElementById('modalOverlay').classList.add('open');
   };
 
@@ -72,7 +73,7 @@
     const txns = getTxns(currentYear, currentMonth); const tx = txns.find(item => String(item.id) === String(id));
     if (!tx) return;
     const cats = tx.type === 'income' ? INCOME_CATS : EXPENSE_CATS;
-    document.getElementById('modal').innerHTML = `<h3>${currentLang === 'kz' ? 'Операцияны өңдеу' : 'Редактировать операцию'}</h3><div class="form-group"><label>${t('amount')}</label><input type="number" class="form-input big" id="editAmount" value="${tx.amount}" inputmode="decimal"></div><div class="form-group"><label>${t('category')}</label><div class="chips" id="editCatChips">${cats.map(cat => `<div class="chip ${cat.id === tx.category ? 'selected' : ''}" data-id="${cat.id}" onclick="selectChip(this)">${cat.icon} ${cat.name}</div>`).join('')}</div></div><div class="form-group"><label>${t('comment')}</label><input class="form-input" id="editComment" value="${String(tx.comment || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"></div><div class="form-group"><label>${t('tag')}</label><input class="form-input" id="editTags" value="${(tx.tags || []).join(' ')}"></div><div class="form-group"><label>${t('wallet')}</label><div class="chips" id="editWalletChips"><div class="chip ${(tx.wallet || 'personal') !== 'business' ? 'selected' : ''}" data-id="personal" onclick="selectChip(this)">👤 ${t('personal')}</div><div class="chip ${tx.wallet === 'business' ? 'selected' : ''}" data-id="business" onclick="selectChip(this)">💼 ${t('business')}</div></div></div><div class="form-group"><label>${t('date')}</label><input type="date" class="form-input" id="editDate" value="${tx.date}"></div><button class="btn btn-gold" onclick="saveEditedTx('${String(tx.id)}')">${t('save')}</button><button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="deleteTx('${String(tx.id)}')">${t('delete')}</button>`;
+    document.getElementById('modal').innerHTML = `<h3>${text('Редактировать операцию', 'Операцияны өңдеу', 'Edit transaction')}</h3><div class="form-group"><label>${t('amount')}</label><input type="number" class="form-input big" id="editAmount" value="${tx.amount}" inputmode="decimal"></div><div class="form-group"><label>${t('category')}</label><div class="chips" id="editCatChips">${cats.map(cat => `<div class="chip ${cat.id === tx.category ? 'selected' : ''}" data-id="${cat.id}" onclick="selectChip(this)">${cat.icon} ${cat.name}</div>`).join('')}</div></div><div class="form-group"><label>${t('comment')}</label><input class="form-input" id="editComment" value="${String(tx.comment || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"></div><div class="form-group"><label>${t('tag')}</label><input class="form-input" id="editTags" value="${(tx.tags || []).join(' ')}"></div><div class="form-group"><label>${t('wallet')}</label><div class="chips" id="editWalletChips"><div class="chip ${(tx.wallet || 'personal') !== 'business' ? 'selected' : ''}" data-id="personal" onclick="selectChip(this)">👤 ${t('personal')}</div><div class="chip ${tx.wallet === 'business' ? 'selected' : ''}" data-id="business" onclick="selectChip(this)">💼 ${t('business')}</div></div></div><div class="form-group"><label>${t('date')}</label><input type="date" class="form-input" id="editDate" value="${tx.date}"></div><button class="btn btn-gold" onclick="saveEditedTx('${String(tx.id)}')">${t('save')}</button><button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="deleteTx('${String(tx.id)}')">${t('delete')}</button>`;
     document.getElementById('modalOverlay').classList.add('open');
   };
 
@@ -85,7 +86,7 @@
     saveTxns(currentYear, currentMonth, oldTxns.filter(item => String(item.id) !== String(id)));
     const target = targetY === currentYear && targetM === currentMonth ? getTxns(targetY, targetM) : getTxns(targetY, targetM);
     target.push({ ...tx, amount, category:cat.dataset.id, comment, tags, wallet, date }); saveTxns(targetY, targetM, target);
-    closeModal(); toast(currentLang === 'kz' ? 'Сақталды ✓' : 'Сохранено ✓'); render();
+    closeModal(); toast(text('Сохранено ✓', 'Сақталды ✓', 'Saved ✓')); render();
   };
 
 
@@ -193,19 +194,19 @@
     if (!hero) {
       hero = document.createElement('section');
       hero.className = 'balance-hero';
-      hero.setAttribute('aria-label', currentLang === 'kz' ? 'Жалпы баланс' : 'Общий баланс');
-      hero.innerHTML = `<div class="balance-hero-top"><span class="balance-hero-label"></span><span class="sync-status">${currentLang === 'kz' ? 'Синхрондау жергілікті' : 'Данные на устройстве'}</span></div><div class="balance-hero-period"></div>`;
+      hero.setAttribute('aria-label', text('Общий баланс', 'Жалпы баланс', 'Total balance'));
+      hero.innerHTML = `<div class="balance-hero-top"><span class="balance-hero-label"></span><span class="sync-status">${text('Данные на устройстве', 'Деректер құрылғыда', 'Data on this device')}</span></div><div class="balance-hero-period"></div>`;
       summary.parentNode.insertBefore(hero, summary);
       const oldCard = balance.closest('.summary-item');
       hero.insertBefore(balance, hero.querySelector('.balance-hero-period'));
       if (oldCard) oldCard.remove();
     }
     applyTimeAwareBalanceArtwork(hero);
-    hero.querySelector('.balance-hero-label').textContent = currentLang === 'kz' ? 'Жалпы баланс' : 'Общий баланс';
+    hero.querySelector('.balance-hero-label').textContent = text('Общий баланс', 'Жалпы баланс', 'Total balance');
     hero.querySelector('.balance-hero-period').textContent = `${t('months_arr')[currentMonth]} ${currentYear}`;
     const labels = summary.querySelectorAll('.summary-item .label');
-    if (labels[0]) labels[0].textContent = `${t('income')} · ${currentLang === 'kz' ? 'осы ай' : 'за месяц'}`;
-    if (labels[1]) labels[1].textContent = `${t('expense')} · ${currentLang === 'kz' ? 'осы ай' : 'за месяц'}`;
+    if (labels[0]) labels[0].textContent = `${t('income')} · ${text('за месяц', 'осы ай', 'this month')}`;
+    if (labels[1]) labels[1].textContent = `${t('expense')} · ${text('за месяц', 'осы ай', 'this month')}`;
     let balanceKpi = document.getElementById('balanceKpi');
     if (!balanceKpi) {
       balanceKpi = document.createElement('div');
@@ -217,7 +218,7 @@
     // Carry the verified closing balance into the next month, then apply only new operations.
     const closingBalance = carriedBalance(currentYear, currentMonth);
     balance.textContent = fmt(closingBalance);
-    balanceKpi.querySelector('.label').textContent = currentLang === 'kz' ? 'АЙ СОҢЫНДАҒЫ ҚАЛДЫҚ' : 'ОСТАТОК НА КОНЕЦ МЕСЯЦА';
+    balanceKpi.querySelector('.label').textContent = text('ОСТАТОК НА КОНЕЦ МЕСЯЦА', 'АЙ СОҢЫНДАҒЫ ҚАЛДЫҚ', 'END-OF-MONTH BALANCE');
     balanceKpi.querySelector('.value').textContent = balance.textContent;
   }
 
@@ -234,13 +235,13 @@
     }
     const txns = filterTxnsByWallet(getTxns(currentYear, currentMonth));
     const expense = txns.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
-    panel.innerHTML = `<div class="desktop-context-title">${currentLang === 'kz' ? 'Осы ай' : 'Этот месяц'}</div>
+    panel.innerHTML = `<div class="desktop-context-title">${text('Этот месяц', 'Осы ай', 'This month')}</div>
       <div class="desktop-context-number">${fmt(expense)}</div>
-      <div class="desktop-context-label">${currentLang === 'kz' ? 'шығындар' : 'расходы'}</div>
+      <div class="desktop-context-label">${text('расходы', 'шығындар', 'expenses')}</div>
       <div class="desktop-context-divider"></div>
-      <div class="desktop-context-row"><span>${currentLang === 'kz' ? 'Операциялар' : 'Операции'}</span><b>${txns.length}</b></div>
-      <div class="desktop-context-row"><span>${currentLang === 'kz' ? 'Деректер' : 'Данные'}</span><b class="desktop-local">${currentLang === 'kz' ? 'Құрылғыда' : 'На устройстве'}</b></div>
-      <button class="desktop-context-action" onclick="switchTab('analytics')">${currentLang === 'kz' ? 'Аналитиканы ашу' : 'Открыть аналитику'} →</button>`;
+      <div class="desktop-context-row"><span>${text('Операции', 'Операциялар', 'Transactions')}</span><b>${txns.length}</b></div>
+      <div class="desktop-context-row"><span>${text('Данные', 'Деректер', 'Data')}</span><b class="desktop-local">${text('На устройстве', 'Құрылғыда', 'On device')}</b></div>
+      <button class="desktop-context-action" onclick="switchTab('analytics')">${text('Открыть аналитику', 'Аналитиканы ашу', 'Open analytics')} →</button>`;
   }
 
   window.render = function renderV2() {
@@ -354,6 +355,30 @@
       linkedOperation: 'Операция жасалды', missingAmount: 'Соманы енгізіңіз', enterName: 'Атауды енгізіңіз',
       noPrice: 'Баға көрсетілмеген', confirmDeleteList: 'Тізімді және барлық тармақтарды жою керек пе?',
       confirmDeleteItem: 'Бұл тармақты жою керек пе?', completedTotal: 'Нақты расталған'
+    },
+    en: {
+      title: 'Lists', newList: '+ New list', expenses: 'Expenses', incomes: 'Income',
+      active: 'Active', archived: 'Archive', all: 'All', planned: 'Planned',
+      confirmed: 'Confirmed', remaining: 'Remaining', create: 'Create list',
+      listName: 'List name', listType: 'List type', planExpense: 'Expense plan',
+      planIncome: 'Income plan', wallet: 'Wallet', dateOptional: 'Planned date',
+      commentOptional: 'Comment', addItem: '+ Add item', noLists: 'No lists yet',
+      noListsHint: 'Plan purchases, trips or expected income — finances change only after confirmation.',
+      listDetails: 'List details', itemName: 'Item name', quantity: 'Quantity',
+      unit: 'Unit', unitPlaceholder: 'pcs, pack, mo', unitPrice: 'Unit price',
+      plannedAmount: 'Planned amount', category: 'Category', tags: 'Tags',
+      save: 'Save', cancel: 'Cancel', confirmExpense: 'Confirm expense',
+      confirmIncome: 'Confirm income', actualAmount: 'Actual amount',
+      confirm: 'Confirm', completed: 'Purchased', received: 'Received',
+      plannedStatus: 'Planned', cancelled: 'Cancelled', actual: 'Actual',
+      edit: 'Edit', archive: 'Archive', restore: 'Restore', duplicate: 'Duplicate',
+      delete: 'Delete', listActions: 'List actions', itemActions: 'Item actions',
+      completedOf: 'completed', difference: 'Difference', back: 'Back',
+      revertTitle: 'Remove completion mark?', keepOperation: 'Keep financial transaction',
+      deleteOperation: 'Delete linked transaction', deleteOperationHint: 'The expense or income will be deleted after confirmation.',
+      linkedOperation: 'Transaction created', missingAmount: 'Enter an amount', enterName: 'Enter a name',
+      noPrice: 'No price set', confirmDeleteList: 'Delete this list and all its items?',
+      confirmDeleteItem: 'Delete this item?', completedTotal: 'Actually confirmed'
     }
   };
 
@@ -387,7 +412,7 @@
   }
   function formatPlanningDate(value) {
     if (!value) return '';
-    try { return new Date(value + 'T00:00:00').toLocaleDateString(currentLang === 'kz' ? 'kk-KZ' : 'ru-RU', { day: 'numeric', month: 'short' }); } catch (_) { return value; }
+    try { return new Date(value + 'T00:00:00').toLocaleDateString(window.tiinLocale ? window.tiinLocale() : 'ru-RU', { day: 'numeric', month: 'short' }); } catch (_) { return value; }
   }
   function planningWalletLabel(wallet) { return wallet === 'business' ? '💼 ' + t('business') : '👤 ' + t('personal'); }
 
@@ -707,7 +732,7 @@
     const name = document.getElementById('tplCustomCategoryName')?.value.trim();
     const icon = document.getElementById('tplCustomCategoryIcon')?.value.trim() || '🏷️';
     const type = document.querySelector('#tplTypeChips .chip.selected')?.dataset.id || 'expense';
-    if (!name) { toast(currentLang === 'kz' ? 'Санат атауын енгізіңіз' : 'Введите название категории'); return; }
+    if (!name) { toast(text('Введите название категории', 'Санат атауын енгізіңіз', 'Enter a category name')); return; }
     const id = 'custom_' + type + '_' + Date.now();
     const category = { id, name, icon: Array.from(icon)[0] || '🏷️', type };
     const rows = getCustomCategories(); rows.push(category); persistCustomCategories(rows);
