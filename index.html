@@ -645,6 +645,9 @@ LANG.en = {
 
 let currentLang = localStorage.getItem('lang') || 'ru';
 if (!LANG[currentLang]) currentLang = 'ru';
+// Feature modules are loaded as separate scripts. Keep the selected language on
+// window as well as in this module so they never silently fall back to Russian.
+window.currentLang = currentLang;
 function t(key) { return LANG[currentLang][key] || LANG.ru[key] || key; }
 window.tiinText = function (ru, kz, en) { return currentLang === 'kz' ? (kz || ru) : currentLang === 'en' ? (en || ru) : ru; };
 window.tiinLocale = function () { return currentLang === 'kz' ? 'kk-KZ' : currentLang === 'en' ? 'en-GB' : 'ru-RU'; };
@@ -656,6 +659,7 @@ function updateLangToggle() {
 }
 function setLang(lang) {
   currentLang = LANG[lang] ? lang : 'ru';
+  window.currentLang = currentLang;
   localStorage.setItem('lang', currentLang);
   updateLangToggle();
   updateStaticTexts();
@@ -2072,12 +2076,12 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=73', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=74', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
 </script>
-<script src="src/tiin-v2.js?v=26"></script>
+<script src="src/tiin-v2.js?v=27"></script>
 <script src="src/tiin-currency.js?v=3"></script>
   <script src="src/tiin-multicurrency.js?v=2"></script>
 <script src="src/tiin-auth-handoff.js?v=1"></script>
@@ -2085,6 +2089,6 @@ init();
 <script id="tiinLimitsScript" src="src/tiin-limits.js?v=3"></script>
 <script src="src/tiin-command-deck.js?v=20"></script>
 <script src="src/tiin-deals.js?v=7"></script>
-<script src="src/tiin-settings.js?v=12"></script>
+<script src="src/tiin-settings.js?v=13"></script>
 </body>
 </html>
