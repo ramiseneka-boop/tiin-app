@@ -14,8 +14,9 @@
   let rates = null;
   let sourceTime = null;
 
-  function locale() { return window.currentLang === 'kz' ? 'kk-KZ' : 'ru-RU'; }
+  function locale() { return window.currentLang === 'kz' ? 'kk-KZ' : window.currentLang === 'en' ? 'en-GB' : 'ru-RU'; }
   function labels() {
+    if (window.currentLang === 'en') return { title: 'Currency converter', from: 'You send', to: 'You receive', amount: 'Amount', result: 'Result', refresh: 'Refresh rate', offline: 'Last saved rate', updated: 'Updated', live: 'Market rate', error: 'Could not refresh rates' };
     return window.currentLang === 'kz'
       ? { title: 'Валюта конвертері', from: 'Беремін', to: 'Аламын', amount: 'Сома', result: 'Нәтиже', refresh: 'Курсты жаңарту', offline: 'Соңғы сақталған курс', updated: 'Жаңартылды', live: 'Нарықтық курс', error: 'Курсты жаңарту мүмкін болмады' }
       : { title: 'Конвертер валют', from: 'Отдаю', to: 'Получаю', amount: 'Сумма', result: 'Результат', refresh: 'Обновить курс', offline: 'Последний сохранённый курс', updated: 'Обновлено', live: 'Рыночный курс', error: 'Не удалось обновить курс' };
@@ -135,7 +136,7 @@
     button.type = 'button';
     button.id = 'currencyAccess';
     button.className = 'template-chip currency-access';
-    button.innerHTML = '⇄ <span>' + (window.currentLang === 'kz' ? 'Валюталар' : 'Валюты') + '</span>';
+    button.innerHTML = '⇄ <span>' + (window.currentLang === 'kz' ? 'Валюталар' : window.currentLang === 'en' ? 'Currencies' : 'Валюты') + '</span>';
     button.onclick = open;
     templates.appendChild(button);
   }
