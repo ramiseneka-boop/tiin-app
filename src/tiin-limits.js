@@ -20,7 +20,8 @@
     warning: 'Лимит асты', transactionOver: 'Лимиттен тыс', allGood: 'Лимиттер қалыпты',
     day: 'Бүгін', month: 'Айда', limitSaved: 'Лимиттер сақталды ✓'
   };
-  const copy = () => window.currentLang === 'kz' ? kz : ru;
+  const en = { title:'Spending limits', set:'Set limits', save:'Save limits', total:'Overall limit', daily:'Per day', monthly:'Per month', categories:'By category', spent:'Spent', left:'Remaining', over:'Over limit', noLimits:'No limits set yet', warning:'Limit exceeded', transactionOver:'Over limit', allGood:'Limits are on track', day:'Today', month:'This month', limitSaved:'Limits saved ✓' };
+  const copy = () => window.currentLang === 'kz' ? kz : window.currentLang === 'en' ? en : ru;
   const number = value => Math.max(0, Number(value) || 0);
 
   function normalise(raw) {
