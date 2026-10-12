@@ -48,14 +48,14 @@ html.light .goal-card{background:#FFFCF6!important}.goals-free-funds{border-colo
 /* One isolated full-frame artwork layer.  Old PNG background rules are
    deliberately not used: partially cached assets previously left the lower
    part of the card black on iOS PWA. */
-html:not(.light) .balance-hero{
+.balance-hero{
   position:relative!important;
   isolation:isolate;
   overflow:hidden!important;
   background:linear-gradient(135deg,#13233b,#09111f)!important;
   background-image:none!important;
 }
-html:not(.light) .balance-hero::before{
+.balance-hero::before{
   content:''!important;
   position:absolute!important;
   inset:0!important;
@@ -69,7 +69,7 @@ html:not(.light) .balance-hero::before{
   transform:scale(1.01);
   transition:opacity .55s ease!important;
 }
-html:not(.light) .balance-hero::after{
+.balance-hero::after{
   content:''!important;
   position:absolute!important;
   inset:0!important;
@@ -78,15 +78,52 @@ html:not(.light) .balance-hero::after{
   background:linear-gradient(90deg,rgba(5,12,23,.48) 0%,rgba(7,18,31,.20) 58%,rgba(7,18,31,.05) 100%)!important;
   pointer-events:none!important;
 }
-html:not(.light) .balance-hero .balance-hero-top,
-html:not(.light) .balance-hero .value,
-html:not(.light) .balance-hero .balance-hero-period{
+.balance-hero .balance-hero-top,
+.balance-hero .value,
+.balance-hero .balance-hero-period{
   position:relative!important;
   z-index:2!important;
 }
-html:not(.light) .balance-hero[data-daypart="morning"]::before{background-image:url('../assets/tiin-hero-morning.jpg')!important;filter:brightness(1.04) saturate(.94)!important}
-html:not(.light) .balance-hero[data-daypart="day"]::before{background-image:url('../assets/tiin-hero-day.jpg')!important;filter:brightness(1.02) saturate(1.02)!important}
-html:not(.light) .balance-hero[data-daypart="evening"]::before{background-image:url('../assets/tiin-hero-evening.jpg')!important;filter:brightness(.90) saturate(1.12)!important}
-html:not(.light) .balance-hero[data-daypart="night"]::before{background-image:url('../assets/tiin-balance-mountains.jpeg')!important;filter:brightness(.76) saturate(.84)!important}
+.balance-hero[data-daypart="morning"]::before{background-image:url('../assets/tiin-hero-morning.jpg')!important;filter:brightness(1.04) saturate(.94)!important}
+.balance-hero[data-daypart="day"]::before{background-image:url('../assets/tiin-hero-day.jpg')!important;filter:brightness(1.02) saturate(1.02)!important}
+.balance-hero[data-daypart="evening"]::before{background-image:url('../assets/tiin-hero-evening.jpg')!important;filter:brightness(.90) saturate(1.12)!important}
+.balance-hero[data-daypart="night"]::before{background-image:url('../assets/tiin-balance-mountains.jpeg')!important;filter:brightness(.76) saturate(.84)!important}
+html.light .balance-hero::after{background:linear-gradient(90deg,rgba(255,251,241,.52) 0%,rgba(255,251,241,.22) 58%,rgba(255,251,241,.08) 100%)!important}
+html.light .balance-hero[data-daypart="morning"]::before{filter:brightness(1.13) saturate(.84)!important}
+html.light .balance-hero[data-daypart="day"]::before{filter:brightness(1.10) saturate(.80)!important}
+html.light .balance-hero[data-daypart="evening"]::before{filter:brightness(1.04) saturate(.80)!important}
+html.light .balance-hero[data-daypart="night"]::before{filter:brightness(.88) saturate(.66)!important}
 @keyframes tiinHeroFade{from{opacity:.72;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
 .balance-hero.tiin-daypart-transition{animation:tiinHeroFade .55s ease both!important}
+
+/* Light theme uses the same premium surfaces as the dashboard — no inherited
+   navy islands from advanced screens. */
+html.light .tiin-settings-group,
+html.light .tiin-pay-overview,
+html.light .tiin-pay-item{
+  background:#fffdf8!important;
+  border-color:#e6dcc7!important;
+  box-shadow:0 9px 24px rgba(96,76,36,.08)!important;
+}
+html.light .tiin-settings-group h3{border-color:rgba(104,78,26,.16)!important;color:#8b671d!important}
+html.light .tiin-setting-row,
+html.light .tiin-setting-inline,
+html.light .tiin-toggle,
+html.light .tiin-faq details{border-color:rgba(104,78,26,.13)!important}
+html.light .tiin-setting-row,
+html.light .tiin-setting-inline b,
+html.light .tiin-toggle{color:#252231!important}
+html.light .tiin-setting-row small,
+html.light .tiin-setting-inline small,
+html.light .tiin-muted,
+html.light .tiin-pay-main small,
+html.light .tiin-payment-metrics small,
+html.light .tiin-sync-state small,
+html.light .tiin-faq p{color:#736e67!important}
+html.light .tiin-payment-metrics>div{background:#fffaf0!important;border-color:#eadfca!important}
+html.light .tiin-pay-date{background:#f8ecd0!important;color:#926d1c!important}
+html.light .tiin-empty{background:#fffdf8!important;border-color:#cfb16b!important}
+html.light .tiin-empty h3{color:#252231!important}
+html.light .tiin-sync-state{background:#edf9f3!important;color:#245b46!important}
+html.light .tiin-segment button{background:#fffdf8!important;border-color:#e6dcc7!important;color:#736e67!important}
+html.light .tiin-segment button.selected{background:#f8ecd0!important;border-color:#c9a44c!important;color:#735417!important}
