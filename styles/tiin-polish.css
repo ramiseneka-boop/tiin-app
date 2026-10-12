@@ -110,3 +110,10 @@ html:not(.light) .balance-hero[data-daypart="morning"]::before{background-image:
 html:not(.light) .balance-hero[data-daypart="day"]::before{background-image:url('../assets/tiin-balance-day.png')!important}
 html:not(.light) .balance-hero[data-daypart="evening"]::before{background-image:url('../assets/tiin-balance-evening.png')!important}
 html:not(.light) .balance-hero[data-daypart="night"]::before{background-image:url('../assets/tiin-balance-mountains.jpeg')!important}
+
+
+/* Published JPG assets are the verified full-frame variants. */
+html:not(.light) .balance-hero[data-daypart]{background-image:none!important}
+html:not(.light) .balance-hero[data-daypart="morning"]::before{background-image:url('../assets/tiin-hero-morning.jpg')!important;filter:brightness(1.04) saturate(.94)!important}
+html:not(.light) .balance-hero[data-daypart="day"]::before{background-image:url('../assets/tiin-hero-day.jpg')!important;filter:brightness(1.02) saturate(1.02)!important}
+html:not(.light) .balance-hero[data-daypart="evening"]::before{background-image:url('../assets/tiin-hero-evening.jpg')!important;filter:brightness(.90) saturate(1.12)!important}
