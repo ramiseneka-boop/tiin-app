@@ -41,7 +41,14 @@
   }
   function txns(year = currentYear, month = currentMonth) { return typeof getTxns === 'function' ? getTxns(year, month) : []; }
   function txKey(tx) { return String(tx.paymentScheduleId || '') + ':' + String(tx.paymentPeriod || ''); }
-  function paymentTx(schedule, key = periodKey()) { return txns().find(t => t.type === 'expense' && (txKey(t) === schedule.id + ':' + key || (schedule.autoRecurringId && t.auto_recurring_id === schedule.autoRecurringId))); }
+  function paymentTx(schedule, key = periodKey()) {
+    // A payment must be looked up in the month in which it was actually paid,
+    // not in the month currently opened in the calendar. This prevents a second
+    // tap from creating a duplicate expense after switching months.
+    const [year, month] = String(key).split('-').map(Number);
+    const source = Number.isInteger(year) && Number.isInteger(month) ? txns(year, month - 1) : txns();
+    return source.find(t => t.type === 'expense' && (txKey(t) === schedule.id + ':' + key || (schedule.autoRecurringId && t.auto_recurring_id === schedule.autoRecurringId)));
+  }
   function dueFor(schedule, ref = now()) {
     const y = ref.getFullYear(), m = ref.getMonth();
     if (schedule.repeat === 'once') return new Date(schedule.date + 'T00:00:00');
@@ -135,13 +142,14 @@
   };
   window.payTIINPayment = function(id) {
     const s=schedules().find(x=>x.id===id); if(!s || paymentTx(s)) { toast('Этот платёж уже учтён'); return; }
-    const d=dueFor(s); const y=d.getFullYear(),m=d.getMonth(), key=periodKey();
-    const list=txns(y,m); list.push({id:String(Date.now()),type:'expense',amount:s.amount,category:s.category,comment:s.title+' · платёж',date:dateKey(now()),wallet:s.wallet,paymentScheduleId:s.id,paymentPeriod:key});
+    const paidAt=now(), y=paidAt.getFullYear(),m=paidAt.getMonth(), key=periodKey(paidAt);
+    const list=txns(y,m); list.push({id:String(Date.now()),type:'expense',amount:s.amount,category:s.category,comment:s.title+' · платёж',date:dateKey(paidAt),wallet:s.wallet,paymentScheduleId:s.id,paymentPeriod:key});
     localStorage.setItem('txns_'+y+'_'+m,JSON.stringify(list)); window.TIINCloud?.scheduleSync?.(); toast('Расход добавлен в историю'); render();
   };
   window.unpayTIINPayment = function(id) {
     const s=schedules().find(x=>x.id===id), key=periodKey(); if(!s) return;
-    let removed=false; for(let y=currentYear-1;y<=currentYear+1;y++) for(let m=0;m<12;m++){const k='txns_'+y+'_'+m;const list=read(k,[]);const next=list.filter(t=>!(t.paymentScheduleId===s.id&&t.paymentPeriod===key));if(next.length!==list.length){localStorage.setItem(k,JSON.stringify(next));removed=true;}}
+    const [year,month]=key.split('-').map(Number); let removed=false;
+    if(Number.isInteger(year)&&Number.isInteger(month)){const k='txns_'+year+'_'+(month-1),list=read(k,[]),next=list.filter(t=>!(t.paymentScheduleId===s.id&&t.paymentPeriod===key));if(next.length!==list.length){localStorage.setItem(k,JSON.stringify(next));removed=true;}}
     if(removed){window.TIINCloud?.scheduleSync?.();toast('Связанная операция отменена');render();}
   };
   window.removeTIINPayment = function(id) { if(!confirm('Убрать этот платёж? История операций останется.'))return; saveSchedules(schedules().filter(x=>x.id!==id));renderPayments(); };

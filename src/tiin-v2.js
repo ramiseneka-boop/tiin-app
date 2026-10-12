@@ -150,10 +150,16 @@
   // Morning stays visible through 10:59; this matches how people experience the day.
   function applyTimeAwareBalanceArtwork(hero) {
     const hour = new Date().getHours();
-    const daypart = hour >= 5 && hour < 11 ? 'morning'
+    const automatic = hour >= 5 && hour < 11 ? 'morning'
       : hour >= 11 && hour < 17 ? 'day'
       : hour >= 17 && hour < 21 ? 'evening'
       : 'night';
+    // Settings owns the preference.  This renderer may run after every
+    // transaction update, so it must never silently reset a manually chosen
+    // morning/day/evening/night artwork back to automatic mode.
+    let preference = 'auto';
+    try { preference = JSON.parse(localStorage.getItem('tiin_preferences_v1') || '{}').daypart || 'auto'; } catch (_) {}
+    const daypart = preference === 'auto' ? automatic : preference;
     const previousDaypart = hero.dataset.daypart;
     hero.dataset.daypart = daypart;
     hero.setAttribute('data-daypart', daypart);

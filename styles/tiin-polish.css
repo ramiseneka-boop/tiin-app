@@ -28,11 +28,6 @@ button{font-family:Inter,-apple-system,BlinkMacSystemFont,sans-serif}
 .modal{border-radius:24px 24px 0 0!important}.modal h3{letter-spacing:-.35px}.form-input{border-radius:var(--ui-r-md)!important}.month-close-heading h3{font-size:24px!important}.month-close-summary>div,.month-close-result,.month-close-action,.month-goal-picker button{border-radius:var(--ui-r-md)!important}.month-close-action{min-height:62px!important}.month-close-action-goal{box-shadow:0 8px 22px rgba(212,175,90,.18)!important}
 
 html.light .goal-card{background:#FFFCF6!important}.goals-free-funds{border-color:rgba(91,70,30,.13)}html.light .goal-amounts span{background:#FFF8E9;border-color:rgba(91,70,30,.13)}
-/* The last legacy rule used to force the night artwork regardless of time. */
-html:not(.light) .balance-hero[data-daypart="night"]{background-image:linear-gradient(90deg,rgba(7,13,25,.74) 0%,rgba(8,16,30,.48) 54%,rgba(8,16,30,.14) 100%),linear-gradient(0deg,rgba(7,13,25,.25),transparent 58%),url('../assets/tiin-balance-mountains.jpeg')!important}
-html:not(.light) .balance-hero[data-daypart="morning"]{background-image:linear-gradient(90deg,rgba(9,16,29,.72) 0%,rgba(17,31,48,.42) 55%,rgba(33,54,70,.14) 100%),linear-gradient(0deg,rgba(9,16,29,.18),transparent 58%),url('../assets/tiin-balance-morning.png')!important}
-html:not(.light) .balance-hero[data-daypart="day"]{background-image:linear-gradient(90deg,rgba(8,18,31,.56) 0%,rgba(12,31,48,.28) 55%,rgba(30,52,67,.08) 100%),linear-gradient(0deg,rgba(8,18,31,.12),transparent 58%),url('../assets/tiin-balance-day.png')!important}
-html:not(.light) .balance-hero[data-daypart="evening"]{background-image:linear-gradient(90deg,rgba(12,15,28,.74) 0%,rgba(29,27,45,.46) 55%,rgba(55,40,47,.16) 100%),linear-gradient(0deg,rgba(12,15,28,.2),transparent 58%),url('../assets/tiin-balance-evening.png')!important}
 @media(max-width:767px){
   .month-nav{min-height:46px!important;margin:0 0 8px!important;padding:4px 0!important}.month-nav button{width:40px!important;height:40px!important;min-height:40px!important}.wallet-toggle{min-height:44px!important;margin:0 0 10px!important;padding:4px!important}.wallet-btn{min-height:36px!important}
   .balance-hero{min-height:196px!important;padding:18px!important;margin:0 0 11px!important}.balance-hero .value.balance{margin:34px 0 7px!important;font-size:clamp(34px,10vw,45px)!important;line-height:.98!important}.balance-hero-period{font-size:12px!important}.balance-hero .sync-status{padding:6px 8px!important}
@@ -50,31 +45,14 @@ html:not(.light) .balance-hero[data-daypart="evening"]{background-image:linear-g
 @media(max-width:480px){.modal .deal-date-status{display:grid!important;grid-template-columns:1fr!important;gap:0!important}.modal .deal-date-status .form-group{width:100%!important;margin:0 0 16px!important}.modal .deal-date-status input[type="date"],.modal .deal-date-status select{box-sizing:border-box!important;width:100%!important;min-width:0!important;min-height:56px!important;padding:12px 16px!important;font-size:16px!important}.modal .deal-date-status .form-group:last-child{margin-bottom:0!important}}
 
 
-/* Time-of-day hero: full-bleed artwork, no repeated or cropped black area. */
-html:not(.light) .balance-hero[data-daypart]{
-  background-size:cover!important;
-  background-repeat:no-repeat!important;
-  background-position:center 42%!important;
-}
-html:not(.light) .balance-hero[data-daypart="morning"]{
-  background-image:linear-gradient(90deg,rgba(8,18,31,.48) 0%,rgba(15,38,55,.25) 55%,rgba(52,90,109,.08) 100%),url('../assets/tiin-balance-morning.png')!important;
-}
-html:not(.light) .balance-hero[data-daypart="day"]{
-  background-image:linear-gradient(90deg,rgba(7,18,31,.42) 0%,rgba(10,36,53,.20) 55%,rgba(25,62,79,.06) 100%),url('../assets/tiin-balance-day.png')!important;
-}
-html:not(.light) .balance-hero[data-daypart="evening"]{
-  background-image:linear-gradient(90deg,rgba(15,16,32,.56) 0%,rgba(46,30,49,.32) 55%,rgba(91,51,48,.10) 100%),url('../assets/tiin-balance-evening.png')!important;
-}
-@keyframes tiinHeroFade{from{opacity:.72;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
-.balance-hero.tiin-daypart-transition{animation:tiinHeroFade .55s ease both!important}
-
-
-/* Final isolated artwork layer: avoids legacy hero backgrounds masking the image. */
+/* One isolated full-frame artwork layer.  Old PNG background rules are
+   deliberately not used: partially cached assets previously left the lower
+   part of the card black on iOS PWA. */
 html:not(.light) .balance-hero{
   position:relative!important;
   isolation:isolate;
   overflow:hidden!important;
-  background:#09111F!important;
+  background:linear-gradient(135deg,#13233b,#09111f)!important;
   background-image:none!important;
 }
 html:not(.light) .balance-hero::before{
@@ -106,14 +84,9 @@ html:not(.light) .balance-hero .balance-hero-period{
   position:relative!important;
   z-index:2!important;
 }
-html:not(.light) .balance-hero[data-daypart="morning"]::before{background-image:url('../assets/tiin-balance-morning.png')!important}
-html:not(.light) .balance-hero[data-daypart="day"]::before{background-image:url('../assets/tiin-balance-day.png')!important}
-html:not(.light) .balance-hero[data-daypart="evening"]::before{background-image:url('../assets/tiin-balance-evening.png')!important}
-html:not(.light) .balance-hero[data-daypart="night"]::before{background-image:url('../assets/tiin-balance-mountains.jpeg')!important}
-
-
-/* Published JPG assets are the verified full-frame variants. */
-html:not(.light) .balance-hero[data-daypart]{background-image:none!important}
 html:not(.light) .balance-hero[data-daypart="morning"]::before{background-image:url('../assets/tiin-hero-morning.jpg')!important;filter:brightness(1.04) saturate(.94)!important}
 html:not(.light) .balance-hero[data-daypart="day"]::before{background-image:url('../assets/tiin-hero-day.jpg')!important;filter:brightness(1.02) saturate(1.02)!important}
 html:not(.light) .balance-hero[data-daypart="evening"]::before{background-image:url('../assets/tiin-hero-evening.jpg')!important;filter:brightness(.90) saturate(1.12)!important}
+html:not(.light) .balance-hero[data-daypart="night"]::before{background-image:url('../assets/tiin-balance-mountains.jpeg')!important;filter:brightness(.76) saturate(.84)!important}
+@keyframes tiinHeroFade{from{opacity:.72;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
+.balance-hero.tiin-daypart-transition{animation:tiinHeroFade .55s ease both!important}

@@ -1,9 +1,11 @@
-const CACHE_NAME = 'tiin-navigation-21';
+// Increment on every production release so installed iPhone/Android PWAs do not
+// keep an older application shell or an old, damaged hero image.
+const CACHE_NAME = 'tiin-navigation-23';
 const APP_SHELL = [
   './', './index.html', './refresh.html', './manifest.json', './styles/tiin-v2.css', './styles/tiin-command-deck.css', './styles/tiin-polish.css',
   './src/tiin-v2.js', './src/tiin-currency.js',
-  './src/tiin-multicurrency.js', './src/tiin-auth-handoff.js', './src/tiin-sync.js', './src/tiin-limits.js', './src/tiin-finance-coach.js', './src/tiin-command-deck.js', './src/tiin-deals.js', './icon-192.png', './assets/tiin-balance-mountains.jpeg', './assets/tiin-balance-morning.png', './assets/tiin-balance-day.png', './assets/tiin-balance-evening.png', './icon-512.png',
-  './assets/tiin-balance-mountains.jpeg'
+  './src/tiin-multicurrency.js', './src/tiin-auth-handoff.js', './src/tiin-sync.js', './src/tiin-limits.js', './src/tiin-finance-coach.js', './src/tiin-command-deck.js', './src/tiin-deals.js', './src/tiin-settings.js', './icon-192.png', './icon-512.png',
+  './assets/tiin-hero-morning.jpg', './assets/tiin-hero-day.jpg', './assets/tiin-hero-evening.jpg', './assets/tiin-balance-mountains.jpeg'
 ];
 
 self.addEventListener('install', event => {
