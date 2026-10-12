@@ -1,8 +1,8 @@
 // Increment on every production release so installed iPhone/Android PWAs do not
 // keep an older application shell or an old, damaged hero image.
-const CACHE_NAME = 'tiin-navigation-23';
+const CACHE_NAME = 'tiin-assets-24';
 const APP_SHELL = [
-  './', './index.html', './refresh.html', './manifest.json', './styles/tiin-v2.css', './styles/tiin-command-deck.css', './styles/tiin-polish.css',
+  './manifest.json', './styles/tiin-v2.css', './styles/tiin-command-deck.css', './styles/tiin-polish.css',
   './src/tiin-v2.js', './src/tiin-currency.js',
   './src/tiin-multicurrency.js', './src/tiin-auth-handoff.js', './src/tiin-sync.js', './src/tiin-limits.js', './src/tiin-finance-coach.js', './src/tiin-command-deck.js', './src/tiin-deals.js', './src/tiin-settings.js', './icon-192.png', './icon-512.png',
   './assets/tiin-hero-morning.jpg', './assets/tiin-hero-day.jpg', './assets/tiin-hero-evening.jpg', './assets/tiin-balance-mountains.jpeg'
@@ -29,7 +29,19 @@ self.addEventListener('fetch', event => {
     })));
     return;
   }
-  const isFreshAsset = event.request.mode === 'navigate' || /\.(?:html|js|css)$/i.test(url.pathname);
+  // Never put documents into Cache Storage. Some iOS/PWA combinations can
+  // replay a compressed document body as text when an HTML response is read
+  // back from a worker cache. Navigation must always use the network.
+  if (isSameOrigin && event.request.mode === 'navigate') {
+    event.respondWith(fetch(event.request, { cache: 'no-store' }).catch(() =>
+      new Response('TIIN needs an internet connection to open.', {
+        status: 503,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      })
+    ));
+    return;
+  }
+  const isFreshAsset = /\.(?:js|css)$/i.test(url.pathname);
   if (isSameOrigin && isFreshAsset) {
     event.respondWith(fetch(event.request, { cache: 'no-store' }).then(response => {
       const copy = response.clone();
@@ -44,5 +56,5 @@ self.addEventListener('fetch', event => {
       caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
     }
     return response;
-  }).catch(() => caches.match('./index.html'))));
+  })));
 });
