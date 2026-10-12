@@ -26,7 +26,8 @@
     const el = document.getElementById('tab-transactions');
     let txns = filterTxnsByWallet(getTxns(currentYear, currentMonth));
     const allTags = getAllTags();
-    let filters = `<div class="filter-row"><select class="filter-select" onchange="currentTagFilter=this.value;renderTransactions()"><option value="">${currentLang === 'kz' ? 'Барлық тегтер' : 'Все теги'}</option>${allTags.map(tag => `<option value="${tag}" ${currentTagFilter === tag ? 'selected' : ''}>#${tag}</option>`).join('')}</select></div>`;
+    const tr = (ru, kz, en) => window.tiinText ? window.tiinText(ru, kz, en) : ru;
+    let filters = `<div class="filter-row"><select class="filter-select" onchange="currentTagFilter=this.value;renderTransactions()"><option value="">${tr('Все теги','Барлық тегтер','All tags')}</option>${allTags.map(tag => `<option value="${tag}" ${currentTagFilter === tag ? 'selected' : ''}>#${tag}</option>`).join('')}</select></div>`;
     if (currentTagFilter) txns = txns.filter(tx => tx.tags && tx.tags.includes(currentTagFilter));
     if (!txns.length) { el.innerHTML = filters + `<div class="empty"><div class="emoji">📭</div><p>${t('noTransactions')}</p></div>`; return; }
     const grouped = txns.reduce((groups, tx) => ((groups[tx.date] ||= []).push(tx), groups), {});
@@ -36,21 +37,21 @@
     Object.keys(grouped).sort().reverse().forEach(date => {
       const items = grouped[date].sort((a, b) => String(b.id).localeCompare(String(a.id)));
       const d = new Date(date + 'T00:00:00');
-      const label = d.toLocaleDateString(currentLang === 'kz' ? 'kk-KZ' : 'ru-RU', { weekday:'short', day:'numeric', month:'long' });
+      const label = d.toLocaleDateString(window.tiinLocale ? window.tiinLocale() : 'ru-RU', { weekday:'short', day:'numeric', month:'long' });
       const totals = dayTotals(items);
       // Transaction dates are historical records, not planned payments. Never mark them overdue.
       // Only show a metric when it exists, except the day's final balance which is always useful.
-      const incomeMetric = totals.income > 0 ? `<span class="day-metric income"><small>${currentLang === 'kz' ? 'Кіріс' : 'Доход'}</small><b>+${fmt(totals.income)}</b></span>` : '';
-      const expenseMetric = totals.expense > 0 ? `<span class="day-metric expense"><small>${currentLang === 'kz' ? 'Шығыс' : 'Расход'}</small><b>−${fmt(totals.expense)}</b></span>` : '';
+      const incomeMetric = totals.income > 0 ? `<span class="day-metric income"><small>${tr('Доход','Кіріс','Income')}</small><b>+${fmt(totals.income)}</b></span>` : '';
+      const expenseMetric = totals.expense > 0 ? `<span class="day-metric expense"><small>${tr('Расход','Шығыс','Expense')}</small><b>−${fmt(totals.expense)}</b></span>` : '';
       const netSign = totals.net >= 0 ? '+' : '−';
-      html += `<section class="day-group"><header class="day-header"><div class="day-heading"><div class="day-title">${label}</div><div class="day-caption">${currentLang === 'kz' ? 'Күн қорытындысы' : 'Итоги дня'}</div></div><div class="day-totals">${incomeMetric}${expenseMetric}<span class="day-metric net"><small>${currentLang === 'kz' ? 'Нәтиже' : 'Итог'}</small><b>${netSign}${fmt(Math.abs(totals.net))}</b></span></div></header>`;
+      html += `<section class="day-group"><header class="day-header"><div class="day-heading"><div class="day-title">${label}</div><div class="day-caption">${tr('Итоги дня','Күн қорытындысы','Daily total')}</div></div><div class="day-totals">${incomeMetric}${expenseMetric}<span class="day-metric net"><small>${tr('Итог','Нәтиже','Total')}</small><b>${netSign}${fmt(Math.abs(totals.net))}</b></span></div></header>`;
       items.forEach(tx => {
-        const cat = allCats.find(item => item.id === tx.category) || { icon:'•', name: currentLang === 'kz' ? 'Санат' : 'Категория' };
+        const cat = allCats.find(item => item.id === tx.category) || { icon:'•', name: tr('Категория','Санат','Category') };
         const isIncome = tx.type === 'income'; const tags = tx.tags?.length ? `<div class="tx-tags">${tx.tags.map(tag => `#${tag}`).join(' ')}</div>` : '';
         const wallet = tx.wallet === 'business' ? '💼 ' : '';
         // Keeping the id in a data attribute avoids invalid nested quotes in inline handlers.
         const txId = encodeURIComponent(String(tx.id));
-        html += `<article class="tx-item" data-tx-id="${txId}" onclick="editTx(decodeURIComponent(this.dataset.txId))"><div class="tx-icon">${cat.icon}</div><div class="tx-info"><div class="tx-cat">${wallet}${cat.name}</div><div class="tx-comment">${tx.comment || ''}</div>${tags}</div><div class="tx-actions"><div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '−'}${tx.currency && tx.currency !== 'KZT' && Number.isFinite(Number(tx.originalAmount)) ? new Intl.NumberFormat(currentLang === 'kz' ? 'kk-KZ' : 'ru-RU', { maximumFractionDigits: tx.currency === 'USD' || tx.currency === 'EUR' || tx.currency === 'RUB' ? 2 : 0 }).format(Number(tx.originalAmount)) + ' ' + ({ USD:'$', VND:'₫', EUR:'€', RUB:'₽' }[tx.currency] || tx.currency) : fmt(tx.amount)}</div>${tx.currency && tx.currency !== 'KZT' && Number.isFinite(Number(tx.originalAmount)) ? '<div class="tx-base-amount">≈ ' + (isIncome ? '+' : '−') + fmt(tx.amount) + '</div>' : ''}<button class="tx-menu" type="button" aria-label="Действия с операцией" onclick="event.stopPropagation();openTxActions('${txId}')">⋮</button></div></article>`;
+        html += `<article class="tx-item" data-tx-id="${txId}" onclick="editTx(decodeURIComponent(this.dataset.txId))"><div class="tx-icon">${cat.icon}</div><div class="tx-info"><div class="tx-cat">${wallet}${cat.name}</div><div class="tx-comment">${tx.comment || ''}</div>${tags}</div><div class="tx-actions"><div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '−'}${tx.currency && tx.currency !== 'KZT' && Number.isFinite(Number(tx.originalAmount)) ? new Intl.NumberFormat(window.tiinLocale ? window.tiinLocale() : 'ru-RU', { maximumFractionDigits: tx.currency === 'USD' || tx.currency === 'EUR' || tx.currency === 'RUB' ? 2 : 0 }).format(Number(tx.originalAmount)) + ' ' + ({ USD:'$', VND:'₫', EUR:'€', RUB:'₽' }[tx.currency] || tx.currency) : fmt(tx.amount)}</div>${tx.currency && tx.currency !== 'KZT' && Number.isFinite(Number(tx.originalAmount)) ? '<div class="tx-base-amount">≈ ' + (isIncome ? '+' : '−') + fmt(tx.amount) + '</div>' : ''}<button class="tx-menu" type="button" aria-label="${tr('Действия с операцией','Операция әрекеттері','Transaction actions')}" onclick="event.stopPropagation();openTxActions('${txId}')">⋮</button></div></article>`;
       });
       html += '</section>';
     });
