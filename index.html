@@ -434,7 +434,7 @@ window.addEventListener('appinstalled',function(){
 </script>
 
 <div class="top-controls">
-  <div class="lang-toggle" id="langToggle" onclick="toggleLang()"><span id="langRu" class="active">РУС</span><span id="langKz">ҚАЗ</span></div>
+  <div class="lang-toggle" id="langToggle" role="group" aria-label="Language"><span id="langRu" class="active" onclick="setLang('ru')">РУС</span><span id="langKz" onclick="setLang('kz')">ҚАЗ</span><span id="langEn" onclick="setLang('en')">ENG</span></div>
   <button class="ctrl-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
 </div>
 <div class="container" id="app">
@@ -630,21 +630,38 @@ const LANG = {
   }
 };
 
+LANG.en = {
+  income:'Income',expense:'Expense',balance:'Balance',addExpense:'+ Expense',addIncome:'+ Income',transactions:'Home',analytics:'Analytics',goals:'Goals',payments:'Payments',
+  noTransactions:'No transactions this month',save:'Save',delete:'Delete',cancel:'Cancel',addExpenseTitle:'Add expense',addIncomeTitle:'Add income',amount:'Amount',category:'Category',comment:'Comment',date:'Date',optional:'Optional',tag:'Tag',all:'All',personal:'Personal',business:'Business',template:'+ Template',
+  goalTitle:'Savings goals',addGoal:'+ Goal',goalName:'Name',targetAmount:'Target amount',deadline:'Deadline',deposit:'Save',withdraw:'Withdraw',createGoal:'Create goal',freeFunds:'Free funds',atCurrentPace:'At the current pace',months:'mo.',
+  expensesByCategory:'Expenses by category',noExpenses:'No expenses',top:'Top',vsLastMonth:'Expenses vs last month',noDataLastMonth:'No data for last month',expenseHistory:'Expense history',export:'Export',avgPerDay:'Average expense/day',forecast:'Monthly forecast',budgets:'Category limits',setBudgets:'Set limits',weeklyReview:'Weekly review',last7days:'Last 7 days',prev7days:'Previous 7 days',recurring:'Recurring',addRecurring:'+ Payment',payday:'Payday',daysUntilPayday:'Days until payday',dailyBudget:'Daily budget',calendarSync:'Calendar sync',downloadICS:'Download .ics',subscribe:'Subscribe',paid:'Paid',pending:'Pending',
+  confirmDelete:'Delete transaction?',confirmDeleteGoal:'Delete goal?',added:'added',deleted:'Deleted',saved:'Saved',enterAmount:'Enter an amount',selectCategory:'Select a category',selectDate:'Select a date',enterName:'Enter a name',noData:'No data',
+  credits:'Loans',food:'Food',transport:'Transport',health:'Health',leisure:'Leisure',extra:'Extra expenses',rentHome:'Home rent',rentOffice:'Office rent',internet:'Internet',subscriptions:'Subscriptions',taxes:'Taxes',utilities:'Utilities',shop:'Shopping',other:'Other',salary:'Salary',businessInc:'Business',otherInc:'Other',
+  newTemplate:'New template',name:'Name',type:'Type',create:'Create',existingTemplates:'Existing templates:',templateCreated:'Template created ✓',templateDeleted:'Template deleted',fillAllFields:'Fill in all fields',recurringPayment:'Recurring payment',dayOfMonth:'Day of month',paymentCreated:'Payment created ✓',deleteRecurring:'Delete recurring payment?',addPayments:'Add recurring payments',addFirstGoal:'Add your first savings goal',currentBalance:'Current balance',perDay:'per day',calendarDesc:'Add payments to your iPhone calendar — with a reminder one day before',calendarDownloadDesc:'opens a file; iPhone will offer to add events',calendarSubDesc:'an auto-updating calendar',calendarManual:'Or manually: Settings → Calendar → Accounts → Subscribe',openSubscription:'Opening calendar subscription…',noPayments:'No payments',budgetExceeded:'⚠️ Limit exceeded!',setBudgetLimits:'Set category limits',
+  forecastTitle:'Forecast',avgDay:'AVERAGE/DAY',forecastMonth:'MONTHLY FORECAST',forecastHint:'',fixedPayments:'Required payments',dailySpending:'Spent',perMonth:'per month',forecastFormula:'',daysGone:'{x} of {y} days passed',daysLeft:'{x} days left',forecastExplain:'spent + unpaid bills',comparisonByCategory:'Comparison by category',change:'Change',canCalc:'You can use: 5000+3200, 2500*3',wallet:'Wallet',goalCreated:'Goal created ✓',goalDeleted:'Goal deleted',depositToGoal:'Add to goal',withdrawFromGoal:'Withdraw from goal',deposited:'Saved ✓',withdrawn:'Withdrawn ✓',limitsSaved:'Limits saved ✓',enterDay:'Enter a day (1–31)',icsDownloaded:'.ics file downloaded 📅',allDownloaded:'All payments downloaded 📅',csvDownloaded:'CSV downloaded ✓',pdfDownloaded:'PDF downloaded ✓',backupData:'Data backup',restoreData:'Restore',backupDone:'Backup saved ✓',restoreDone:'Restored {n} records ✓',incomeAdded:'Income added ✓',expenseAdded:'Expense added ✓',auto:'(auto)',allTags:'All tags',newGoal:'New goal',example:'For example: Car',deadlineOpt:'Deadline (optional)',tomorrowPayment:'Payment tomorrow',paymentAmount:'Amount',addToCalendar:'Add to calendar',payments_tracker:'Payments',addPaymentItem:'+ Item',pt_paid:'Paid',pt_waiting:'Awaiting',pt_overdue:'Overdue',highPriority:'High',medPriority:'Medium',lowPriority:'Low',paidOf:'Paid {x} of {y}',dueBy:'by the {x}',pt_name:'Name',pt_amount:'Amount',pt_priority:'Priority',pt_deadline:'Deadline (day of month)',pt_addItem:'Add payment item',pt_deleteConfirm:'Delete payment item?',months_arr:['January','February','March','April','May','June','July','August','September','October','November','December'],debtLoad:'Debt load',totalDebt:'Total debt',repayDebt:'Pay',debtRepaid:'Debt repaid ✓',debtsCount:'debts',noDebts:'No debts',unpaidBills:'Unpaid bills',subtotal:'Total'
+};
+
 let currentLang = localStorage.getItem('lang') || 'ru';
+if (!LANG[currentLang]) currentLang = 'ru';
 function t(key) { return LANG[currentLang][key] || LANG.ru[key] || key; }
+window.tiinText = function (ru, kz, en) { return currentLang === 'kz' ? (kz || ru) : currentLang === 'en' ? (en || ru) : ru; };
+window.tiinLocale = function () { return currentLang === 'kz' ? 'kk-KZ' : currentLang === 'en' ? 'en-GB' : 'ru-RU'; };
 
 function updateLangToggle() {
   document.getElementById('langRu').classList.toggle('active', currentLang === 'ru');
   document.getElementById('langKz').classList.toggle('active', currentLang === 'kz');
+  document.getElementById('langEn').classList.toggle('active', currentLang === 'en');
 }
-function toggleLang() {
-  currentLang = currentLang === 'ru' ? 'kz' : 'ru';
+function setLang(lang) {
+  currentLang = LANG[lang] ? lang : 'ru';
   localStorage.setItem('lang', currentLang);
   updateLangToggle();
   updateStaticTexts();
   updateTodayDate();
   render();
+  window.dispatchEvent(new Event('tiin-language-change'));
 }
+function toggleLang() { setLang(currentLang === 'ru' ? 'kz' : currentLang === 'kz' ? 'en' : 'ru'); }
 
 function toggleTheme() {
   const isLight = document.documentElement.classList.toggle('light');
@@ -727,7 +744,8 @@ function updateTodayDate() {
   const day = now.getDate();
   const daysRu = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
   const daysKz = ['Жексенбі','Дүйсенбі','Сейсенбі','Сәрсенбі','Бейсенбі','Жұма','Сенбі'];
-  const days = currentLang === 'kz' ? daysKz : daysRu;
+  const daysEn = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const days = currentLang === 'kz' ? daysKz : currentLang === 'en' ? daysEn : daysRu;
   const dayName = days[now.getDay()];
   el.innerHTML = `<div style="font-size:28px;font-weight:800;color:var(--gold1);line-height:1">${day}</div><div style="font-size:10px;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px">${dayName}</div>`;
 }
@@ -756,7 +774,7 @@ function getBudgets() { return JSON.parse(localStorage.getItem('budgets') || '{}
 function saveBudgets(b) { localStorage.setItem('budgets', JSON.stringify(b)); }
 function getPayday() { return parseInt(localStorage.getItem('payday') || '0'); }
 function setPayday(d) { localStorage.setItem('payday', d.toString()); }
-function fmt(n) { return Math.round(n).toLocaleString('ru-RU') + ' ₸'; }
+function fmt(n) { return Math.round(n).toLocaleString(window.tiinLocale()) + ' ₸'; }
 
 function filterTxnsByWallet(txns) {
   if (currentWallet === 'all') return txns;
@@ -2052,12 +2070,12 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=69', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=70', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
 </script>
-<script src="src/tiin-v2.js?v=25"></script>
+<script src="src/tiin-v2.js?v=26"></script>
 <script src="src/tiin-currency.js?v=2"></script>
   <script src="src/tiin-multicurrency.js?v=1"></script>
 <script src="src/tiin-auth-handoff.js?v=1"></script>
@@ -2065,6 +2083,6 @@ init();
 <script id="tiinLimitsScript" src="src/tiin-limits.js?v=2"></script>
 <script src="src/tiin-command-deck.js?v=19"></script>
 <script src="src/tiin-deals.js?v=6"></script>
-<script src="src/tiin-settings.js?v=10"></script>
+<script src="src/tiin-settings.js?v=11"></script>
 </body>
 </html>
