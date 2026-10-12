@@ -165,9 +165,12 @@
     hero.setAttribute('data-daypart', daypart);
 
     if (previousDaypart && previousDaypart !== daypart) {
-      hero.classList.remove('tiin-daypart-fade');
+      hero.classList.remove('tiin-daypart-transition');
       void hero.offsetWidth;
-      hero.classList.add('tiin-daypart-fade');
+      hero.classList.add('tiin-daypart-transition');
+      window.setTimeout(function () {
+        hero.classList.remove('tiin-daypart-transition');
+      }, 650);
     }
   }
 
