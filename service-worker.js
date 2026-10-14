@@ -1,6 +1,6 @@
 // Increment on every production release so installed iPhone/Android PWAs do not
 // keep an older application shell or an old, damaged hero image.
-const CACHE_NAME = 'tiin-assets-30';
+const CACHE_NAME = 'tiin-assets-31';
 const APP_SHELL = [
   './manifest.json', './styles/tiin-v2.css', './styles/tiin-command-deck.css', './styles/tiin-polish.css',
   './src/tiin-v2.js', './src/tiin-currency.js',
