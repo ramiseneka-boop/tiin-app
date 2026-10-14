@@ -2076,7 +2076,7 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=74', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=75', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
@@ -2090,5 +2090,6 @@ init();
 <script src="src/tiin-command-deck.js?v=20"></script>
 <script src="src/tiin-deals.js?v=7"></script>
 <script src="src/tiin-settings.js?v=13"></script>
+<script src="src/tiin-reports.js?v=1"></script>
 </body>
 </html>
