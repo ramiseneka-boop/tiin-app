@@ -786,6 +786,9 @@ function fmt(n) { return Math.round(n).toLocaleString(window.tiinLocale()) + ' â
 // expenses only after the user confirms them in the Payments screen.
 function isActualTransaction(tx) {
   if (!tx || !tx.date) return true;
+  // `auto_recurring_id` was written by the retired scheduler without any
+  // confirmation from the user. It is a forecast, never a factual payment.
+  if (tx.auto_recurring_id) return false;
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   return tx.date <= today;
