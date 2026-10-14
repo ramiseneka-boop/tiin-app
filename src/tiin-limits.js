@@ -41,7 +41,7 @@
     } catch (_) { return normalise(null); }
   }
   function saveLimits(value) { localStorage.setItem(KEY, JSON.stringify(normalise(value))); }
-  function allMonthExpenses(year, month) { return getTxns(year, month).filter(tx => tx.type === 'expense'); }
+  function allMonthExpenses(year, month) { return filterTxnsByWallet(getTxns(year, month)).filter(tx => tx.type === 'expense'); }
   function sameDay(txns, date) { return txns.filter(tx => tx.date === date); }
   function total(txns) { return txns.reduce((sum, tx) => sum + number(tx.amount), 0); }
   function byCategory(txns, category) { return total(txns.filter(tx => tx.category === category)); }
