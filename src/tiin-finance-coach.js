@@ -112,7 +112,7 @@
   };
   function reminderItems() {
     const { year, month } = selectedMonth(), c = words(), items = [], now = new Date();
-    const all = getTxns(year, month).filter(item => item.type === 'expense');
+    const all = filterTxnsByWallet(getTxns(year, month)).filter(item => item.type === 'expense');
     const raw = (() => { try { return JSON.parse(localStorage.getItem('budgets') || '{}'); } catch (_) { return {}; } })();
     const dailyLimit = num(raw?.global?.daily);
     const daySpent = sum(all.filter(item => item.date === today()));
