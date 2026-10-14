@@ -782,9 +782,19 @@ function getPayday() { return parseInt(localStorage.getItem('payday') || '0'); }
 function setPayday(d) { localStorage.setItem('payday', d.toString()); }
 function fmt(n) { return Math.round(n).toLocaleString(window.tiinLocale()) + ' ₸'; }
 
+// A planned date is not a completed movement of money. Payments become
+// expenses only after the user confirms them in the Payments screen.
+function isActualTransaction(tx) {
+  if (!tx || !tx.date) return true;
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  return tx.date <= today;
+}
+
 function filterTxnsByWallet(txns) {
-  if (currentWallet === 'all') return txns;
-  return txns.filter(tx => (tx.wallet || 'personal') === currentWallet);
+  const actual = (txns || []).filter(isActualTransaction);
+  if (currentWallet === 'all') return actual;
+  return actual.filter(tx => (tx.wallet || 'personal') === currentWallet);
 }
 
 function getAllTags() {
@@ -823,43 +833,16 @@ function changeMonth(d) {
 function checkRecurring(forYear, forMonth) {
   const recurring = getRecurring();
   if (!recurring.length) return;
-  const now = new Date();
-  const y = forYear !== undefined ? forYear : now.getFullYear();
-  const m = forMonth !== undefined ? forMonth : now.getMonth();
-  const txns = getTxns(y, m);
-  let changed = false;
-  recurring.forEach(r => {
-    // Migrated schedules are confirmed manually from the unified Payments screen.
-    if (r.manual) return;
-    // Skip if startMonth is set and current month is before it
-    if (r.startMonth) {
-      const [sy, sm] = r.startMonth.split('-').map(Number);
-      if (y < sy || (y === sy && m < sm - 1)) return;
-    }
-    const rid = 'recurring_' + r.id;
-    if (!txns.find(tx => tx.auto_recurring_id === rid)) {
-      const day = Math.min(r.day, new Date(y, m + 1, 0).getDate());
-      txns.push({
-        id: Date.now() + Math.random(),
-        type: r.type || 'expense',
-        amount: r.amount,
-        category: r.category,
-        comment: r.name + ' ' + t('auto'),
-        date: `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`,
-        wallet: r.wallet || 'personal',
-        tags: [],
-        auto_recurring_id: rid
-      });
-      changed = true;
-    }
-  });
-  if (changed) saveTxns(y, m, txns);
+  // Legacy versions created transactions merely by opening a month. Preserve
+  // the schedules, but mark them manual so only an explicit "Pay" action can
+  // create a real expense from now on. Existing transaction history remains
+  // untouched and future legacy rows are excluded by isActualTransaction().
+  if (recurring.some(r => !r.manual)) saveRecurring(recurring.map(r => ({ ...r, manual: true })));
 }
 
 function render() {
   document.getElementById('monthTitle').textContent = t('months_arr')[currentMonth] + ' ' + currentYear;
   updateStaticTexts();
-  checkRecurring(currentYear, currentMonth);
   const txns = filterTxnsByWallet(getTxns(currentYear, currentMonth));
   const inc = txns.filter(tx=>tx.type==='income').reduce((s,tx)=>s+tx.amount,0);
   const exp = txns.filter(tx=>tx.type==='expense').reduce((s,tx)=>s+tx.amount,0);
@@ -1433,11 +1416,10 @@ function submitRecurring() {
   if (!name || !amount || !day || !catEl) { toast(t('fillAllFields')); return; }
   const recurring = getRecurring();
   const sm = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
-  recurring.push({ id: Date.now(), name, amount, day: Math.min(Math.max(day, 1), 31), type: typeEl ? typeEl.dataset.id : 'expense', category: catEl.dataset.id, wallet: currentWallet === 'all' ? 'personal' : currentWallet, startMonth: sm });
+  recurring.push({ id: Date.now(), name, amount, day: Math.min(Math.max(day, 1), 31), type: typeEl ? typeEl.dataset.id : 'expense', category: catEl.dataset.id, wallet: currentWallet === 'all' ? 'personal' : currentWallet, startMonth: sm, manual: true });
   saveRecurring(recurring);
   closeModal();
   toast(t('paymentCreated'));
-  checkRecurring();
   render();
 }
 
@@ -2076,7 +2058,7 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=75', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=76', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
@@ -2090,6 +2072,6 @@ init();
 <script src="src/tiin-command-deck.js?v=20"></script>
 <script src="src/tiin-deals.js?v=7"></script>
 <script src="src/tiin-settings.js?v=13"></script>
-<script src="src/tiin-reports.js?v=1"></script>
+<script src="src/tiin-reports.js?v=2"></script>
 </body>
 </html>
