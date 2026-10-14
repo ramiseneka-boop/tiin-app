@@ -21,7 +21,10 @@
         rows.forEach(row => result.push({ ...row, date: row.date || `${match[1]}-${String(Number(match[2]) + 1).padStart(2, '0')}-01` }));
       } catch (_) { /* A damaged old record is skipped rather than breaking reports. */ }
     }
-    return typeof filterTxnsByWallet === 'function' ? filterTxnsByWallet(result) : result;
+    // Never include a dated future plan in a factual balance or export. This
+    // additionally protects reports made from records created by older builds.
+    const actual = typeof isActualTransaction === 'function' ? result.filter(isActualTransaction) : result;
+    return typeof filterTxnsByWallet === 'function' ? filterTxnsByWallet(actual) : actual;
   }
 
   function totals(rows) {
