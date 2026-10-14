@@ -28,3 +28,21 @@ test('payment status is resolved from the paid period, not the open calendar mon
   assert.match(app, /const paidAt=now\(\), y=paidAt\.getFullYear\(\),m=paidAt\.getMonth\(\), key=periodKey\(paidAt\)/);
   assert.match(app, /paymentScheduleId:s\.id,paymentPeriod:key/);
 });
+
+test('reports provide card drill-down and selected-period PDF export', () => {
+  const report = read('src/tiin-reports.js');
+  const app = read('index.html');
+  const sw = read('service-worker.js');
+
+  assert.match(report, /openTIINStatement\('month-income'\)/);
+  assert.match(report, /openTIINStatement\('month-expense'\)/);
+  assert.match(report, /openTIINStatement\('lifetime-balance'\)/);
+  assert.match(report, /value=\"1\"/);
+  assert.match(report, /value=\"2\"/);
+  assert.match(report, /value=\"3\"/);
+  assert.match(report, /value=\"all\"/);
+  assert.match(report, /value=\"custom\"/);
+  assert.match(report, /Where \/ purpose/);
+  assert.match(app, /src\/tiin-reports\.js\?v=1/);
+  assert.match(sw, /src\/tiin-reports\.js/);
+});
