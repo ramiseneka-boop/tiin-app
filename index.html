@@ -782,7 +782,7 @@ function getPayday() { return parseInt(localStorage.getItem('payday') || '0'); }
 function setPayday(d) { localStorage.setItem('payday', d.toString()); }
 function fmt(n) { return Math.round(n).toLocaleString(window.tiinLocale()) + ' ₸'; }
 
-// A planned date is not a completed movement of money. Payments become
+// A planned date is not a completed movement of money.  Payments become
 // expenses only after the user confirms them in the Payments screen.
 function isActualTransaction(tx) {
   if (!tx || !tx.date) return true;
@@ -836,9 +836,9 @@ function changeMonth(d) {
 function checkRecurring(forYear, forMonth) {
   const recurring = getRecurring();
   if (!recurring.length) return;
-  // Legacy versions created transactions merely by opening a month. Preserve
+  // Legacy versions created transactions merely by opening a month.  Preserve
   // the schedules, but mark them manual so only an explicit "Pay" action can
-  // create a real expense from now on. Existing transaction history remains
+  // create a real expense from now on.  Existing transaction history remains
   // untouched and future legacy rows are excluded by isActualTransaction().
   if (recurring.some(r => !r.manual)) saveRecurring(recurring.map(r => ({ ...r, manual: true })));
 }
@@ -2061,20 +2061,20 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=78', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=79', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
 </script>
-<script src="src/tiin-v2.js?v=27"></script>
+<script src="src/tiin-v2.js?v=28"></script>
 <script src="src/tiin-currency.js?v=3"></script>
   <script src="src/tiin-multicurrency.js?v=2"></script>
 <script src="src/tiin-auth-handoff.js?v=1"></script>
 <script src="src/tiin-sync.js?v=15"></script>
 <script id="tiinLimitsScript" src="src/tiin-limits.js?v=3"></script>
 <script src="src/tiin-command-deck.js?v=20"></script>
-<script src="src/tiin-deals.js?v=7"></script>
-<script src="src/tiin-settings.js?v=15"></script>
+<script src="src/tiin-deals.js?v=8"></script>
+<script src="src/tiin-settings.js?v=16"></script>
 <script src="src/tiin-reports.js?v=2"></script>
 </body>
 </html>
