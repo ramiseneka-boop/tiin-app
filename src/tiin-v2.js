@@ -741,6 +741,26 @@
     document.getElementById('tplCustomCategoryName').value = '';
     document.getElementById('tplCustomCategoryIcon').value = '🏷️';
   };
+  window.openTIINCategories = function openTIINCategories() {
+    const rows=getCustomCategories();
+    const copy=currentLang==='kz'
+      ? {title:'Өз санаттарыңыз',hint:'Санат операциялар мен есептерде бірден пайда болады.',name:'Атауы',emoji:'Эмодзи',type:'Түрі',expense:'Шығыс',income:'Кіріс',save:'Санатты қосу',empty:'Өз санаттарыңыз әлі жоқ'}
+      : currentLang==='en'
+        ? {title:'Your categories',hint:'The category will immediately appear in operations and reports.',name:'Name',emoji:'Emoji',type:'Type',expense:'Expense',income:'Income',save:'Add category',empty:'You have no custom categories yet'}
+        : {title:'Свои категории',hint:'Категория сразу появится в операциях и отчётах.',name:'Название',emoji:'Эмодзи',type:'Тип',expense:'Расход',income:'Доход',save:'Добавить категорию',empty:'Своих категорий пока нет'};
+    document.getElementById('modal').innerHTML='<div class="tiin-sheet"><div class="tiin-sheet-handle"></div><h2>✦ '+copy.title+'</h2><p>'+copy.hint+'</p><div class="form-group"><label>'+copy.name+'</label><input class="form-input" id="tiinCustomCategoryName" placeholder="'+(currentLang==='kz'?'Мысалы, Үй жануары':currentLang==='en'?'For example, Pet':'Например, Питомец')+'"></div><div class="tiin-two"><label>'+copy.emoji+'<input class="form-input" id="tiinCustomCategoryEmoji" value="🏷️" maxlength="2"></label><label>'+copy.type+'<select class="form-input" id="tiinCustomCategoryType"><option value="expense">'+copy.expense+'</option><option value="income">'+copy.income+'</option></select></label></div><button class="btn btn-gold" onclick="saveTIINCustomCategory()">'+copy.save+'</button><div class="tiin-template-list">'+(rows.length?rows.map(row=>'<div><span>'+esc(row.icon||'🏷️')+' '+esc(row.name)+'</span><small>'+((row.type==='income')?copy.income:copy.expense)+'</small></div>').join(''):'<small>'+copy.empty+'</small>')+'</div></div>';
+    document.getElementById('modalOverlay').classList.add('open');
+  };
+  window.saveTIINCustomCategory = function saveTIINCustomCategory() {
+    const name=document.getElementById('tiinCustomCategoryName')?.value.trim();
+    const icon=Array.from(document.getElementById('tiinCustomCategoryEmoji')?.value.trim()||'🏷️')[0]||'🏷️';
+    const type=document.getElementById('tiinCustomCategoryType')?.value==='income'?'income':'expense';
+    if(!name){toast(text('Введите название категории','Санат атауын енгізіңіз','Enter a category name'));return;}
+    const category={id:'custom_'+type+'_'+Date.now(),name,icon,type};
+    const rows=getCustomCategories();rows.push(category);persistCustomCategories(rows);
+    (type==='income'?INCOME_CATS:EXPENSE_CATS).push({id:category.id,name,icon,custom:true});
+    closeModal();toast(text('Категория добавлена ✓','Санат қосылды ✓','Category added ✓'));window.render?.();
+  };
   window.openTemplateModal = function openTemplateModalWithCategories() {
     const existing = getTemplates();
     document.getElementById('modal').innerHTML = '<h3>' + t('newTemplate') + '</h3>' +
