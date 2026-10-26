@@ -34,8 +34,17 @@
   }
 
   function category(row) {
-    const found = [...(window.EXPENSE_CATS || []), ...(window.INCOME_CATS || [])].find(item => item.id === row.category);
-    return found || { icon:'•', name: tr('Категория', 'Санат', 'Category') };
+    // The catalogue is declared with top-level `const` in the legacy app,
+    // which deliberately does not create window.EXPENSE_CATS. Access both
+    // forms so a report never loses its category names in a separate script.
+    const expense = typeof EXPENSE_CATS !== 'undefined' ? EXPENSE_CATS : (window.EXPENSE_CATS || []);
+    const income = typeof INCOME_CATS !== 'undefined' ? INCOME_CATS : (window.INCOME_CATS || []);
+    const found = [...expense, ...income].find(item => item.id === row.category);
+    if (found) return found;
+    // Older records sometimes stored a literal category name. Preserve it
+    // instead of hiding meaningful user data behind a generic word.
+    const legacyName = typeof row.category === 'string' && row.category.trim();
+    return { icon:'•', name: legacyName || tr('Категория', 'Санат', 'Category') };
   }
 
   function rowsByDate(rows) {
