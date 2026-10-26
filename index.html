@@ -784,11 +784,26 @@ function fmt(n) { return Math.round(n).toLocaleString(window.tiinLocale()) + ' �
 
 // A planned date is not a completed movement of money.  Payments become
 // expenses only after the user confirms them in the Payments screen.
+function isLegacyAutoScheduledPayment(tx) {
+  if (!tx || tx.type !== 'expense' || !tx.paymentScheduleId) return false;
+  // Build 1.x created a scheduled transaction on its own and put “Авто” in
+  // the comment. An early 2.0 migration linked some of those rows to a
+  // schedule, which accidentally made a forecast look like a completed
+  // payment. A genuine payment created by the current screen uses
+  // “· платёж” and is never filtered here.
+  let schedules = [];
+  try { schedules = JSON.parse(localStorage.getItem('tiin_payment_schedules_v2') || '[]'); } catch (_) {}
+  const schedule = Array.isArray(schedules) && schedules.find(item => String(item.id) === String(tx.paymentScheduleId));
+  if (!schedule?.autoRecurringId) return false;
+  return tx.legacyAutoReconciled === true || /(?:^|\s)(авто|авто\. |auto)\s*$/i.test(String(tx.comment || '').trim());
+}
+window.isTIINLegacyAutoPayment = isLegacyAutoScheduledPayment;
+
 function isActualTransaction(tx) {
   if (!tx || !tx.date) return true;
   // `auto_recurring_id` was written by the retired scheduler without any
   // confirmation from the user. It is a forecast, never a factual payment.
-  if (tx.auto_recurring_id) return false;
+  if (tx.auto_recurring_id || isLegacyAutoScheduledPayment(tx)) return false;
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   return tx.date <= today;
@@ -2061,7 +2076,7 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=80', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=81', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
@@ -2074,7 +2089,7 @@ init();
 <script id="tiinLimitsScript" src="src/tiin-limits.js?v=3"></script>
 <script src="src/tiin-command-deck.js?v=20"></script>
 <script src="src/tiin-deals.js?v=8"></script>
-<script src="src/tiin-settings.js?v=16"></script>
+<script src="src/tiin-settings.js?v=17"></script>
 <script src="src/tiin-reports.js?v=2"></script>
 </body>
 </html>
