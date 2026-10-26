@@ -61,7 +61,7 @@
     // tap from creating a duplicate expense after switching months.
     const [year, month] = String(key).split('-').map(Number);
     const source = Number.isInteger(year) && Number.isInteger(month) ? txns(year, month - 1) : txns();
-    return source.find(t => t.type === 'expense' && txKey(t) === schedule.id + ':' + key);
+    return source.find(t => t.type === 'expense' && txKey(t) === schedule.id + ':' + key && !window.isTIINLegacyAutoPayment?.(t));
   }
 
   // Older builds marked a recurring item as paid by creating an automatic row.
@@ -69,22 +69,11 @@
   // converting it to one normal, linked expense. Future rows stay forecasts;
   // they are never promoted and therefore cannot affect a future balance.
   function reconcileCurrentLegacyPaidPayments() {
-    const key = periodKey(), [year, month] = key.split('-').map(Number);
-    if (!Number.isInteger(year) || !Number.isInteger(month)) return false;
-    const byLegacyId = new Map(schedules().filter(s => s.autoRecurringId).map(s => [s.autoRecurringId, s]));
-    if (!byLegacyId.size) return false;
-    const storageKey = 'txns_' + year + '_' + (month - 1);
-    const rows = read(storageKey, []), today = dateKey(now()); let changed = false;
-    rows.forEach(row => {
-      const schedule = byLegacyId.get(row.auto_recurring_id);
-      if (!schedule || row.type !== 'expense' || row.paymentScheduleId || !row.date || row.date.slice(0, 7) !== key || row.date > today) return;
-      row.paymentScheduleId = schedule.id;
-      row.paymentPeriod = key;
-      delete row.auto_recurring_id;
-      changed = true;
-    });
-    if (changed) { localStorage.setItem(storageKey, JSON.stringify(rows)); window.TIINCloud?.scheduleSync?.(); }
-    return changed;
+    // A legacy auto row was only a forecast: old TIIN generated it merely by
+    // opening a month. It must never be upgraded into a real paid operation.
+    // Existing records stay untouched for audit/history; the central actual
+    // transaction filter ignores them until the user confirms payment.
+    return false;
   }
   function dueFor(schedule, ref = now()) {
     const y = ref.getFullYear(), m = ref.getMonth();
