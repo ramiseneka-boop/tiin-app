@@ -73,21 +73,27 @@
   window.confirmDealPayment=function(dealId){ const d=deal(dealId), amount=n(document.getElementById('dealPaymentAmount').value), date=document.getElementById('dealPaymentDate').value; if(!d||!amount||!date)return; if(amount>remaining(d)+.01){toast(tx('overpay'));return;} const dt=new Date(date+'T00:00:00'), y=dt.getFullYear(),m=dt.getMonth(), incomeId='deal-net-income-'+d.id+'-'+Date.now(), ratio=amount/Math.max(1,n(d.amount)); const netReceived=Math.max(0,amount-deductions(d).reduce((s,row)=>s+row.amount*ratio,0)); const ts=getTxns(y,m); ts.push({id:incomeId,type:'income',amount:netReceived,category:'business',comment:tx('title')+': '+d.title+' · '+tx('net'),date,wallet:d.wallet||'personal',tags:['deal'],dealId:d.id,dealNetIncome:true}); saveTxns(y,m,ts); const rows=read(), target=rows.find(x=>x.id===d.id);target.payments.push({id:id(),amount,date,transactionId:incomeId,expenseTransactionIds:[],netTransaction:true});if(remaining(target)===0)target.status='paid';target.updatedAt=new Date().toISOString();write(rows);closeModal();toast(tx('addedNet')+fmt(netReceived));window.render();};
 
   // Older versions wrote a gross deal income and several synthetic expenses.
-  // Keep the cash result unchanged, but show the real net profit in monthly
-  // income/expense totals. Only IDs recorded by the deal itself are removed.
+  // Canonicalise only transaction IDs explicitly stored by a deal payment:
+  // manual income/expense rows must never be guessed at or altered.
   function reconcileLegacyDealPayments() {
     const deals=read(), months=new Map(); let changed=false;
     const getMonth=(year,month)=>{const key=year+'-'+month;if(!months.has(key))months.set(key,{year,month,rows:getTxns(year,month),changed:false});return months.get(key);};
     deals.forEach(d=>(d.payments||[]).forEach(p=>{
-      if(p.netTransaction || !p.date || !p.transactionId)return;
+      if(!p.date || !p.transactionId)return;
       const dt=new Date(p.date+'T00:00:00'), bucket=getMonth(dt.getFullYear(),dt.getMonth());
       const income=bucket.rows.find(row=>String(row.id)===String(p.transactionId)); if(!income)return;
       const ratio=n(p.amount)/Math.max(1,n(d.amount));
       const netReceived=Math.max(0,n(p.amount)-deductions(d).reduce((sum,row)=>sum+row.amount*ratio,0));
-      income.amount=netReceived; income.category='business'; income.comment=tx('title')+': '+d.title+' · '+tx('net'); income.dealNetIncome=true;
+      const correctComment=tx('title')+': '+d.title+' · '+tx('net');
+      // A deal can be edited after its payment was received. Recalculate the
+      // linked factual income from the current deal economics on every render,
+      // rather than leaving a stale gross/old-net amount in monthly totals.
+      if(income.type!=='income' || Math.abs(n(income.amount)-netReceived)>.01 || income.category!=='business' || income.dealNetIncome!==true || income.dealId!==d.id || income.comment!==correctComment){
+        income.type='income'; income.amount=netReceived; income.category='business'; income.comment=correctComment; income.dealNetIncome=true; income.dealId=d.id; bucket.changed=true; changed=true;
+      }
       const legacyIds=new Set((p.expenseTransactionIds||[]).map(String));
-      if(legacyIds.size) bucket.rows=bucket.rows.filter(row=>!legacyIds.has(String(row.id)));
-      bucket.changed=true; p.expenseTransactionIds=[]; p.netTransaction=true; changed=true;
+      if(legacyIds.size) { bucket.rows=bucket.rows.filter(row=>!legacyIds.has(String(row.id))); bucket.changed=true; changed=true; }
+      if(legacyIds.size || !p.netTransaction) { p.expenseTransactionIds=[]; p.netTransaction=true; changed=true; }
     }));
     months.forEach(bucket=>{if(bucket.changed)saveTxns(bucket.year,bucket.month,bucket.rows);});
     if(changed){write(deals);window.TIINCloud?.scheduleSync?.();}
@@ -102,6 +108,14 @@
   const oldRenderTab=window.renderTab; window.renderTab=function(){if(currentTab==='deals')render();else oldRenderTab();};
   const oldTransactions=window.renderTransactions; window.renderTransactions=function(){oldTransactions();if(currentTab==='transactions'){const host=document.getElementById('tab-transactions');if(host&&!host.querySelector('.deals-forecast'))host.insertAdjacentHTML('afterbegin',hero());}};
   const oldTemplates=window.renderTemplates; window.renderTemplates=function(){oldTemplates();ensure();};
+  // Sync can hydrate local storage after this script has loaded. Wrapping
+  // render makes the correction run again once those records arrive, and it
+  // remains a no-op when every linked payment is already correct.
+  const baseRenderForDealReconciliation=window.render;
+  window.render=function renderWithDealReconciliation(){
+    reconcileLegacyDealPayments();
+    return baseRenderForDealReconciliation.apply(this,arguments);
+  };
   const legacyDealsReconciled=reconcileLegacyDealPayments();
   ensure();
   if(legacyDealsReconciled&&typeof window.render==='function')window.render();
