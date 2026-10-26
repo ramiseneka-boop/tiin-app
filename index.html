@@ -1090,14 +1090,14 @@ function renderAnalytics() {
     html += `<div class="donut-wrap"><canvas id="donutCanvas" width="160" height="160"></canvas><div class="donut-legend">`;
     sorted.forEach(([catId, amount]) => {
       const cat = EXPENSE_CATS.find(c=>c.id===catId)||{icon:'❓',name:catId};
-      html += `<div class="legend-item"><div class="legend-dot" style="background:${CAT_COLORS[catId]||'#888'}"></div>${cat.icon} ${cat.name}: ${fmt(amount)}</div>`;
+      html += `<button type="button" class="legend-item analytics-category-trigger" onclick="openAnalyticsCategory('${catId}')" aria-label="${cat.name}"><div class="legend-dot" style="background:${CAT_COLORS[catId]||'#888'}"></div><span>${cat.icon} ${cat.name}: ${fmt(amount)}</span><b>›</b></button>`;
     });
     html += '</div></div>';
     html += '<div style="margin-top:16px">';
     sorted.forEach(([catId, amount]) => {
       const cat = EXPENSE_CATS.find(c=>c.id===catId)||{name:catId};
       const pct = (amount/totalExp*100).toFixed(1);
-      html += `<div class="cat-bar"><div class="cat-bar-header"><span>${cat.icon||''} ${cat.name}</span><span>${pct}%</span></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%;background:${CAT_COLORS[catId]||'#888'}"></div></div></div>`;
+      html += `<button type="button" class="cat-bar analytics-category-trigger" onclick="openAnalyticsCategory('${catId}')" aria-label="${cat.name}"><div class="cat-bar-header"><span>${cat.icon||''} ${cat.name}</span><span>${pct}% &nbsp;›</span></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%;background:${CAT_COLORS[catId]||'#888'}"></div></div></button>`;
     });
     html += '</div>';
   }
@@ -2061,12 +2061,12 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=79', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=80', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
 </script>
-<script src="src/tiin-v2.js?v=28"></script>
+<script src="src/tiin-v2.js?v=29"></script>
 <script src="src/tiin-currency.js?v=3"></script>
   <script src="src/tiin-multicurrency.js?v=2"></script>
 <script src="src/tiin-auth-handoff.js?v=1"></script>
