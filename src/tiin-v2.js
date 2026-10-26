@@ -777,5 +777,110 @@
     document.getElementById('modalOverlay').classList.add('open');
   };
 
+  // === Expense history ranges =============================================
+  // The home history is deliberately based on factual transactions, not on
+  // planned payments.  It can therefore span month boundaries safely.
+  function historyCopy() {
+    return currentLang === 'kz'
+      ? { title:'Кезеңдегі шығындар', week:'7 күн', fortnight:'14 күн', month:'Ай', custom:'Күнді таңдау', from:'Басталуы', to:'Аяқталуы', show:'Көрсету', total:'Шығындар', operations:'операция', noData:'Осы кезеңде шығындар жоқ', rangeError:'Басталу күні аяқталу күнінен кейін болмауы керек', note:'Тек нақты жүргізілген шығындар көрсетіледі', comment:'Түсіндірмесіз', expense:'Шығыс' }
+      : currentLang === 'en'
+        ? { title:'Expenses for a period', week:'7 days', fortnight:'14 days', month:'Month', custom:'Choose dates', from:'From', to:'To', show:'Show', total:'Expenses', operations:'transactions', noData:'No expenses in this period', rangeError:'The start date must be before the end date', note:'Only confirmed expenses are shown', comment:'No comment', expense:'Expense' }
+        : { title:'Расходы за период', week:'7 дней', fortnight:'14 дней', month:'Месяц', custom:'Выбрать даты', from:'С', to:'По', show:'Показать', total:'Расходы', operations:'операций', noData:'За этот период расходов нет', rangeError:'Дата начала должна быть раньше даты окончания', note:'Показаны только фактически проведённые расходы', comment:'Без комментария', expense:'Расход' };
+  }
+
+  function isoDate(date) { return window.localDateString ? window.localDateString(date) : date.toISOString().slice(0, 10); }
+  function addDays(date, days) { const copy = new Date(date); copy.setDate(copy.getDate() + days); return copy; }
+  function expenseHistoryRange() {
+    const state = window.tiinExpenseHistoryRange || { type:'month' };
+    const today = new Date();
+    if (state.type === 'week') return { start:isoDate(addDays(today, -6)), end:isoDate(today), type:state.type };
+    if (state.type === 'fortnight') return { start:isoDate(addDays(today, -13)), end:isoDate(today), type:state.type };
+    if (state.type === 'custom' && state.start && state.end) return state;
+    const start = new Date(currentYear, currentMonth, 1);
+    const end = new Date(currentYear, currentMonth + 1, 0);
+    return { start:isoDate(start), end:isoDate(end), type:'month' };
+  }
+
+  function transactionsBetween(start, end) {
+    const all = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!/^txns_\d+_\d+$/.test(key || '')) continue;
+      try { all.push(...JSON.parse(localStorage.getItem(key) || '[]')); } catch (_) {}
+    }
+    return filterTxnsByWallet(all).filter(tx => tx.date >= start && tx.date <= end);
+  }
+
+  function rangeLabel(range) {
+    return new Date(range.start + 'T00:00:00').toLocaleDateString(window.tiinLocale(), { day:'numeric', month:'short' }) + ' — ' + new Date(range.end + 'T00:00:00').toLocaleDateString(window.tiinLocale(), { day:'numeric', month:'short', year:'numeric' });
+  }
+
+  window.setExpenseHistoryPeriod = function setExpenseHistoryPeriod(type) {
+    window.tiinExpenseHistoryRange = { type };
+    renderTransactions();
+  };
+
+  window.applyExpenseHistoryDates = function applyExpenseHistoryDates() {
+    const start = document.getElementById('expenseRangeStart')?.value;
+    const end = document.getElementById('expenseRangeEnd')?.value;
+    if (!start || !end || start > end) { toast(historyCopy().rangeError); return; }
+    window.tiinExpenseHistoryRange = { type:'custom', start, end };
+    renderTransactions();
+  };
+
+  window.renderTransactions = function renderTransactionsWithExpensePeriods() {
+    const el = document.getElementById('tab-transactions');
+    if (!el) return;
+    const copy = historyCopy();
+    const range = expenseHistoryRange();
+    const state = window.tiinExpenseHistoryRange || { type:'month' };
+    const expenses = transactionsBetween(range.start, range.end)
+      .filter(tx => tx.type === 'expense')
+      .sort((a, b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
+    const total = expenses.reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+    const selected = state.type || 'month';
+    const chip = (type, label) => `<button type="button" class="expense-range-chip ${selected === type ? 'selected' : ''}" onclick="setExpenseHistoryPeriod('${type}')">${label}</button>`;
+    const customOpen = selected === 'custom';
+    let html = `<section class="expense-history-card"><div class="expense-history-head"><div><h3>🧾 ${copy.title}</h3><p>${rangeLabel(range)}</p></div><div class="expense-history-total"><small>${copy.total}</small><b>${fmt(total)}</b></div></div><div class="expense-range-chips">${chip('week', copy.week)}${chip('fortnight', copy.fortnight)}${chip('month', copy.month)}${chip('custom', copy.custom)}</div>${customOpen ? `<div class="expense-range-form"><label>${copy.from}<input id="expenseRangeStart" type="date" value="${range.start}"></label><label>${copy.to}<input id="expenseRangeEnd" type="date" value="${range.end}"></label><button type="button" onclick="applyExpenseHistoryDates()">${copy.show}</button></div>` : ''}<p class="expense-history-note">${copy.note} · ${expenses.length} ${copy.operations}</p></section>`;
+    if (!expenses.length) { el.innerHTML = html + `<div class="empty"><div class="emoji">📭</div><p>${copy.noData}</p></div>`; return; }
+    const groups = expenses.reduce((all, tx) => ((all[tx.date] ||= []).push(tx), all), {});
+    const cats = [...EXPENSE_CATS, ...INCOME_CATS];
+    Object.keys(groups).sort().reverse().forEach(date => {
+      const items = groups[date]; const daily = items.reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+      const label = new Date(date + 'T00:00:00').toLocaleDateString(window.tiinLocale(), { weekday:'short', day:'numeric', month:'long' });
+      html += `<section class="day-group"><header class="day-header"><div class="day-heading"><div class="day-title">${label}</div><div class="day-caption">${copy.expense}</div></div><div class="day-totals"><span class="day-metric expense"><small>${copy.expense}</small><b>−${fmt(daily)}</b></span></div></header>`;
+      items.forEach(tx => {
+        const cat = cats.find(item => item.id === tx.category) || { icon:'•', name:text('Категория','Санат','Category') };
+        const note = tx.comment ? esc(tx.comment) : copy.comment;
+        const wallet = tx.wallet === 'business' ? '💼 ' : '';
+        const id = encodeURIComponent(String(tx.id));
+        html += `<article class="tx-item" data-tx-id="${id}" onclick="editTx(decodeURIComponent(this.dataset.txId))"><div class="tx-icon">${cat.icon}</div><div class="tx-info"><div class="tx-cat">${wallet}${esc(cat.name)}</div><div class="tx-comment">${note}</div></div><div class="tx-actions"><div class="tx-amount expense">−${fmt(tx.amount)}</div><button class="tx-menu" type="button" aria-label="${text('Действия с операцией','Операция әрекеттері','Transaction actions')}" onclick="event.stopPropagation();openTxActions('${id}')">⋮</button></div></article>`;
+      });
+      html += '</section>';
+    });
+    el.innerHTML = html;
+  };
+
+  // === Analytics category drill-down ======================================
+  window.openAnalyticsCategory = function openAnalyticsCategory(categoryId) {
+    const copy = currentLang === 'kz'
+      ? { title:'Санат шығындары', total:'Барлығы', operations:'операция', empty:'Бұл санатта шығындар жоқ', comment:'Түсіндірмесіз', close:'Түсінікті' }
+      : currentLang === 'en'
+        ? { title:'Category expenses', total:'Total', operations:'transactions', empty:'No expenses in this category', comment:'No comment', close:'Done' }
+        : { title:'Расходы по категории', total:'Всего', operations:'операций', empty:'В этой категории расходов нет', comment:'Без комментария', close:'Понятно' };
+    const category = EXPENSE_CATS.find(item => item.id === categoryId) || { icon:'❓', name:categoryId };
+    const rows = filterTxnsByWallet(getTxns(currentYear, currentMonth))
+      .filter(tx => tx.type === 'expense' && tx.category === categoryId)
+      .sort((a, b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
+    const total = rows.reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+    const items = rows.length ? rows.map(tx => {
+      const date = new Date(tx.date + 'T00:00:00').toLocaleDateString(window.tiinLocale(), { day:'numeric', month:'long', year:'numeric' });
+      const note = tx.comment ? esc(tx.comment) : copy.comment;
+      return `<div class="analytics-detail-row"><div><b>${note}</b><small>${date}${tx.wallet === 'business' ? ' · 💼' : ''}</small></div><strong>−${fmt(tx.amount)}</strong></div>`;
+    }).join('') : `<p class="analytics-detail-empty">${copy.empty}</p>`;
+    document.getElementById('modal').innerHTML = `<div class="tiin-sheet analytics-detail-sheet"><div class="tiin-sheet-handle"></div><div class="analytics-detail-heading"><span>${category.icon}</span><div><p>${copy.title}</p><h2>${esc(category.name)}</h2></div></div><div class="analytics-detail-total"><span>${copy.total} · ${rows.length} ${copy.operations}</span><b>${fmt(total)}</b></div><div class="analytics-detail-list">${items}</div><button class="btn btn-gold" onclick="closeModal()">${copy.close}</button></div>`;
+    document.getElementById('modalOverlay').classList.add('open');
+  };
+
   setTimeout(() => { render(); }, 0);
 }());
