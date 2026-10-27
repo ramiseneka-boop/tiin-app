@@ -8,7 +8,7 @@
     const styles = document.createElement('link');
     styles.id = 'tiinV2FinalStyles';
     styles.rel = 'stylesheet';
-    styles.href = 'styles/tiin-v2.css?v=6';
+    styles.href = 'styles/tiin-v2.css?v=7';
     document.head.appendChild(styles);
   }
 
@@ -792,10 +792,10 @@
   // planned payments.  It can therefore span month boundaries safely.
   function historyCopy() {
     return currentLang === 'kz'
-      ? { title:'Кезеңдегі шығындар', week:'7 күн', fortnight:'14 күн', month:'Ай', custom:'Күнді таңдау', from:'Басталуы', to:'Аяқталуы', show:'Көрсету', total:'Шығындар', operations:'операция', noData:'Осы кезеңде шығындар жоқ', rangeError:'Басталу күні аяқталу күнінен кейін болмауы керек', note:'Тек нақты жүргізілген шығындар көрсетіледі', comment:'Түсіндірмесіз', expense:'Шығыс' }
+      ? { expensesTitle:'Кезеңдегі шығындар', incomesTitle:'Кезеңдегі кірістер', expenses:'Шығыстар', incomes:'Кірістер', week:'7 күн', fortnight:'14 күн', month:'Ай', custom:'Күнді таңдау', from:'Басталуы', to:'Аяқталуы', show:'Көрсету', total:'Барлығы', operations:'операция', noExpenses:'Осы кезеңде шығындар жоқ', noIncomes:'Осы кезеңде кірістер жоқ', rangeError:'Басталу күні аяқталу күнінен кейін болмауы керек', expenseNote:'Тек нақты жүргізілген шығындар көрсетіледі', incomeNote:'Тек нақты алынған кірістер көрсетіледі', comment:'Түсіндірмесіз', expense:'Шығыс', income:'Кіріс' }
       : currentLang === 'en'
-        ? { title:'Expenses for a period', week:'7 days', fortnight:'14 days', month:'Month', custom:'Choose dates', from:'From', to:'To', show:'Show', total:'Expenses', operations:'transactions', noData:'No expenses in this period', rangeError:'The start date must be before the end date', note:'Only confirmed expenses are shown', comment:'No comment', expense:'Expense' }
-        : { title:'Расходы за период', week:'7 дней', fortnight:'14 дней', month:'Месяц', custom:'Выбрать даты', from:'С', to:'По', show:'Показать', total:'Расходы', operations:'операций', noData:'За этот период расходов нет', rangeError:'Дата начала должна быть раньше даты окончания', note:'Показаны только фактически проведённые расходы', comment:'Без комментария', expense:'Расход' };
+        ? { expensesTitle:'Expenses for a period', incomesTitle:'Income for a period', expenses:'Expenses', incomes:'Income', week:'7 days', fortnight:'14 days', month:'Month', custom:'Choose dates', from:'From', to:'To', show:'Show', total:'Total', operations:'transactions', noExpenses:'No expenses in this period', noIncomes:'No income in this period', rangeError:'The start date must be before the end date', expenseNote:'Only confirmed expenses are shown', incomeNote:'Only income actually received is shown', comment:'No comment', expense:'Expense', income:'Income' }
+        : { expensesTitle:'Расходы за период', incomesTitle:'Доходы за период', expenses:'Расходы', incomes:'Доходы', week:'7 дней', fortnight:'14 дней', month:'Месяц', custom:'Выбрать даты', from:'С', to:'По', show:'Показать', total:'Всего', operations:'операций', noExpenses:'За этот период расходов нет', noIncomes:'За этот период доходов нет', rangeError:'Дата начала должна быть раньше даты окончания', expenseNote:'Показаны только фактически проведённые расходы', incomeNote:'Показаны только фактически полученные доходы', comment:'Без комментария', expense:'Расход', income:'Доход' };
   }
 
   function isoDate(date) { return window.localDateString ? window.localDateString(date) : date.toISOString().slice(0, 10); }
@@ -830,6 +830,11 @@
     renderTransactions();
   };
 
+  window.setPeriodHistoryType = function setPeriodHistoryType(type) {
+    window.tiinPeriodHistoryType = type === 'income' ? 'income' : 'expense';
+    renderTransactions();
+  };
+
   window.applyExpenseHistoryDates = function applyExpenseHistoryDates() {
     const start = document.getElementById('expenseRangeStart')?.value;
     const end = document.getElementById('expenseRangeEnd')?.value;
@@ -844,27 +849,34 @@
     const copy = historyCopy();
     const range = expenseHistoryRange();
     const state = window.tiinExpenseHistoryRange || { type:'month' };
-    const expenses = transactionsBetween(range.start, range.end)
-      .filter(tx => tx.type === 'expense')
+    const historyType = window.tiinPeriodHistoryType === 'income' ? 'income' : 'expense';
+    const isIncome = historyType === 'income';
+    const transactions = transactionsBetween(range.start, range.end)
+      .filter(tx => tx.type === historyType)
       .sort((a, b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
-    const total = expenses.reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+    const total = transactions.reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
     const selected = state.type || 'month';
     const chip = (type, label) => `<button type="button" class="expense-range-chip ${selected === type ? 'selected' : ''}" onclick="setExpenseHistoryPeriod('${type}')">${label}</button>`;
+    const typeSwitch = (type, label) => `<button type="button" class="period-type-switch ${historyType === type ? 'selected ' + type : ''}" onclick="setPeriodHistoryType('${type}')">${type === 'income' ? '↑' : '↓'} ${label}</button>`;
     const customOpen = selected === 'custom';
-    let html = `<section class="expense-history-card"><div class="expense-history-head"><div><h3>🧾 ${copy.title}</h3><p>${rangeLabel(range)}</p></div><div class="expense-history-total"><small>${copy.total}</small><b>${fmt(total)}</b></div></div><div class="expense-range-chips">${chip('week', copy.week)}${chip('fortnight', copy.fortnight)}${chip('month', copy.month)}${chip('custom', copy.custom)}</div>${customOpen ? `<div class="expense-range-form"><label>${copy.from}<input id="expenseRangeStart" type="date" value="${range.start}"></label><label>${copy.to}<input id="expenseRangeEnd" type="date" value="${range.end}"></label><button type="button" onclick="applyExpenseHistoryDates()">${copy.show}</button></div>` : ''}<p class="expense-history-note">${copy.note} · ${expenses.length} ${copy.operations}</p></section>`;
-    if (!expenses.length) { el.innerHTML = html + `<div class="empty"><div class="emoji">📭</div><p>${copy.noData}</p></div>`; return; }
-    const groups = expenses.reduce((all, tx) => ((all[tx.date] ||= []).push(tx), all), {});
+    const title = isIncome ? copy.incomesTitle : copy.expensesTitle;
+    const typeLabel = isIncome ? copy.incomes : copy.expenses;
+    const noteText = isIncome ? copy.incomeNote : copy.expenseNote;
+    const singleLabel = isIncome ? copy.income : copy.expense;
+    let html = `<section class="expense-history-card ${isIncome ? 'income-history-card' : ''}"><div class="expense-history-head"><div><h3>${isIncome ? '💰' : '🧾'} ${title}</h3><p>${rangeLabel(range)}</p></div><div class="expense-history-total ${isIncome ? 'income' : ''}"><small>${typeLabel}</small><b>${fmt(total)}</b></div></div><div class="period-type-switches">${typeSwitch('expense', copy.expenses)}${typeSwitch('income', copy.incomes)}</div><div class="expense-range-chips">${chip('week', copy.week)}${chip('fortnight', copy.fortnight)}${chip('month', copy.month)}${chip('custom', copy.custom)}</div>${customOpen ? `<div class="expense-range-form"><label>${copy.from}<input id="expenseRangeStart" type="date" value="${range.start}"></label><label>${copy.to}<input id="expenseRangeEnd" type="date" value="${range.end}"></label><button type="button" onclick="applyExpenseHistoryDates()">${copy.show}</button></div>` : ''}<p class="expense-history-note">${noteText} · ${transactions.length} ${copy.operations}</p></section>`;
+    if (!transactions.length) { el.innerHTML = html + `<div class="empty"><div class="emoji">📭</div><p>${isIncome ? copy.noIncomes : copy.noExpenses}</p></div>`; return; }
+    const groups = transactions.reduce((all, tx) => ((all[tx.date] ||= []).push(tx), all), {});
     const cats = [...EXPENSE_CATS, ...INCOME_CATS];
     Object.keys(groups).sort().reverse().forEach(date => {
       const items = groups[date]; const daily = items.reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
       const label = new Date(date + 'T00:00:00').toLocaleDateString(window.tiinLocale(), { weekday:'short', day:'numeric', month:'long' });
-      html += `<section class="day-group"><header class="day-header"><div class="day-heading"><div class="day-title">${label}</div><div class="day-caption">${copy.expense}</div></div><div class="day-totals"><span class="day-metric expense"><small>${copy.expense}</small><b>−${fmt(daily)}</b></span></div></header>`;
+      html += `<section class="day-group"><header class="day-header"><div class="day-heading"><div class="day-title">${label}</div><div class="day-caption">${singleLabel}</div></div><div class="day-totals"><span class="day-metric ${isIncome ? 'income' : 'expense'}"><small>${singleLabel}</small><b>${isIncome ? '+' : '−'}${fmt(daily)}</b></span></div></header>`;
       items.forEach(tx => {
         const cat = cats.find(item => item.id === tx.category) || { icon:'•', name:text('Категория','Санат','Category') };
         const note = tx.comment ? esc(tx.comment) : copy.comment;
         const wallet = tx.wallet === 'business' ? '💼 ' : '';
         const id = encodeURIComponent(String(tx.id));
-        html += `<article class="tx-item" data-tx-id="${id}" onclick="editTx(decodeURIComponent(this.dataset.txId))"><div class="tx-icon">${cat.icon}</div><div class="tx-info"><div class="tx-cat">${wallet}${esc(cat.name)}</div><div class="tx-comment">${note}</div></div><div class="tx-actions"><div class="tx-amount expense">−${fmt(tx.amount)}</div><button class="tx-menu" type="button" aria-label="${text('Действия с операцией','Операция әрекеттері','Transaction actions')}" onclick="event.stopPropagation();openTxActions('${id}')">⋮</button></div></article>`;
+        html += `<article class="tx-item" data-tx-id="${id}" onclick="editTx(decodeURIComponent(this.dataset.txId))"><div class="tx-icon">${cat.icon}</div><div class="tx-info"><div class="tx-cat">${wallet}${esc(cat.name)}</div><div class="tx-comment">${note}</div></div><div class="tx-actions"><div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '−'}${fmt(tx.amount)}</div><button class="tx-menu" type="button" aria-label="${text('Действия с операцией','Операция әрекеттері','Transaction actions')}" onclick="event.stopPropagation();openTxActions('${id}')">⋮</button></div></article>`;
       });
       html += '</section>';
     });
