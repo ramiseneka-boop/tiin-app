@@ -217,9 +217,19 @@
     }
     // Carry the verified closing balance into the next month, then apply only new operations.
     const closingBalance = carriedBalance(currentYear, currentMonth);
+    const monthlyChange = monthNet(currentYear, currentMonth);
+    const openingBalance = closingBalance - monthlyChange;
     balance.textContent = fmt(closingBalance);
     balanceKpi.querySelector('.label').textContent = text('ОСТАТОК НА КОНЕЦ МЕСЯЦА', 'АЙ СОҢЫНДАҒЫ ҚАЛДЫҚ', 'END-OF-MONTH BALANCE');
     balanceKpi.querySelector('.value').textContent = balance.textContent;
+    let explanation = balanceKpi.querySelector('.balance-kpi-explanation');
+    if (!explanation) {
+      explanation = document.createElement('small');
+      explanation.className = 'balance-kpi-explanation';
+      balanceKpi.appendChild(explanation);
+    }
+    const changePrefix = monthlyChange >= 0 ? '+' : '−';
+    explanation.textContent = text('На начало', 'Ай басында', 'At month start') + ' ' + fmt(openingBalance) + ' · ' + text('за месяц', 'осы айда', 'this month') + ' ' + changePrefix + fmt(Math.abs(monthlyChange));
   }
 
   const originalRender = window.render;
