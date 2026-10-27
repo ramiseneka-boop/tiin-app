@@ -76,6 +76,15 @@
       rows = monthly.filter(row => row.type === (isIncome ? 'income' : 'expense'));
       heading = isIncome ? tr('Доход за месяц', 'Айлық кіріс', 'Income for the month') : tr('Расход за месяц', 'Айлық шығыс', 'Expense for the month');
     }
+    if (scope === 'month-balance') {
+      const values = totals(monthly);
+      const closing = typeof carriedBalance === 'function'
+        ? carriedBalance(currentYear, currentMonth)
+        : values.net;
+      const opening = closing - values.net;
+      heading = tr('Сверка баланса за месяц', 'Айлық баланс салыстыруы', 'Monthly balance reconciliation');
+      subheading = `${t('months_arr')[currentMonth]} ${currentYear} · ${tr('На начало', 'Ай басында', 'At month start')}: ${fmt(opening)} · ${tr('На конец', 'Ай соңында', 'At month end')}: ${fmt(closing)}`;
+    }
     if (scope === 'lifetime-balance') {
       rows = allTransactions();
       heading = tr('Общий баланс — вся история', 'Жалпы баланс — бүкіл тарих', 'Total balance — all history');
@@ -156,7 +165,8 @@
     const income = document.getElementById('totalIncome')?.closest('.summary-item');
     const expense = document.getElementById('totalExpense')?.closest('.summary-item');
     const hero = document.querySelector('.balance-hero');
-    [[income, 'month-income'], [expense, 'month-expense'], [hero, 'lifetime-balance']].forEach(([element, scope]) => {
+    const monthBalance = document.getElementById('balanceKpi');
+    [[income, 'month-income'], [expense, 'month-expense'], [monthBalance, 'month-balance'], [hero, 'lifetime-balance']].forEach(([element, scope]) => {
       if (!element) return;
       element.dataset.tiinReport = scope;
       element.setAttribute('role', 'button'); element.tabIndex = 0;
@@ -172,4 +182,7 @@
   const style = document.createElement('style');
   style.textContent = `.summary-item[data-tiin-report],.balance-hero[data-tiin-report]{cursor:pointer}.summary-item[data-tiin-report]:focus-visible,.balance-hero[data-tiin-report]:focus-visible{outline:2px solid var(--gold1);outline-offset:3px}.tiin-report{max-height:min(76vh,700px);overflow:auto;padding-bottom:10px}.tiin-report h2{font-size:21px}.tiin-report-subtitle{text-align:center!important;font-size:12px!important;margin:-4px 0 14px!important}.tiin-report-totals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0 16px}.tiin-report-totals>div{padding:10px 7px;border:1px solid var(--border);background:var(--card);border-radius:12px}.tiin-report-totals small,.tiin-report-day small,.tiin-report-row small{display:block;color:var(--text2);font-size:10px;line-height:1.35}.tiin-report-totals b{display:block;margin-top:5px;font-size:13px}.tiin-report-day{border:1px solid var(--border);border-radius:15px;background:var(--card);overflow:hidden;margin:9px 0}.tiin-report-day header{display:flex;justify-content:space-between;gap:8px;padding:11px;border-bottom:1px solid var(--border)}.tiin-report-day header>b{font-size:12px}.tiin-report-day header>strong{font-size:12px;text-align:right}.tiin-report-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center;padding:10px 11px;border-top:1px solid rgba(148,163,184,.12)}.tiin-report-row:first-of-type{border-top:0}.tiin-report-row b{display:block;font-size:12px}.tiin-report-row>strong{font-size:12px;text-align:right}.tiin-report-icon{font-size:18px;text-align:center}.tiin-report-empty{text-align:center;color:var(--text2);padding:28px 10px}.tiin-report-empty p{margin:8px}.tiin-pdf-picker p{font-size:13px}.tiin-range-list{display:grid;gap:7px;margin:18px 0 12px}.tiin-range-list label{display:flex;gap:9px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--card);font-size:13px}.tiin-range-list input{accent-color:var(--gold1)}.tiin-custom-range{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 14px}.tiin-custom-range label{display:grid;gap:5px;color:var(--text2);font-size:11px}.tiin-custom-range .form-input{width:100%}.tiin-pdf-picker .btn{width:100%}@media(max-width:380px){.tiin-report-totals{gap:5px}.tiin-report-totals>div{padding:8px 5px}.tiin-report-totals b{font-size:11px}.tiin-custom-range{grid-template-columns:1fr}}`;
   document.head.appendChild(style);
+  const balanceStyle = document.createElement('style');
+  balanceStyle.textContent = '.balance-kpi-explanation{display:block;margin-top:7px;color:var(--text2);font-size:9px;line-height:1.3;text-transform:none;letter-spacing:0}.balance-kpi[data-tiin-report]{cursor:pointer}';
+  document.head.appendChild(balanceStyle);
 })();
