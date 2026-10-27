@@ -93,6 +93,14 @@
       }
       const legacyIds=new Set((p.expenseTransactionIds||[]).map(String));
       if(legacyIds.size) { bucket.rows=bucket.rows.filter(row=>!legacyIds.has(String(row.id))); bucket.changed=true; changed=true; }
+      // Some pre-net-profit records retained synthetic deductions by dealId
+      // without retaining their IDs in the payment. Keep them for audit, but
+      // exclude them from totals so deal tax/VAT/cost is never double-counted.
+      bucket.rows.forEach(row=>{
+        if(row.type==='expense' && String(row.dealId||'')===String(d.id) && row.dealAccountingOnly!==true){
+          row.dealAccountingOnly=true; bucket.changed=true; changed=true;
+        }
+      });
       if(legacyIds.size || !p.netTransaction) { p.expenseTransactionIds=[]; p.netTransaction=true; changed=true; }
     }));
     months.forEach(bucket=>{if(bucket.changed)saveTxns(bucket.year,bucket.month,bucket.rows);});
