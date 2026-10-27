@@ -804,6 +804,9 @@ function isActualTransaction(tx) {
   // `auto_recurring_id` was written by the retired scheduler without any
   // confirmation from the user. It is a forecast, never a factual payment.
   if (tx.auto_recurring_id || isLegacyAutoScheduledPayment(tx)) return false;
+  // VAT, tax and costs generated from a deal are already included in that
+  // deal's net profit. Keep legacy rows for audit, never count them twice.
+  if (tx.dealAccountingOnly === true) return false;
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   return tx.date <= today;
@@ -2076,7 +2079,7 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=84', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=85', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
@@ -2088,7 +2091,7 @@ init();
 <script src="src/tiin-sync.js?v=15"></script>
 <script id="tiinLimitsScript" src="src/tiin-limits.js?v=3"></script>
 <script src="src/tiin-command-deck.js?v=20"></script>
-<script src="src/tiin-deals.js?v=9"></script>
+<script src="src/tiin-deals.js?v=10"></script>
 <script src="src/tiin-settings.js?v=17"></script>
 <script src="src/tiin-reports.js?v=4"></script>
 </body>
