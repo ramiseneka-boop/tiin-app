@@ -47,23 +47,28 @@
   function txns(year, month) { return filterTxnsByWallet(getTxns(year, month)); }
   function sum(list) { return list.reduce((total, item) => total + num(item.amount), 0); }
   function monthExpenses(year, month) { return sum(txns(year, month).filter(item => item.type === 'expense')); }
-  function paymentTrackerExpenses(year, month) {
-    // Read the same storage used by the Payments screen directly.  This also
-    // works in installed iPhone PWAs where legacy global helpers can be absent.
-    let items = [];
-    try { items = JSON.parse(localStorage.getItem('payment_items') || '[]'); } catch (_) { return []; }
-    return items.filter(item => {
-      if (!num(item.amount)) return false;
-      if (!item.createdAt) return true;
-      const [startYear, startMonth] = String(item.createdAt).split('-').map(Number);
-      return !startYear || year > startYear || (year === startYear && month >= startMonth - 1);
-    });
+  function paymentScheduleExpenses(year, month) {
+    // This is the live source behind the current Payments screen.
+    let schedules = [];
+    try { schedules = JSON.parse(localStorage.getItem('tiin_payment_schedules_v2') || '[]'); } catch (_) { return []; }
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    return schedules.reduce((total, item) => {
+      const value = num(item.amount);
+      if (!value) return total;
+      if (item.repeat === 'once') return String(item.date || '').startsWith(monthKey(year, month)) ? total + value : total;
+      if (item.repeat === 'weekly') {
+        const weekday = Number.isFinite(Number(item.weekday)) ? Number(item.weekday) : 1;
+        let occurrences = 0;
+        for (let day = 1; day <= daysInMonth; day += 1) if (new Date(year, month, day).getDay() === weekday) occurrences += 1;
+        return total + value * occurrences;
+      }
+      return total + value; // monthly is the default
+    }, 0);
   }
   function recurringExpenses(year, month) {
-    const trackerItems = paymentTrackerExpenses(year, month);
-    // Prefer the tracker when it is in use, so legacy entries cannot be
-    // double-counted alongside the same obligations.
-    if (trackerItems.length) return sum(trackerItems);
+    const scheduled = paymentScheduleExpenses(year, month);
+    if (scheduled) return scheduled;
+    // Fallback only for accounts not yet migrated to the new payment schedules.
     return sum(getRecurring().filter(item => {
       if (item.type !== 'expense') return false;
       if (!item.startMonth) return true;
