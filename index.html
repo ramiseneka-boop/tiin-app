@@ -2033,7 +2033,7 @@ function togglePaymentStatus(id) {
     status[id] = {paid: true, paidDate: localDateString(now)};
   }
   savePaymentStatus(y, m, status);
-  renderPaymentTracker();
+  render();
 }
 
 function openPaymentItemModal() {
@@ -2068,14 +2068,14 @@ function savePaymentItem() {
   savePaymentItems(items);
   closeModal();
   toast(t('saved'));
-  renderPaymentTracker();
+  render();
 }
 
 function deletePaymentItem(id) {
   if (!confirm(t('pt_deleteConfirm'))) return;
   savePaymentItems(getPaymentItems().filter(i => i.id !== id));
   toast(t('deleted'));
-  renderPaymentTracker();
+  render();
 }
 
 if ('serviceWorker' in navigator) {
