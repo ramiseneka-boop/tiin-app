@@ -48,9 +48,11 @@
   function sum(list) { return list.reduce((total, item) => total + num(item.amount), 0); }
   function monthExpenses(year, month) { return sum(txns(year, month).filter(item => item.type === 'expense')); }
   function paymentTrackerExpenses(year, month) {
-    // The Payments screen is the current source of recurring obligations.
-    if (typeof getPaymentItems !== 'function') return [];
-    return getPaymentItems().filter(item => {
+    // Read the same storage used by the Payments screen directly.  This also
+    // works in installed iPhone PWAs where legacy global helpers can be absent.
+    let items = [];
+    try { items = JSON.parse(localStorage.getItem('payment_items') || '[]'); } catch (_) { return []; }
+    return items.filter(item => {
       if (!num(item.amount)) return false;
       if (!item.createdAt) return true;
       const [startYear, startMonth] = String(item.createdAt).split('-').map(Number);
