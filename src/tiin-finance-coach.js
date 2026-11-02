@@ -242,6 +242,15 @@
     document.querySelector('.balance-hero-label')?.replaceChildren(words().freeBalance);
     const kpi=document.querySelector('#balanceKpi .value'); if(kpi) kpi.textContent=fmt(m.reserve);
   }
+  // Payment Tracker mutations used to refresh only their own screen.  Refresh
+  // the whole app after every save so the monthly plan never keeps a stale total.
+  const nativeSavePaymentItems=window.savePaymentItems;
+  if (typeof nativeSavePaymentItems === 'function') {
+    window.savePaymentItems=function(items) {
+      nativeSavePaymentItems(items);
+      window.render?.();
+    };
+  }
   const nativeRender=window.render;
   window.render=function(){nativeRender(); applyBalanceEnvelopes(); if(document.getElementById('tab-transactions')) insertHome(); if(document.getElementById('tab-analytics')) insertAnalytics(); if(document.getElementById('tab-goals')) {decorateGoals();enhanceGoalCards();}};
   const style=document.createElement('style');
