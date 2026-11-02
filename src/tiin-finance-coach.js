@@ -47,7 +47,21 @@
   function txns(year, month) { return filterTxnsByWallet(getTxns(year, month)); }
   function sum(list) { return list.reduce((total, item) => total + num(item.amount), 0); }
   function monthExpenses(year, month) { return sum(txns(year, month).filter(item => item.type === 'expense')); }
+  function paymentTrackerExpenses(year, month) {
+    // The Payments screen is the current source of recurring obligations.
+    if (typeof getPaymentItems !== 'function') return [];
+    return getPaymentItems().filter(item => {
+      if (!num(item.amount)) return false;
+      if (!item.createdAt) return true;
+      const [startYear, startMonth] = String(item.createdAt).split('-').map(Number);
+      return !startYear || year > startYear || (year === startYear && month >= startMonth - 1);
+    });
+  }
   function recurringExpenses(year, month) {
+    const trackerItems = paymentTrackerExpenses(year, month);
+    // Prefer the tracker when it is in use, so legacy entries cannot be
+    // double-counted alongside the same obligations.
+    if (trackerItems.length) return sum(trackerItems);
     return sum(getRecurring().filter(item => {
       if (item.type !== 'expense') return false;
       if (!item.startMonth) return true;
