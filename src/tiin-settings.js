@@ -164,7 +164,7 @@
     const repeat = document.getElementById('tp_repeat').value;
     const record = {id:id||('payment-'+Date.now()),title,amount:value,category:document.getElementById('tp_category').value,wallet:document.getElementById('tp_wallet').value,repeat,priority:document.getElementById('tp_priority').value,reminder:document.getElementById('tp_reminder').checked,day:amount(document.getElementById('tp_day')?.value),weekday:amount(document.getElementById('tp_weekday')?.value),date:document.getElementById('tp_date')?.value || dateKey(now()),createdAt:Date.now()};
     const all=schedules(); const index=all.findIndex(x=>x.id===record.id); if(index>=0) all[index]=Object.assign(all[index],record); else all.push(record);
-    saveSchedules(all); closeModal(); toast(tr('Платёж сохранён','Төлем сақталды','Payment saved')); renderPayments();
+    saveSchedules(all); closeModal(); toast(tr('Платёж сохранён','Төлем сақталды','Payment saved')); render(); renderPayments();
   };
   window.payTIINPayment = function(id) {
     const s=schedules().find(x=>x.id===id); if(!s || paymentTx(s)) { toast(tr('Этот платёж уже учтён','Бұл төлем әлдеқашан есепке алынды','This payment has already been recorded')); return; }
@@ -178,7 +178,7 @@
     if(Number.isInteger(year)&&Number.isInteger(month)){const k='txns_'+year+'_'+(month-1),list=read(k,[]),next=list.filter(t=>!(t.paymentScheduleId===s.id&&t.paymentPeriod===key));if(next.length!==list.length){localStorage.setItem(k,JSON.stringify(next));removed=true;}}
     if(removed){window.TIINCloud?.scheduleSync?.();toast(tr('Связанная операция отменена','Байланысты операция болдырылмады','Linked transaction cancelled'));render();}
   };
-  window.removeTIINPayment = function(id) { if(!confirm(tr('Убрать этот платёж? История операций останется.','Бұл төлемді алып тастау керек пе? Операциялар тарихы сақталады.','Remove this payment? Transaction history will remain.')))return; saveSchedules(schedules().filter(x=>x.id!==id));renderPayments(); };
+  window.removeTIINPayment = function(id) { if(!confirm(tr('Убрать этот платёж? История операций останется.','Бұл төлемді алып тастау керек пе? Операциялар тарихы сақталады.','Remove this payment? Transaction history will remain.')))return; saveSchedules(schedules().filter(x=>x.id!==id));render();renderPayments(); };
 
   function renderPayments() {
     const host=document.getElementById('tab-payments'); if(!host) return;
