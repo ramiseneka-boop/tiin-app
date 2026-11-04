@@ -46,7 +46,19 @@
   function overallBalance() { const value=document.getElementById('totalBalance'); return num(value?.dataset.financeGrossBalance || (document.querySelector('.balance-hero .value.balance')?.textContent || value?.textContent || '0').replace(/[^0-9.,-]/g, '').replace(/,/g, '')); }
   function txns(year, month) { return filterTxnsByWallet(getTxns(year, month)); }
   function sum(list) { return list.reduce((total, item) => total + num(item.amount), 0); }
-  function monthExpenses(year, month) { return sum(txns(year, month).filter(item => item.type === 'expense')); }
+  // Себестоимость is an actual business cash outflow, so it always reduces
+  // the factual total balance. It is deliberately excluded from the personal
+  // "allocated for living" envelope and its daily limit.
+  function isBusinessCost(item) {
+    if (!item || item.type !== 'expense') return false;
+    if (item.category === 'business_cost' || item.businessCost === true) return true;
+    const tags = Array.isArray(item.tags) ? item.tags.join(' ') : '';
+    const label = (String(item.comment || '') + ' ' + tags).toLowerCase();
+    return /(?:себестоим|өзіндік\s*құн|cost\s*of\s*goods|\bcogs\b)/i.test(label);
+  }
+  function monthExpenses(year, month) {
+    return sum(txns(year, month).filter(item => item.type === 'expense' && !isBusinessCost(item)));
+  }
   function paymentScheduleExpenses(year, month) {
     // This is the live source behind the current Payments screen.
     let schedules = [];
