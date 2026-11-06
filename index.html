@@ -138,6 +138,10 @@ input[type=number]{-moz-appearance:textfield}
 .summary-item .value.income{color:var(--green);text-shadow:0 0 20px rgba(45,212,168,0.15)}
 .summary-item .value.expense{color:var(--red);text-shadow:0 0 20px rgba(255,107,107,0.15)}
 .summary-item .value.balance{background:linear-gradient(135deg,#C9A44C,#E8D07E,#C9A44C);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.expense-mode-toggle{display:flex;gap:3px;margin:9px auto 0;padding:3px;width:max-content;max-width:100%;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(9,12,27,.4)}
+.expense-mode-toggle button{padding:4px 6px;border:0;border-radius:7px;background:transparent;color:var(--text2);font:700 8px/1 Inter,sans-serif;white-space:nowrap;cursor:pointer}
+.expense-mode-toggle button.active{background:rgba(248,113,113,.18);color:#FDA4AF}
+html.light .expense-mode-toggle{background:#F7F2F2;border-color:rgba(120,40,40,.12)}
 
 .actions{display:flex;gap:10px;margin-bottom:16px}
 .btn{
@@ -459,7 +463,7 @@ window.addEventListener('appinstalled',function(){
 
   <div class="summary">
     <div class="summary-item"><div class="label">Доход</div><div class="value income" id="totalIncome">0 ₸</div></div>
-    <div class="summary-item"><div class="label">Расход</div><div class="value expense" id="totalExpense">0 ₸</div></div>
+    <div class="summary-item"><div class="label">Расход</div><div class="value expense" id="totalExpense">0 ₸</div><div class="expense-mode-toggle" id="expenseCostToggle"><button type="button" data-mode="without" onclick="setExpenseCostMode(false)">Без себест.</button><button type="button" data-mode="with" onclick="setExpenseCostMode(true)">С себест.</button></div></div>
     <div class="summary-item"><div class="label">Баланс</div><div class="value balance" id="totalBalance">0 ₸</div></div>
   </div>
 
@@ -862,15 +866,37 @@ function checkRecurring(forYear, forMonth) {
   if (recurring.some(r => !r.manual)) saveRecurring(recurring.map(r => ({ ...r, manual: true })));
 }
 
+function isBusinessCostTransaction(tx) {
+  if (!tx || tx.type !== 'expense') return false;
+  if (tx.category === 'business_cost' || tx.businessCost === true) return true;
+  const tags = Array.isArray(tx.tags) ? tx.tags.join(' ') : '';
+  return /(?:себестоим|өзіндік\s*құн|cost\s*of\s*goods|\bcogs\b)/i.test((String(tx.comment || '') + ' ' + tags).toLowerCase());
+}
+function includesCostInExpenseTotal() {
+  return localStorage.getItem('tiin_expense_include_cost') === '1';
+}
+function refreshExpenseCostToggle() {
+  const include = includesCostInExpenseTotal();
+  document.querySelectorAll('#expenseCostToggle button').forEach(button => button.classList.toggle('active', button.dataset.mode === (include ? 'with' : 'without')));
+}
+window.setExpenseCostMode = function(include) {
+  localStorage.setItem('tiin_expense_include_cost', include ? '1' : '0');
+  render();
+};
+
 function render() {
   document.getElementById('monthTitle').textContent = t('months_arr')[currentMonth] + ' ' + currentYear;
   updateStaticTexts();
   const txns = filterTxnsByWallet(getTxns(currentYear, currentMonth));
   const inc = txns.filter(tx=>tx.type==='income').reduce((s,tx)=>s+tx.amount,0);
-  const exp = txns.filter(tx=>tx.type==='expense').reduce((s,tx)=>s+tx.amount,0);
+  const allExpenses = txns.filter(tx=>tx.type==='expense');
+  const actualExpense = allExpenses.reduce((s,tx)=>s+tx.amount,0);
+  const shownExpense = includesCostInExpenseTotal() ? actualExpense : allExpenses.filter(tx=>!isBusinessCostTransaction(tx)).reduce((s,tx)=>s+tx.amount,0);
   document.getElementById('totalIncome').textContent = fmt(inc);
-  document.getElementById('totalExpense').textContent = fmt(exp);
-  document.getElementById('totalBalance').textContent = fmt(inc - exp);
+  document.getElementById('totalExpense').textContent = fmt(shownExpense);
+  // Balance always remains factual and therefore always includes себестоимость.
+  document.getElementById('totalBalance').textContent = fmt(inc - actualExpense);
+  refreshExpenseCostToggle();
   // Debt badge
   const mainDebts = getDebts(currentYear, currentMonth);
   const mainDebtSum = mainDebts.reduce((s, d) => s + d.amount, 0);
@@ -2080,7 +2106,7 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=90', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=91', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
@@ -2091,7 +2117,7 @@ init();
 <script src="src/tiin-auth-handoff.js?v=1"></script>
 <script src="src/tiin-sync.js?v=15"></script>
 <script id="tiinLimitsScript" src="src/tiin-limits.js?v=3"></script>
-<script src="src/tiin-command-deck.js?v=24"></script>
+<script src="src/tiin-command-deck.js?v=25"></script>
 <script src="src/tiin-deals.js?v=10"></script>
 <script src="src/tiin-settings.js?v=18"></script>
 <script src="src/tiin-reports.js?v=4"></script>
