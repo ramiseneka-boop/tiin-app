@@ -89,7 +89,7 @@
     var title = new Intl.DateTimeFormat(locale, { month:'long', year:'numeric' }).format(calendarView);
     return '<div class="obsidian-calendar"><div class="tiin-sheet-handle"></div><div class="obsidian-calendar-head"><div><span class="obsidian-calendar-kicker">' +
       (getLang() === 'en' ? 'CALENDAR' : getLang() === 'kz' ? 'КҮНТІЗБЕ' : 'КАЛЕНДАРЬ') +
-      '</span><h2>' + title + '</h2></div><button type="button" class="obsidian-calendar-close" onclick="closeModal()" aria-label="Close">×</button></div>' +
+      '</span><h2>' + title + '</h2></div><button type="button" class="obsidian-calendar-close" onclick="document.getElementById(\'modalOverlay\').classList.remove(\'open\')" aria-label="Close">×</button></div>' +
       '<div class="obsidian-calendar-nav"><button type="button" onclick="tiinCalendarShift(-1)" aria-label="Previous month">‹</button><span>' + title + '</span><button type="button" onclick="tiinCalendarShift(1)" aria-label="Next month">›</button></div>' +
       '<div class="obsidian-calendar-grid">' + weekdays.map(function(w){return '<span class="obsidian-calendar-weekday">' + w + '</span>';}).join('') + cells.join('') + '</div>' +
       '<button type="button" class="obsidian-calendar-today" onclick="tiinCalendarToday()">' + (getLang() === 'en' ? 'Today' : getLang() === 'kz' ? 'Бүгін' : 'Сегодня') + '</button></div>';
@@ -114,7 +114,7 @@
       if (typeof render === 'function') render();
       if (typeof switchTab === 'function') switchTab('transactions');
     }
-    if (typeof closeModal === 'function') closeModal();
+    document.getElementById('modalOverlay').classList.remove('open');
     var key = year + '-' + String(month + 1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
     setTimeout(function () {
       var group = document.querySelector('#tab-transactions .day-group[data-date="' + key + '"]');
