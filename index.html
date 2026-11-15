@@ -1135,8 +1135,8 @@ function renderAnalytics() {
   let html = '';
   
   html += `<div class="card"><h3 class="gold" style="font-size:16px;margin-bottom:12px">📈 ${t('forecastTitle')}</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-      <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:14px">
+    <div class="analytics-forecast-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="analytics-forecast-tile" style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:14px">
         <div style="font-size:10px;color:var(--text2);margin-bottom:4px;text-transform:uppercase">${t('fixedPayments')}</div>
         <div style="font-size:17px;font-weight:700;color:#F87171">${fmt(fixedTotal)}</div>
         <div style="margin-top:6px;height:4px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden">
@@ -1144,14 +1144,14 @@ function renderAnalytics() {
         </div>
         <div style="font-size:10px;color:var(--text2);margin-top:4px">✅ ${fmt(fixedPaid)} · ⏳ ${fmt(fixedRemaining)}</div>
       </div>
-      <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:14px">
+      <div class="analytics-forecast-tile" style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:14px">
         <div style="font-size:10px;color:var(--text2);margin-bottom:4px;text-transform:uppercase">${t('dailySpending')}</div>
         <div style="font-size:17px;font-weight:700;color:var(--gold1)">${fmt(totalSpent)}</div>
         <div style="font-size:10px;color:var(--text2);margin-top:6px">${t('daysGone').replace('{x}', dayOfMonth).replace('{y}', daysInMonth)}</div>
         <div style="font-size:10px;color:var(--text2);margin-top:2px">${t('daysLeft').replace('{x}', daysLeft)}</div>
       </div>
     </div>
-    <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:14px">
+    <div class="analytics-forecast-tile analytics-forecast-total" style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:14px">
       <div style="font-size:10px;color:var(--text2);margin-bottom:4px;text-transform:uppercase">${t('forecastMonth')}</div>
       <div style="font-size:24px;font-weight:800;color:${forecastTotal > curInc ? '#F87171' : '#34D399'}">${fmt(forecastTotal)}</div>
       <div style="font-size:10px;color:var(--text2);margin-top:4px">${t('forecastExplain')}</div>
@@ -1232,11 +1232,11 @@ function renderWeeklyReport() {
   
   return `<div class="card"><h3 class="gold" style="font-size:16px;margin-bottom:12px">📅 ${t('weeklyReview')}</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:14px">
+      <div class="analytics-forecast-tile" style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:14px">
         <div style="font-size:11px;color:var(--text2);margin-bottom:4px">${t('last7days').toUpperCase()}</div>
         <div style="font-size:18px;font-weight:700;color:var(--red)">${fmt(thisWeek)}</div>
       </div>
-      <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:14px">
+      <div class="analytics-forecast-tile" style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:14px">
         <div style="font-size:11px;color:var(--text2);margin-bottom:4px">${t('prev7days').toUpperCase()}</div>
         <div style="font-size:18px;font-weight:700;color:var(--text2)">${fmt(lastWeek)}</div>
       </div>
@@ -1260,13 +1260,13 @@ function drawDonut(sorted, total) {
     ctx.stroke();
     startAngle += slice;
   });
-  ctx.fillStyle = '#e8e8f0';
-  ctx.font = '700 16px Inter, sans-serif';
+  ctx.fillStyle = document.documentElement.classList.contains('light') ? '#17202a' : '#e8e8f0';
+  ctx.font = document.documentElement.classList.contains('light') ? '800 16px Manrope, sans-serif' : '700 16px Inter, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(fmt(total).replace(' ₸',''), cx, cy - 6);
   ctx.font = '400 10px Inter, sans-serif';
-  ctx.fillStyle = '#9ca3af';
+  ctx.fillStyle = document.documentElement.classList.contains('light') ? '#8b6b37' : '#9ca3af';
   ctx.fillText('₸', cx, cy + 10);
 }
 
@@ -2136,7 +2136,7 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=106', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=107', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
@@ -2152,6 +2152,6 @@ init();
 <script src="src/tiin-settings.js?v=18"></script>
 <script src="src/tiin-reports.js?v=5"></script>
 <link rel="stylesheet" href="styles/tiin-obsidian-system.css?v=6">
-<link rel="stylesheet" href="styles/tiin-pearl-system.css?v=2">
+<link rel="stylesheet" href="styles/tiin-pearl-system.css?v=3">
 </body>
 </html>
