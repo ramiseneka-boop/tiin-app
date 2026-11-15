@@ -140,3 +140,11 @@ html:not(.light) .tab svg{width:21px!important;height:21px!important}
   html:not(.light) #app.container{max-width:760px!important}
   html:not(.light) .balance-hero{min-height:225px!important}
 }
+
+/* Obsidian is a single-screen composition on desktop as well. */
+@media(min-width:1024px){
+  html:not(.light) #app.container{display:block!important;width:min(100%,760px)!important;max-width:760px!important;padding:0 18px 40px!important}
+  html:not(.light) .command-header{margin-left:-18px!important;margin-right:-18px!important;padding-left:22px!important;padding-right:22px!important}
+  html:not(.light) .desktop-context{display:none!important}
+  html:not(.light) .month-nav,html:not(.light) .wallet-toggle,html:not(.light) .balance-hero,html:not(.light) #balanceKpi,html:not(.light) .summary,html:not(.light) .actions,html:not(.light) .templates-scroll{grid-column:auto!important;grid-row:auto!important;width:100%!important;max-width:none!important}
+}
