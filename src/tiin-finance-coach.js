@@ -263,7 +263,7 @@
 
     // Forecast = current factual balance minus money still reserved for this
     // month's living budget and savings. Actual expenses are already in gross.
-    kpi.querySelector('.label').textContent=tr('ПРОГНОЗ ОСТАТКА НА КОНЕЦ МЕСЯЦА','АЙ СОҢЫНДАҒЫ ҚАЛДЫҚ БОЛЖАМЫ','FORECAST END-OF-MONTH BALANCE');
+    kpi.querySelector('.label').textContent=tr('Прогноз на конец месяца','Ай соңындағы болжам','End-of-month forecast');
     const value=kpi.querySelector('.value');
     if (value) value.textContent=fmt(m.reserve);
     let explanation=kpi.querySelector('.balance-kpi-explanation');
@@ -272,7 +272,7 @@
       explanation.className='balance-kpi-explanation';
       kpi.appendChild(explanation);
     }
-    explanation.textContent=tr('Текущий баланс','Ағымдағы баланс','Current balance')+' '+fmt(gross)+' · '+tr('в бюджете на жизнь осталось','Өмір сүру бюджетінде қалды','left in living budget')+' '+fmt(m.lifeRemaining);
+    explanation.textContent=tr('На жизнь осталось','Өмірге қалғаны','Living budget remaining')+' '+fmt(m.lifeRemaining);
   }
   // Payment Tracker mutations used to refresh only their own screen.  Refresh
   // the whole app after every save so the monthly plan never keeps a stale total.
