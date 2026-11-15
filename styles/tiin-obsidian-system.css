@@ -1,0 +1,226 @@
+/* TIIN Obsidian design system — all sections, sheets and controls. */
+:root{
+  --obs-bg:#080e1a;
+  --obs-surface:#151d2e;
+  --obs-surface-hi:#1c2638;
+  --obs-inset:#101827;
+  --obs-line:rgba(193,203,224,.19);
+  --obs-gold:#efca7d;
+  --obs-green:#43d5a3;
+  --obs-red:#ff7b84;
+  --obs-text:#f4f6fb;
+  --obs-muted:#a0aabd;
+  --obs-shadow:0 14px 32px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.055);
+}
+html:not(.light) {
+  --bg1:var(--obs-bg);--bg2:#101827;--bg3:#080e1a;
+  --card-bg:linear-gradient(145deg,#1a2436,#111a2b);
+  --card-bg-solid:#151d2e;--card-border:var(--obs-line);
+  --text:var(--obs-text);--text2:var(--obs-muted);
+  --gold1:#d4aa59;--gold2:var(--obs-gold);
+  --green:var(--obs-green);--red:var(--obs-red);
+  --ui-surface:var(--obs-surface);--ui-surface-soft:var(--obs-surface-hi);
+  --ui-border:var(--obs-line);
+}
+
+/* Header: fixed left brand and right controls, never overlapping on iPhone. */
+html:not(.light) #app > .command-header{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:8px!important;grid-template-columns:none!important;min-width:0!important;
+  margin:0 -14px 15px!important;padding:14px 14px 10px!important;
+}
+html:not(.light) .command-header .command-date-slot{display:none!important}
+html:not(.light) .command-header .command-logo-slot{
+  display:flex!important;flex:0 0 auto!important;grid-column:auto!important;
+  justify-content:flex-start!important;overflow:visible!important;min-width:0!important;
+}
+html:not(.light) .command-header .command-logo-slot>div{display:flex!important;justify-content:flex-start!important}
+html:not(.light) .command-header .command-control-slot{
+  display:flex!important;flex:0 1 auto!important;grid-column:auto!important;
+  margin-left:auto!important;min-width:0!important;justify-content:flex-end!important;
+}
+html:not(.light) .command-header .top-controls{display:flex!important;flex-wrap:nowrap!important;gap:5px!important;white-space:nowrap!important}
+html:not(.light) .obsidian-brand{flex:none!important;font-size:clamp(17px,5.3vw,25px)!important;gap:8px!important;white-space:nowrap!important}
+html:not(.light) .obsidian-coin{flex:none!important;width:clamp(34px,10vw,43px)!important;height:clamp(34px,10vw,43px)!important;font-size:clamp(22px,7vw,28px)!important}
+html:not(.light) .lang-toggle{flex:none!important}
+html:not(.light) .lang-toggle span{min-width:25px!important;padding:6px 3px!important}
+html:not(.light) .ctrl-btn,html:not(.light) .tiin-account-button{flex:none!important;min-width:34px!important;min-height:34px!important;padding:0 6px!important}
+@media(max-width:380px){
+  html:not(.light) #app > .command-header{gap:4px!important;padding-inline:10px!important}
+  html:not(.light) .obsidian-brand{font-size:16px!important;letter-spacing:.09em!important;gap:5px!important}
+  html:not(.light) .obsidian-coin{width:32px!important;height:32px!important;font-size:21px!important}
+  html:not(.light) .lang-toggle span{min-width:22px!important;font-size:8px!important}
+  html:not(.light) .ctrl-btn,html:not(.light) .tiin-account-button{min-width:30px!important;min-height:30px!important;padding:0 4px!important}
+}
+
+/* Shared components beyond the hero. */
+html:not(.light) :is(.card,.goal-card,.payment-card,.finance-plan-card,.finance-insight-card,.goals-overview,.deal-card,.deals-forecast,.planning-card,.planning-summary,.planning-item,.limits-card,.tiin-settings-group,.tiin-pay-overview,.tiin-pay-item,.day-group,.pt-item,.pt-summary,.payday-card,.tiin-onboarding){
+  color:var(--obs-text)!important;
+  border:1px solid var(--obs-line)!important;
+  border-radius:22px!important;
+  background:linear-gradient(145deg,#1a2335 0%,#121b2b 70%,#172031 100%)!important;
+  box-shadow:var(--obs-shadow)!important;
+}
+html:not(.light) :is(.card,.goal-card,.payment-card,.finance-plan-card,.deal-card,.planning-card,.tiin-settings-group,.tiin-pay-overview,.tiin-pay-item,.day-group){margin-bottom:14px!important}
+html:not(.light) .card:hover{transform:none!important;box-shadow:var(--obs-shadow)!important}
+html:not(.light) :is(.card,.goal-card,.deal-card,.planning-card,.tiin-settings-group,.tiin-pay-overview,.limits-card) h3{color:var(--obs-gold)!important;-webkit-text-fill-color:var(--obs-gold)!important;background:none!important;letter-spacing:-.025em!important}
+html:not(.light) :is(.card,.goal-card,.deal-card,.planning-card,.tiin-settings-group,.tiin-pay-overview,.limits-card) p,
+html:not(.light) :is(.card,.goal-card,.deal-card,.planning-card,.tiin-settings-group,.tiin-pay-overview,.limits-card) small{color:var(--obs-muted)}
+html:not(.light) .gold{color:var(--obs-gold)!important;-webkit-text-fill-color:var(--obs-gold)!important;background:none!important}
+
+/* Card interiors use one quieter layer and one border weight. */
+html:not(.light) :is(.finance-envelopes>div,.finance-plan-grid>div,.deals-metrics>div,.deals-summary>div,.deal-money>div,.goal-amounts span,.goal-plan-details>div,.planning-metrics>div,.planning-summary>div,.tiin-payment-metrics>div,.limits-summary>div,.pt-summary-item,.pt-item-info,.recurring-item,.budget-item){
+  border:1px solid rgba(196,206,226,.13)!important;
+  border-radius:15px!important;
+  background:rgba(9,15,27,.32)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.025)!important;
+}
+html:not(.light) :is(.finance-envelopes span,.finance-plan-grid span,.goal-amounts span,.goal-plan-details span,.deals-metrics small,.deals-summary small,.deal-money small,.tiin-payment-metrics small,.pt-label){color:var(--obs-muted)!important}
+html:not(.light) :is(.finance-envelopes b,.finance-safe b,.goal-daily b,.planning-progress-label,.pt-item .pt-sum){color:var(--obs-gold)!important}
+html:not(.light) .finance-safe{border-color:rgba(232,190,112,.43)!important;background:rgba(213,169,91,.08)!important}
+html:not(.light) .finance-head{gap:12px!important}
+html:not(.light) .finance-head h3{font-size:clamp(19px,5vw,25px)!important;line-height:1.15!important}
+html:not(.light) .finance-actions{gap:7px!important}
+html:not(.light) .finance-actions .btn,html:not(.light) .finance-close{border-radius:12px!important}
+
+/* Transactions and analytics. */
+html:not(.light) .day-group{padding:13px!important}
+html:not(.light) .day-header{padding:7px 6px 14px!important;margin-bottom:8px!important;border-bottom:1px solid var(--obs-line)!important}
+html:not(.light) .day-title{font-size:16px!important;font-weight:750!important;color:var(--obs-text)!important}
+html:not(.light) .tx-item{
+  min-height:58px!important;margin:6px 0!important;padding:10px 12px!important;
+  border:1px solid rgba(195,205,226,.14)!important;border-radius:17px!important;
+  background:rgba(16,25,42,.6)!important;box-shadow:none!important;
+}
+html:not(.light) .tx-icon{background:rgba(77,100,141,.16)!important;border-radius:13px!important}
+html:not(.light) .tx-comment,html:not(.light) .tx-tags{color:var(--obs-muted)!important}
+html:not(.light) .tx-amount.income,html:not(.light) .positive,html:not(.light) .income{color:var(--obs-green)!important}
+html:not(.light) .tx-amount.expense,html:not(.light) .negative,html:not(.light) .expense{color:var(--obs-red)!important}
+html:not(.light) .tx-menu{color:#bac1cf!important}
+html:not(.light) :is(.expense-history-card,.analytics-detail-total,.weekly-review,.analytics-card,.cat-bar,.legend-item){
+  border-color:var(--obs-line)!important;border-radius:17px!important;
+}
+html:not(.light) .analytics-detail-heading>span{background:#202d43!important}
+html:not(.light) .analytics-detail-total{background:rgba(255,123,132,.07)!important}
+html:not(.light) .expense-range-chip,html:not(.light) .planning-filters button{
+  background:var(--obs-inset)!important;border-color:var(--obs-line)!important;color:var(--obs-muted)!important;
+  border-radius:12px!important;
+}
+html:not(.light) .expense-range-chip.selected,html:not(.light) .planning-filters button.active{
+  color:var(--obs-gold)!important;border-color:rgba(239,202,125,.65)!important;background:rgba(239,202,125,.12)!important;
+}
+html:not(.light) .period-type-switches{border-color:var(--obs-line)!important;background:var(--obs-inset)!important;border-radius:15px!important}
+html:not(.light) :is(.expense-range-form input,.currency-select){background:var(--obs-inset)!important;color:var(--obs-text)!important;border-color:var(--obs-line)!important}
+html:not(.light) :is(.expense-history-note,.analytics-detail-row){border-color:var(--obs-line)!important}
+
+/* Goals, planning lists and deals. */
+html:not(.light) .goals-overview{padding:18px!important}
+html:not(.light) .goal-card{padding:18px!important}
+html:not(.light) .goal-title{color:var(--obs-text)!important;font-weight:750!important}
+html:not(.light) .goal-amounts b{color:var(--obs-text)!important}
+html:not(.light) .goal-bar-track,html:not(.light) .planning-progress,html:not(.light) .deal-progress{background:rgba(255,255,255,.09)!important}
+html:not(.light) .goal-bar-fill,html:not(.light) .planning-progress span{background:linear-gradient(90deg,#b98c42,#f5d898)!important}
+html:not(.light) .goal-actions .btn{min-height:46px!important}
+html:not(.light) .goal-auto-row,html:not(.light) .deal-card-foot{border-top-color:var(--obs-line)!important}
+html:not(.light) .planning-screen h2,html:not(.light) .planning-detail-head h2{color:var(--obs-text)!important}
+html:not(.light) .planning-eyebrow,html:not(.light) .tiin-kicker{color:var(--obs-gold)!important}
+html:not(.light) .planning-card,.planning-item{padding:16px!important}
+html:not(.light) .planning-item{border-radius:16px!important;background:rgba(14,23,38,.82)!important;box-shadow:none!important}
+html:not(.light) .planning-add,html:not(.light) .planning-back{border:1px solid rgba(239,202,125,.48)!important;border-radius:13px!important;background:rgba(239,202,125,.1)!important;color:var(--obs-gold)!important}
+html:not(.light) .deal-card{padding:17px!important}
+html:not(.light) .deals-forecast{border-color:rgba(239,202,125,.4)!important}
+html:not(.light) .deal-economics{border-color:rgba(239,202,125,.3)!important;background:rgba(239,202,125,.05)!important}
+html:not(.light) .deal-status{border:1px solid rgba(195,205,226,.15)!important}
+html:not(.light) .deal-card-foot b,html:not(.light) .deal-money b{color:var(--obs-text)!important}
+html:not(.light) .deal-money b.income,html:not(.light) .deals-summary b.income{color:var(--obs-green)!important}
+
+/* Payments — overview and each scheduled item. */
+html:not(.light) .tiin-pay-overview{padding:18px!important}
+html:not(.light) .tiin-section-head{margin:2px 0 16px!important;gap:12px!important}
+html:not(.light) .tiin-section-head h2{font-size:clamp(21px,6vw,27px)!important;color:var(--obs-text)!important;line-height:1.12!important}
+html:not(.light) .tiin-section-head p{color:var(--obs-muted)!important;line-height:1.45!important}
+html:not(.light) .tiin-pay-overview .tiin-section-head{margin:0 0 18px!important}
+html:not(.light) .tiin-payment-metrics{gap:9px!important}
+html:not(.light) .tiin-payment-metrics>div{padding:13px!important;min-height:76px!important}
+html:not(.light) .tiin-payment-metrics b{font-size:clamp(15px,4.5vw,21px)!important;color:var(--obs-text)!important;overflow-wrap:anywhere}
+html:not(.light) .tiin-payment-metrics b.positive{color:var(--obs-green)!important}
+html:not(.light) .tiin-payment-metrics b.negative{color:var(--obs-red)!important}
+html:not(.light) .tiin-pay-list{gap:11px!important}
+html:not(.light) .tiin-pay-item{padding:13px!important;gap:10px!important}
+html:not(.light) .tiin-pay-date{background:rgba(221,177,96,.14)!important;color:var(--obs-gold)!important;border:1px solid rgba(221,177,96,.1)!important;border-radius:13px!important}
+html:not(.light) .tiin-pay-main b{font-size:14px!important;line-height:1.25!important}
+html:not(.light) .tiin-pay-main small{color:var(--obs-muted)!important}
+html:not(.light) .tiin-pay-amount b{font-size:14px!important}
+html:not(.light) .tiin-pay-amount .paid{color:var(--obs-green)!important}
+html:not(.light) .tiin-pay-amount .overdue{color:var(--obs-red)!important}
+html:not(.light) .tiin-pay-amount .pending{color:var(--obs-gold)!important}
+html:not(.light) .pt-item{background:var(--obs-surface)!important}
+html:not(.light) .pt-summary-item{padding:13px!important}
+html:not(.light) .pt-progress-fill{background:linear-gradient(90deg,#b98c42,#f5d898)!important}
+
+/* Settings — groups are restrained cards, rows are discoverable tap targets. */
+html:not(.light) .tiin-settings-group{padding:18px!important;margin:0 0 12px!important}
+html:not(.light) .tiin-settings-group h3{font-size:17px!important;padding:0 0 12px!important;margin:0 0 4px!important;border-bottom:1px solid var(--obs-line)!important}
+html:not(.light) .tiin-setting-row{
+  min-height:65px!important;padding:13px 2px!important;
+  border-top:1px solid rgba(193,203,224,.13)!important;background:transparent!important;color:var(--obs-text)!important;
+}
+html:not(.light) .tiin-setting-row:first-of-type{border-top:0!important}
+html:not(.light) .tiin-setting-row b{font-size:14px!important;line-height:1.25!important}
+html:not(.light) .tiin-setting-row small{color:var(--obs-muted)!important;font-size:11px!important;line-height:1.35!important}
+html:not(.light) .tiin-setting-row i{color:var(--obs-gold)!important}
+html:not(.light) .tiin-setting-inline,html:not(.light) .tiin-toggle,html:not(.light) .tiin-faq details{border-color:var(--obs-line)!important}
+html:not(.light) .tiin-setting-inline b{color:var(--obs-text)!important}
+html:not(.light) .tiin-segment{padding:3px!important;border:1px solid var(--obs-line)!important;border-radius:13px!important;background:var(--obs-inset)!important;gap:3px!important}
+html:not(.light) .tiin-segment button{border:0!important;border-radius:10px!important;color:var(--obs-muted)!important;background:transparent!important}
+html:not(.light) .tiin-segment button.selected{color:#151926!important;background:linear-gradient(135deg,#ffdc98,#cfa458)!important}
+html:not(.light) .tiin-toggle i{background:#4a5367!important}
+html:not(.light) .tiin-toggle input:checked+i{background:var(--obs-gold)!important}
+html:not(.light) .tiin-sync-state{border:1px solid rgba(67,213,163,.2)!important;background:rgba(67,213,163,.08)!important}
+html:not(.light) .tiin-faq summary{color:var(--obs-text)!important}
+
+/* Forms, sheets, currency and secondary tools. */
+html:not(.light) .modal-overlay{background:rgba(2,7,16,.8)!important;backdrop-filter:blur(8px)!important}
+html:not(.light) .modal{
+  color:var(--obs-text)!important;border:1px solid rgba(220,195,151,.25)!important;
+  background:linear-gradient(155deg,#1a2435,#0e1726)!important;
+  box-shadow:0 30px 70px rgba(0,0,0,.6),inset 0 1px rgba(255,255,255,.07)!important;
+}
+html:not(.light) .modal h2,html:not(.light) .modal h3,html:not(.light) .modal h4{color:var(--obs-text)!important}
+html:not(.light) .modal .gold,html:not(.light) .modal .deal-economics-title{color:var(--obs-gold)!important}
+html:not(.light) .modal .form-group label,html:not(.light) .tiin-payment-form label{color:var(--obs-muted)!important}
+html:not(.light) :is(.form-input,.currency-select,.expense-range-form input){
+  background:var(--obs-inset)!important;border:1px solid rgba(193,203,224,.24)!important;
+  color:var(--obs-text)!important;border-radius:14px!important;box-shadow:inset 0 1px rgba(255,255,255,.03)!important;
+}
+html:not(.light) :is(.form-input,.currency-select,.expense-range-form input):focus{border-color:var(--obs-gold)!important;outline:2px solid rgba(239,202,125,.12)!important}
+html:not(.light) .chip{background:var(--obs-inset)!important;border:1px solid var(--obs-line)!important;color:var(--obs-muted)!important;border-radius:12px!important}
+html:not(.light) .chip.selected{color:var(--obs-gold)!important;border-color:rgba(239,202,125,.6)!important;background:rgba(239,202,125,.1)!important}
+html:not(.light) .currency-result,html:not(.light) .finance-modal-balance,html:not(.light) .goal-plan-preview{
+  border-color:rgba(239,202,125,.36)!important;background:rgba(239,202,125,.08)!important;border-radius:16px!important;
+}
+html:not(.light) .currency-swap,html:not(.light) .finance-goals-button,html:not(.light) .goal-auto-row button{
+  border-color:rgba(239,202,125,.45)!important;background:rgba(239,202,125,.08)!important;color:var(--obs-gold)!important;
+}
+html:not(.light) .tiin-empty,html:not(.light) .empty{border-color:rgba(239,202,125,.35)!important;background:rgba(22,31,48,.48)!important;color:var(--obs-muted)!important;border-radius:20px!important}
+html:not(.light) .tiin-onboarding{border-color:rgba(239,202,125,.42)!important}
+html:not(.light) .tiin-onboard-steps button{color:var(--obs-text)!important}
+html:not(.light) .tiin-sheet-handle{background:#677187!important}
+html:not(.light) .tiin-template-list,html:not(.light) .tiin-template-list>div{border-color:var(--obs-line)!important}
+html:not(.light) #toastContainer>div{background:#1b2537!important;border:1px solid var(--obs-line)!important;color:var(--obs-text)!important}
+
+/* Button language, secondary navigation and focus. */
+html:not(.light) .btn-gold{
+  border:1px solid #ebca82!important;border-radius:15px!important;
+  background:linear-gradient(135deg,#f7d991,#cca258)!important;color:#111722!important;
+  box-shadow:0 7px 18px rgba(219,175,94,.13)!important;
+}
+html:not(.light) .btn-ghost{border:1px solid var(--obs-line)!important;border-radius:15px!important;background:rgba(25,34,51,.88)!important;color:var(--obs-text)!important}
+html:not(.light) .btn-danger{border:1px solid rgba(255,123,132,.3)!important;border-radius:13px!important;background:rgba(255,123,132,.09)!important;color:var(--obs-red)!important}
+html:not(.light) :is(.template-chip,.planning-add,.planning-back,.expense-range-chip,.currency-refresh){border-radius:13px!important}
+html:not(.light) :is(.tab,.wallet-btn,.btn,.tiin-setting-row,.tiin-pay-item,.chip):focus-visible{outline:2px solid var(--obs-gold)!important;outline-offset:2px!important}
+
+/* Light mode retains the same geometry and quieter card hierarchy. */
+html.light :is(.card,.goal-card,.payment-card,.finance-plan-card,.deal-card,.planning-card,.planning-summary,.planning-item,.tiin-settings-group,.tiin-pay-overview,.tiin-pay-item,.day-group){
+  border-radius:22px!important;
+}
