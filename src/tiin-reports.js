@@ -147,12 +147,9 @@
     if (document.body.dataset.tiinReportsInstalled) return;
     document.body.dataset.tiinReportsInstalled = '1';
     document.addEventListener('click', event => {
-      const income = event.target.closest('#totalIncome');
-      const expense = event.target.closest('#totalExpense');
-      const hero = event.target.closest('.balance-hero');
-      if (income) return window.openTIINStatement('month-income');
-      if (expense) return window.openTIINStatement('month-expense');
-      if (hero) return window.openTIINStatement('lifetime-balance');
+      if (event.target.closest('#expenseCostToggle, .sync-status')) return;
+      const card = event.target.closest('[data-tiin-report]');
+      if (card) return window.openTIINStatement(card.dataset.tiinReport);
     });
     document.addEventListener('keydown', event => {
       if ((event.key === 'Enter' || event.key === ' ') && document.activeElement?.matches?.('[data-tiin-report]')) {
