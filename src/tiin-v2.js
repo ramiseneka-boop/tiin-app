@@ -45,7 +45,7 @@
       const incomeMetric = totals.income > 0 ? `<span class="day-metric income"><small>${tr('Доход','Кіріс','Income')}</small><b>+${fmt(totals.income)}</b></span>` : '';
       const expenseMetric = totals.expense > 0 ? `<span class="day-metric expense"><small>${tr('Расход','Шығыс','Expense')}</small><b>−${fmt(totals.expense)}</b></span>` : '';
       const netSign = totals.net >= 0 ? '+' : '−';
-      html += `<section class="day-group"><header class="day-header"><div class="day-heading"><div class="day-title">${label}</div><div class="day-caption">${tr('Итоги дня','Күн қорытындысы','Daily total')}</div></div><div class="day-totals">${incomeMetric}${expenseMetric}<span class="day-metric net"><small>${tr('Итог','Нәтиже','Total')}</small><b>${netSign}${fmt(Math.abs(totals.net))}</b></span></div></header>`;
+      html += `<section class="day-group" data-date="${date}"><header class="day-header"><div class="day-heading"><div class="day-title">${label}</div><div class="day-caption">${tr('Итоги дня','Күн қорытындысы','Daily total')}</div></div><div class="day-totals">${incomeMetric}${expenseMetric}<span class="day-metric net"><small>${tr('Итог','Нәтиже','Total')}</small><b>${netSign}${fmt(Math.abs(totals.net))}</b></span></div></header>`;
       items.forEach(tx => {
         const cat = allCats.find(item => item.id === tx.category) || { icon:'•', name: tr('Категория','Санат','Category') };
         const isIncome = tx.type === 'income'; const tags = tx.tags?.length ? `<div class="tx-tags">${tx.tags.map(tag => `#${tag}`).join(' ')}</div>` : '';
