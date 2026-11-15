@@ -205,8 +205,8 @@
     hero.querySelector('.balance-hero-label').textContent = text('Общий баланс', 'Жалпы баланс', 'Total balance');
     hero.querySelector('.balance-hero-period').textContent = `${t('months_arr')[currentMonth]} ${currentYear}`;
     const labels = summary.querySelectorAll('.summary-item .label');
-    if (labels[0]) labels[0].textContent = `${t('income')} · ${text('за месяц', 'осы ай', 'this month')}`;
-    if (labels[1]) labels[1].textContent = `${t('expense')} · ${text('за месяц', 'осы ай', 'this month')}`;
+    if (labels[0]) labels[0].textContent = t('income');
+    if (labels[1]) labels[1].textContent = t('expense');
     let balanceKpi = document.getElementById('balanceKpi');
     if (!balanceKpi) {
       balanceKpi = document.createElement('div');
