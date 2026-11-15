@@ -148,3 +148,11 @@ html:not(.light) .tab svg{width:21px!important;height:21px!important}
   html:not(.light) .desktop-context{display:none!important}
   html:not(.light) .month-nav,html:not(.light) .wallet-toggle,html:not(.light) .balance-hero,html:not(.light) #balanceKpi,html:not(.light) .summary,html:not(.light) .actions,html:not(.light) .templates-scroll{grid-column:auto!important;grid-row:auto!important;width:100%!important;max-width:none!important}
 }
+
+/* Put the indicator badges in the same top-right position as the concept. */
+html:not(.light) .summary-item .label,html:not(.light) .summary-item .value,html:not(.light) #balanceKpi .label,html:not(.light) #balanceKpi .value{padding-left:0!important}
+html:not(.light) .summary-item::before,html:not(.light) #balanceKpi::before{left:auto!important;right:16px!important;top:16px!important;transform:none!important;width:35px!important;height:35px!important;font-size:20px!important}
+html:not(.light) #balanceKpi::before{right:17px!important;top:16px!important;width:38px!important;height:38px!important}
+html:not(.light) #balanceKpi .label{max-width:calc(100% - 50px)!important}
+html:not(.light) .summary-item::after{right:auto!important;left:15px!important;bottom:13px!important;width:28px!important;height:3px!important;border:0!important;border-radius:4px!important;opacity:1!important}
+html:not(.light) #balanceKpi::after{display:none!important}
