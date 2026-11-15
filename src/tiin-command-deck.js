@@ -84,24 +84,41 @@
     var cells = Array(first).fill('<span class="obsidian-calendar-blank"></span>');
     for (var day = 1; day <= count; day++) {
       var isToday = year === today.getFullYear() && month === today.getMonth() && day === today.getDate();
-      cells.push('<button type="button" class="obsidian-calendar-day' + (isToday ? ' is-today' : '') + '" onclick="tiinCalendarPick(' + day + ')"' + (isToday ? ' aria-current="date"' : '') + '>' + day + '</button>');
+      cells.push('<button type="button" class="obsidian-calendar-day' + (isToday ? ' is-today' : '') + '" data-day="' + day + '"' + (isToday ? ' aria-current="date"' : '') + '>' + day + '</button>');
     }
     var title = new Intl.DateTimeFormat(locale, { month:'long', year:'numeric' }).format(calendarView);
     return '<div class="obsidian-calendar"><div class="tiin-sheet-handle"></div><div class="obsidian-calendar-head"><div><span class="obsidian-calendar-kicker">' +
       (getLang() === 'en' ? 'CALENDAR' : getLang() === 'kz' ? 'КҮНТІЗБЕ' : 'КАЛЕНДАРЬ') +
-      '</span><h2>' + title + '</h2></div><button type="button" class="obsidian-calendar-close" onclick="document.getElementById(\'modalOverlay\').classList.remove(\'open\')" aria-label="Close">×</button></div>' +
-      '<div class="obsidian-calendar-nav"><button type="button" onclick="tiinCalendarShift(-1)" aria-label="Previous month">‹</button><span>' + title + '</span><button type="button" onclick="tiinCalendarShift(1)" aria-label="Next month">›</button></div>' +
+      '</span><h2>' + title + '</h2></div><button type="button" class="obsidian-calendar-close" aria-label="Close">×</button></div>' +
+      '<div class="obsidian-calendar-nav"><button type="button" data-shift="-1" aria-label="Previous month">‹</button><span>' + title + '</span><button type="button" data-shift="1" aria-label="Next month">›</button></div>' +
       '<div class="obsidian-calendar-grid">' + weekdays.map(function(w){return '<span class="obsidian-calendar-weekday">' + w + '</span>';}).join('') + cells.join('') + '</div>' +
-      '<button type="button" class="obsidian-calendar-today" onclick="tiinCalendarToday()">' + (getLang() === 'en' ? 'Today' : getLang() === 'kz' ? 'Бүгін' : 'Сегодня') + '</button></div>';
+      '<button type="button" class="obsidian-calendar-today">' + (getLang() === 'en' ? 'Today' : getLang() === 'kz' ? 'Бүгін' : 'Сегодня') + '</button></div>';
+  }
+  function wireCalendar() {
+    var root = document.querySelector('#modal .obsidian-calendar');
+    if (!root) return;
+    root.querySelector('.obsidian-calendar-close').addEventListener('click', function (event) {
+      event.stopPropagation();
+      document.getElementById('modalOverlay').classList.remove('open');
+    });
+    root.querySelectorAll('[data-shift]').forEach(function (button) {
+      button.addEventListener('click', function () { window.tiinCalendarShift(Number(button.dataset.shift)); });
+    });
+    root.querySelectorAll('[data-day]').forEach(function (button) {
+      button.addEventListener('click', function () { window.tiinCalendarPick(Number(button.dataset.day)); });
+    });
+    root.querySelector('.obsidian-calendar-today').addEventListener('click', window.tiinCalendarToday);
   }
   window.openTIINCalendar = function () {
     calendarView = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     document.getElementById('modal').innerHTML = calendarHtml();
+    wireCalendar();
     document.getElementById('modalOverlay').classList.add('open');
   };
   window.tiinCalendarShift = function (delta) {
     calendarView = new Date(calendarView.getFullYear(), calendarView.getMonth() + delta, 1);
     document.getElementById('modal').innerHTML = calendarHtml();
+    wireCalendar();
   };
   window.tiinCalendarToday = function () {
     calendarView = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
