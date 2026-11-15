@@ -370,3 +370,151 @@ html:not(.light) .tx-action-sheet .tx-action-cancel{
 html:not(.light) .tx-action-sheet .btn-danger{
   margin-top:5px!important;background:rgba(255,123,132,.1)!important;
 }
+
+
+/* Header date: compact, tactile calendar between brand and controls. */
+html:not(.light) #app > .command-header .command-logo-slot{order:0!important}
+html:not(.light) #app > .command-header .command-date-slot{
+  display:flex!important;order:1!important;align-items:center!important;
+  flex:0 1 auto!important;width:auto!important;min-width:0!important;
+  margin:0 auto!important;justify-content:center!important;
+}
+html:not(.light) #app > .command-header .command-control-slot{order:2!important;margin-left:0!important}
+html:not(.light) .obsidian-date-trigger{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  gap:4px!important;white-space:nowrap!important;min-width:0!important;
+  padding:7px 9px!important;border:1px solid rgba(225,190,128,.25)!important;
+  border-radius:12px!important;background:linear-gradient(135deg,rgba(36,44,60,.88),rgba(15,23,38,.9))!important;
+  color:#c5ccda!important;font:600 11px/1.15 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,sans-serif!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.07),0 4px 12px rgba(0,0,0,.12)!important;
+  cursor:pointer!important;
+}
+html:not(.light) .obsidian-date-trigger strong{color:var(--obs-gold)!important;font-weight:800!important}
+html:not(.light) .obsidian-date-trigger i{margin:0 1px!important}
+html:not(.light) .obsidian-date-trigger:focus-visible{outline:2px solid var(--obs-gold)!important;outline-offset:2px!important}
+@media(max-width:380px){
+  html:not(.light) .obsidian-date-trigger{font-size:10px!important;padding:6px!important;gap:2px!important}
+  html:not(.light) .obsidian-date-month{display:none!important}
+}
+@media(max-width:350px){
+  html:not(.light) .obsidian-date-trigger{padding:5px 4px!important}
+}
+
+/* Modern iPhone-native type and a brighter, lower wave as in the concept. */
+html:not(.light) body,
+html:not(.light) :is(button,input,select,textarea){
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Inter,sans-serif!important;
+}
+html:not(.light) .balance-hero{
+  background:#0b111e url('../assets/tiin-obsidian-wave.svg?v=2') center/cover no-repeat!important;
+  border-color:rgba(231,207,166,.58)!important;
+  box-shadow:0 18px 36px rgba(0,0,0,.35),inset 0 1px rgba(255,245,216,.17),0 0 22px rgba(218,170,99,.08)!important;
+}
+html:not(.light) .balance-hero::after{
+  background:linear-gradient(90deg,rgba(8,13,24,.06),transparent 75%)!important;
+}
+html:not(.light) .balance-hero-label{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,sans-serif!important;
+  font-weight:760!important;letter-spacing:-.035em!important;
+}
+html:not(.light) .balance-hero .value.balance{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,sans-serif!important;
+  font-weight:800!important;letter-spacing:-.045em!important;
+  font-variant-numeric:tabular-nums!important;
+  text-shadow:0 2px 14px rgba(0,0,0,.26)!important;
+}
+
+/* Obsidian calendar sheet. */
+html:not(.light) .modal:has(.obsidian-calendar){padding:0!important;border-radius:24px 24px 0 0!important}
+html:not(.light) .obsidian-calendar{
+  padding:21px 20px calc(25px + env(safe-area-inset-bottom,0px))!important;
+  background:radial-gradient(380px 220px at 100% 0,rgba(231,189,108,.1),transparent 75%),linear-gradient(145deg,#1d2739,#101827)!important;
+  border-radius:24px 24px 0 0!important;
+}
+html:not(.light) .obsidian-calendar-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:22px 0!important}
+html:not(.light) .obsidian-calendar-kicker{display:block;color:var(--obs-gold);font-size:10px;font-weight:800;letter-spacing:.15em;margin-bottom:6px}
+html:not(.light) .obsidian-calendar h2{margin:0!important;text-align:left!important;font-size:23px!important;text-transform:capitalize}
+html:not(.light) .obsidian-calendar-close,
+html:not(.light) .obsidian-calendar-nav button{
+  border:1px solid var(--obs-line);background:rgba(12,20,34,.65);color:var(--obs-text);
+  border-radius:12px;width:38px;height:38px;font-size:24px;line-height:1;
+}
+html:not(.light) .obsidian-calendar-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px!important;color:var(--obs-gold);font-size:14px;font-weight:700;text-transform:capitalize}
+html:not(.light) .obsidian-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px!important}
+html:not(.light) .obsidian-calendar-weekday{text-align:center;color:var(--obs-muted);font-size:11px;font-weight:700;padding:4px 0 7px}
+html:not(.light) .obsidian-calendar-day{
+  aspect-ratio:1;border:1px solid transparent;border-radius:12px;
+  background:rgba(13,21,35,.52);color:var(--obs-text);font-size:14px;font-weight:600;
+}
+html:not(.light) .obsidian-calendar-day.is-today{
+  background:linear-gradient(135deg,#ffe2a3,#c99c4e);color:#121724;border-color:#f9d994;
+  box-shadow:0 5px 14px rgba(227,182,95,.22);font-weight:800;
+}
+html:not(.light) .obsidian-calendar-day:focus-visible{outline:2px solid var(--obs-gold)}
+html:not(.light) .obsidian-calendar-today{
+  width:100%;min-height:45px;margin-top:19px;border-radius:13px;
+  border:1px solid rgba(236,200,132,.45);background:rgba(236,200,132,.1);
+  color:var(--obs-gold);font-weight:750;
+}
+
+/* Reports opened from balance, income and expense have the same faceted skin. */
+html:not(.light) .modal:has(.tiin-report){padding:0!important;border-radius:25px 25px 0 0!important;overflow:hidden!important}
+html:not(.light) .tiin-report{
+  max-height:min(82dvh,780px)!important;overflow:auto!important;
+  padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px))!important;
+  background:radial-gradient(430px 240px at 110% -20%,rgba(224,179,100,.11),transparent 76%),linear-gradient(145deg,#1b2638,#0f1828 72%,#1a2535)!important;
+  color:var(--obs-text)!important;
+}
+html:not(.light) .tiin-report h2{
+  text-align:left!important;line-height:1.18!important;margin:24px 0 7px!important;
+  font-size:clamp(19px,5.5vw,25px)!important;letter-spacing:-.03em!important;
+}
+html:not(.light) .tiin-report-subtitle{
+  text-align:left!important;margin:0 0 18px!important;color:var(--obs-muted)!important;
+  line-height:1.4!important;font-size:12px!important;
+}
+html:not(.light) .tiin-report-totals{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:9px!important;margin:0 0 20px!important;
+}
+html:not(.light) .tiin-report-totals>div{
+  min-width:0!important;padding:14px!important;
+  border:1px solid rgba(216,196,163,.22)!important;border-radius:16px!important;
+  background:linear-gradient(145deg,rgba(35,47,65,.9),rgba(13,21,35,.84))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.055)!important;
+}
+html:not(.light) .tiin-report-totals>div:last-child{
+  grid-column:1/-1!important;border-color:rgba(236,202,136,.42)!important;
+  background:linear-gradient(135deg,rgba(87,71,49,.36),rgba(17,26,41,.92))!important;
+}
+html:not(.light) .tiin-report-totals small{color:var(--obs-muted)!important;font-size:11px!important}
+html:not(.light) .tiin-report-totals b{
+  font-size:clamp(14px,4vw,19px)!important;line-height:1.18!important;
+  overflow-wrap:anywhere!important;white-space:normal!important;
+}
+html:not(.light) .tiin-report-totals>div:last-child b{color:var(--obs-gold)!important}
+html:not(.light) .tiin-report-day{
+  margin:12px 0!important;padding:3px 10px 8px!important;
+  border:1px solid rgba(222,194,151,.25)!important;border-radius:19px!important;
+  background:linear-gradient(145deg,rgba(32,43,61,.9),rgba(14,23,38,.94))!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.055)!important;
+}
+html:not(.light) .tiin-report-day header{
+  align-items:flex-start!important;flex-wrap:wrap!important;gap:8px!important;
+  padding:13px 4px!important;border-bottom:1px solid var(--obs-line)!important;
+}
+html:not(.light) .tiin-report-day header>div{min-width:0;flex:1}
+html:not(.light) .tiin-report-day header b{font-size:14px!important;line-height:1.25!important}
+html:not(.light) .tiin-report-day header>strong{font-size:14px!important;white-space:nowrap}
+html:not(.light) .tiin-report-day small{font-size:10px!important;color:var(--obs-muted)!important}
+html:not(.light) .tiin-report-row{
+  grid-template-columns:36px minmax(0,1fr) auto!important;gap:9px!important;
+  padding:11px 4px!important;border-top-color:rgba(197,206,226,.12)!important;
+}
+html:not(.light) .tiin-report-row>div{min-width:0!important}
+html:not(.light) .tiin-report-row b{font-size:13px!important;overflow-wrap:anywhere!important}
+html:not(.light) .tiin-report-row>strong{font-size:13px!important;white-space:nowrap}
+html:not(.light) .tiin-report-icon{
+  display:grid!important;place-items:center!important;width:34px;height:34px;
+  border-radius:11px;background:rgba(85,103,137,.16)!important;
+}
