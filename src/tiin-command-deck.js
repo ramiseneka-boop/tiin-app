@@ -97,9 +97,16 @@
   function wireCalendar() {
     var root = document.querySelector('#modal .obsidian-calendar');
     if (!root) return;
-    root.querySelector('.obsidian-calendar-close').addEventListener('click', function () {
+    var closeButton = root.querySelector('.obsidian-calendar-close');
+    function dismissCalendar() {
       document.getElementById('modalOverlay').classList.remove('open');
+    }
+    closeButton.addEventListener('pointerdown', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      dismissCalendar();
     });
+    closeButton.addEventListener('click', dismissCalendar);
     root.querySelectorAll('[data-shift]').forEach(function (button) {
       button.addEventListener('click', function () { window.tiinCalendarShift(Number(button.dataset.shift)); });
     });
