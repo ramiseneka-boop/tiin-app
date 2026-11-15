@@ -356,3 +356,48 @@ html.light .legend-item.analytics-category-trigger{
 html.light .legend-item.analytics-category-trigger span{min-width:0!important;overflow-wrap:anywhere!important}
 html.light .legend-item.analytics-category-trigger b{margin-left:auto!important;color:#a47731!important}
 html.light .cat-bar-track{background:#e9e0d3!important}
+
+/* Match the proven Obsidian iPhone header geometry in Pearl. */
+@media(max-width:767px){
+  html.light #app > .command-header{
+    position:relative!important;top:auto!important;left:auto!important;
+    display:flex!important;grid-template-columns:none!important;grid-template-rows:none!important;
+    align-items:center!important;justify-content:space-between!important;gap:6px!important;
+    width:auto!important;min-height:64px!important;
+    padding:10px 14px!important;margin:0 -14px 14px!important;
+  }
+  html.light #app > .command-header .command-logo-slot{
+    position:static!important;left:auto!important;top:auto!important;
+    transform:none!important;width:auto!important;height:auto!important;
+    pointer-events:auto!important;overflow:visible!important;min-width:0!important;
+    flex:0 0 auto!important;order:0!important;grid-column:auto!important;grid-row:auto!important;
+    display:flex!important;justify-content:flex-start!important;z-index:auto!important;
+  }
+  html.light #app > .command-header .command-logo-slot>div{
+    display:flex!important;justify-content:flex-start!important;
+    width:auto!important;min-width:0!important;overflow:visible!important;
+  }
+  html.light #app > .command-header .command-date-slot{
+    position:static!important;order:1!important;grid-column:auto!important;grid-row:auto!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;
+    flex:0 1 auto!important;width:auto!important;min-width:0!important;margin:0 auto!important;
+  }
+  html.light #app > .command-header .command-control-slot{
+    position:static!important;order:2!important;grid-column:auto!important;grid-row:auto!important;
+    display:flex!important;flex:0 0 auto!important;justify-content:flex-end!important;
+    width:auto!important;min-width:0!important;max-width:none!important;margin:0!important;z-index:auto!important;
+  }
+  html.light .obsidian-brand{flex:none!important;font-size:clamp(17px,5vw,22px)!important;gap:6px!important;letter-spacing:.11em!important}
+  html.light .obsidian-coin{flex:none!important;width:clamp(32px,9vw,39px)!important;height:clamp(32px,9vw,39px)!important;font-size:clamp(21px,6vw,26px)!important}
+  html.light .obsidian-date-trigger{font-size:11px!important;padding:7px 8px!important;gap:3px!important;min-width:0!important}
+  html.light .top-controls{display:flex!important;flex-wrap:nowrap!important;gap:5px!important}
+}
+@media(max-width:380px){
+  html.light #app > .command-header{gap:4px!important;padding-inline:10px!important}
+  html.light .obsidian-brand{font-size:16px!important;gap:5px!important}
+  html.light .obsidian-coin{width:32px!important;height:32px!important;font-size:21px!important}
+  html.light .obsidian-date-trigger{font-size:10px!important;padding:6px!important;gap:2px!important}
+  html.light .obsidian-date-month{display:none!important}
+  html.light .lang-toggle span{min-width:22px!important;font-size:8px!important}
+  html.light .ctrl-btn,html.light .tiin-account-button{min-width:30px!important;min-height:30px!important;padding-inline:4px!important}
+}
