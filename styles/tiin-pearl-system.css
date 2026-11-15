@@ -288,3 +288,71 @@ html.light .month-nav button:first-child::before,html.light .month-nav button:la
   font-size:27px!important;line-height:1!important;color:#17202a!important;background:none!important;box-shadow:none!important
 }
 html.light .month-nav button:last-child::before{content:'›'!important}
+
+/* Pearl mobile header: logo and controls keep separate lanes, date gets its own row. */
+@media(max-width:650px){
+  html.light .command-header{
+    display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-rows:auto auto!important;align-items:center!important;
+    column-gap:8px!important;row-gap:8px!important;
+    padding:8px 16px 9px!important;margin:0 -16px 12px!important;
+  }
+  html.light .command-logo-slot{
+    grid-column:1!important;grid-row:1!important;min-width:0!important;
+    justify-content:flex-start!important;overflow:hidden!important;
+  }
+  html.light .command-logo-slot>div{min-width:0!important;overflow:hidden!important}
+  html.light .obsidian-brand{font-size:21px!important;gap:7px!important;letter-spacing:.08em!important}
+  html.light .obsidian-coin{width:38px!important;height:38px!important;font-size:24px!important}
+  html.light .command-control-slot{
+    grid-column:2!important;grid-row:1!important;min-width:0!important;
+    justify-content:flex-end!important;max-width:100%!important;
+  }
+  html.light .top-controls{display:flex!important;align-items:center!important;gap:5px!important}
+  html.light .command-date-slot{
+    grid-column:1/-1!important;grid-row:2!important;justify-content:flex-start!important;
+    margin:0!important;width:100%!important;
+  }
+  html.light .obsidian-date-trigger{font-size:12px!important;padding:7px 12px!important;gap:4px!important}
+  html.light .obsidian-date-month{display:inline!important}
+  html.light .month-nav{margin-top:2px!important}
+}
+@media(max-width:400px){
+  html.light .command-header{padding-inline:12px!important}
+  html.light .obsidian-brand{font-size:18px!important;gap:5px!important}
+  html.light .obsidian-coin{width:34px!important;height:34px!important;font-size:22px!important}
+  html.light .lang-toggle span{min-width:22px!important;padding:5px 2px!important;font-size:8px!important}
+  html.light .ctrl-btn,html.light .tiin-account-button{min-width:30px!important;min-height:30px!important}
+}
+
+/* Analytics forecast cards retain visible edges on ivory surfaces. */
+html.light .analytics-forecast-grid{gap:10px!important;margin:0 0 10px!important}
+html.light .analytics-forecast-tile{
+  min-width:0!important;min-height:112px!important;padding:15px 12px!important;
+  background:linear-gradient(145deg,#fffdfa,#f6eee2)!important;
+  border:1px solid rgba(157,119,64,.28)!important;border-radius:17px!important;
+  box-shadow:inset 0 1px #fff,0 7px 18px rgba(91,64,32,.055)!important;
+}
+html.light .analytics-forecast-tile>div:first-child{
+  color:#6b645a!important;font-weight:750!important;letter-spacing:.045em!important;
+}
+html.light .analytics-forecast-tile>div:nth-child(2){
+  font-weight:800!important;overflow-wrap:anywhere!important;
+}
+html.light .analytics-forecast-tile>div[style*="height:4px"]{background:#eadfcb!important}
+html.light .analytics-forecast-total{
+  min-height:96px!important;border-color:rgba(177,129,56,.47)!important;
+  background:linear-gradient(130deg,#fffcf5,#f5e8d2)!important;
+}
+html.light .analytics-forecast-total>div:nth-child(2){color:#936d32!important}
+html.light .donut-wrap{gap:15px!important}
+html.light .donut-legend{width:100%!important;gap:5px!important}
+html.light .legend-item.analytics-category-trigger{
+  width:100%!important;display:flex!important;align-items:center!important;
+  min-width:0!important;padding:9px 10px!important;border:1px solid rgba(157,119,64,.17)!important;
+  border-radius:12px!important;background:linear-gradient(140deg,#fffdfa,#f8f3ea)!important;
+  color:#17202a!important;text-align:left!important;
+}
+html.light .legend-item.analytics-category-trigger span{min-width:0!important;overflow-wrap:anywhere!important}
+html.light .legend-item.analytics-category-trigger b{margin-left:auto!important;color:#a47731!important}
+html.light .cat-bar-track{background:#e9e0d3!important}
