@@ -1,11 +1,11 @@
 // Increment on every production release so installed iPhone/Android PWAs do not
 // keep an older application shell or an old, damaged hero image.
-const CACHE_NAME = 'tiin-assets-46';
+const CACHE_NAME = 'tiin-assets-47';
 const APP_SHELL = [
-  './manifest.json', './styles/tiin-v2.css', './styles/tiin-command-deck.css', './styles/tiin-polish.css',
+  './manifest.json', './styles/tiin-v2.css', './styles/tiin-command-deck.css', './styles/tiin-polish.css', './styles/tiin-obsidian.css',
   './src/tiin-v2.js', './src/tiin-currency.js',
   './src/tiin-multicurrency.js', './src/tiin-auth-handoff.js', './src/tiin-sync.js', './src/tiin-limits.js', './src/tiin-finance-coach.js', './src/tiin-command-deck.js', './src/tiin-deals.js', './src/tiin-settings.js', './src/tiin-reports.js', './icon-192.png', './icon-512.png',
-  './assets/tiin-hero-morning.jpg', './assets/tiin-hero-day.jpg', './assets/tiin-hero-evening.jpg', './assets/tiin-balance-mountains.jpeg'
+  './assets/tiin-hero-morning.jpg', './assets/tiin-hero-day.jpg', './assets/tiin-hero-evening.jpg', './assets/tiin-balance-mountains.jpeg', './assets/tiin-obsidian-wave.svg'
 ];
 
 self.addEventListener('install', event => {
