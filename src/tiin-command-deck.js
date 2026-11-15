@@ -51,7 +51,7 @@
       var obsidian = document.createElement('link');
       obsidian.id = 'tiinObsidianStyles';
       obsidian.rel = 'stylesheet';
-      obsidian.href = 'styles/tiin-obsidian.css?v=2';
+      obsidian.href = 'styles/tiin-obsidian.css?v=3';
       document.head.appendChild(obsidian);
     }
   }
