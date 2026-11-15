@@ -97,8 +97,7 @@
   function wireCalendar() {
     var root = document.querySelector('#modal .obsidian-calendar');
     if (!root) return;
-    root.querySelector('.obsidian-calendar-close').addEventListener('click', function (event) {
-      event.stopPropagation();
+    root.querySelector('.obsidian-calendar-close').addEventListener('click', function () {
       document.getElementById('modalOverlay').classList.remove('open');
     });
     root.querySelectorAll('[data-shift]').forEach(function (button) {
