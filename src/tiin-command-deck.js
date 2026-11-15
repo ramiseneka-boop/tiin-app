@@ -47,6 +47,13 @@
     polish.href = 'styles/tiin-polish.css?v=13';
       document.head.appendChild(polish);
     }
+    if (!document.getElementById('tiinObsidianStyles')) {
+      var obsidian = document.createElement('link');
+      obsidian.id = 'tiinObsidianStyles';
+      obsidian.rel = 'stylesheet';
+      obsidian.href = 'styles/tiin-obsidian.css?v=1';
+      document.head.appendChild(obsidian);
+    }
   }
 
   function commandDate() {
@@ -88,6 +95,7 @@
     center.className = 'command-logo-slot';
     right.className = 'command-control-slot';
     left.appendChild(date);
+    logoWrap.innerHTML = '<span class="obsidian-brand" aria-label="TIIN"><span class="obsidian-coin" aria-hidden="true">T</span><span>TIIN</span></span>';
     center.appendChild(logoWrap);
     if (controls) right.appendChild(controls);
     header.replaceChildren(left, center, right);
@@ -143,9 +151,15 @@
   function composeKpis() {
     var summary = document.querySelector('.summary');
     var balance = document.getElementById('balanceKpi');
-    if (!summary || !balance || balance.parentElement === summary) return;
-    // Visual regrouping only: the existing balance calculation and values stay unchanged.
-    summary.appendChild(balance);
+    if (!summary || !balance || !summary.parentNode) return;
+    // The forecast is a full-width card immediately below the factual balance.
+    if (balance.nextElementSibling !== summary) summary.parentNode.insertBefore(balance, summary);
+    // Keep quick actions visible before secondary shortcuts, as in Obsidian.
+    var actions = document.querySelector('.actions');
+    var templates = document.querySelector('.templates-scroll');
+    if (actions && templates && actions.parentNode === templates.parentNode && actions.nextElementSibling !== templates) {
+      actions.after(templates);
+    }
   }
 
   function updateDesktopContext() {
