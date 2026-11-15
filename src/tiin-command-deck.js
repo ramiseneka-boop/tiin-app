@@ -64,9 +64,63 @@
     var weekday = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(now).replace('.', '');
     var month = new Intl.DateTimeFormat(locale, { month: 'short' }).format(now).replace('.', '');
     weekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
-    date.className = 'command-date';
-    date.innerHTML = '<strong>' + weekday + '</strong><i>·</i><span>' + now.getDate() + ' ' + month + '</span>';
+    date.className = 'command-date obsidian-date-trigger';
+    date.setAttribute('role', 'button');
+    date.setAttribute('tabindex', '0');
+    date.setAttribute('aria-label', getLang() === 'kz' ? 'Күнтізбені ашу' : getLang() === 'en' ? 'Open calendar' : 'Открыть календарь');
+    date.innerHTML = '<strong>' + weekday + '</strong><i>·</i><span class="obsidian-date-day">' + now.getDate() + '</span><span class="obsidian-date-month"> ' + month + '</span>';
+    date.onclick = function () { window.openTIINCalendar(); };
+    date.onkeydown = function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); window.openTIINCalendar(); } };
   }
+
+  var calendarView = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  function calendarHtml() {
+    var locale = getLang() === 'kz' ? 'kk-KZ' : getLang() === 'en' ? 'en-GB' : 'ru-RU';
+    var year = calendarView.getFullYear(), month = calendarView.getMonth();
+    var first = (new Date(year, month, 1).getDay() + 6) % 7;
+    var count = new Date(year, month + 1, 0).getDate();
+    var today = new Date();
+    var weekdays = getLang() === 'en' ? ['Mo','Tu','We','Th','Fr','Sa','Su'] : getLang() === 'kz' ? ['Дс','Сс','Ср','Бс','Жм','Сн','Жс'] : ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+    var cells = Array(first).fill('<span class="obsidian-calendar-blank"></span>');
+    for (var day = 1; day <= count; day++) {
+      var isToday = year === today.getFullYear() && month === today.getMonth() && day === today.getDate();
+      cells.push('<button type="button" class="obsidian-calendar-day' + (isToday ? ' is-today' : '') + '" onclick="tiinCalendarPick(' + day + ')"' + (isToday ? ' aria-current="date"' : '') + '>' + day + '</button>');
+    }
+    var title = new Intl.DateTimeFormat(locale, { month:'long', year:'numeric' }).format(calendarView);
+    return '<div class="obsidian-calendar"><div class="tiin-sheet-handle"></div><div class="obsidian-calendar-head"><div><span class="obsidian-calendar-kicker">' +
+      (getLang() === 'en' ? 'CALENDAR' : getLang() === 'kz' ? 'КҮНТІЗБЕ' : 'КАЛЕНДАРЬ') +
+      '</span><h2>' + title + '</h2></div><button type="button" class="obsidian-calendar-close" onclick="closeModal()" aria-label="Close">×</button></div>' +
+      '<div class="obsidian-calendar-nav"><button type="button" onclick="tiinCalendarShift(-1)" aria-label="Previous month">‹</button><span>' + title + '</span><button type="button" onclick="tiinCalendarShift(1)" aria-label="Next month">›</button></div>' +
+      '<div class="obsidian-calendar-grid">' + weekdays.map(function(w){return '<span class="obsidian-calendar-weekday">' + w + '</span>';}).join('') + cells.join('') + '</div>' +
+      '<button type="button" class="obsidian-calendar-today" onclick="tiinCalendarToday()">' + (getLang() === 'en' ? 'Today' : getLang() === 'kz' ? 'Бүгін' : 'Сегодня') + '</button></div>';
+  }
+  window.openTIINCalendar = function () {
+    calendarView = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    document.getElementById('modal').innerHTML = calendarHtml();
+    document.getElementById('modalOverlay').classList.add('open');
+  };
+  window.tiinCalendarShift = function (delta) {
+    calendarView = new Date(calendarView.getFullYear(), calendarView.getMonth() + delta, 1);
+    document.getElementById('modal').innerHTML = calendarHtml();
+  };
+  window.tiinCalendarToday = function () {
+    calendarView = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    window.tiinCalendarPick(new Date().getDate());
+  };
+  window.tiinCalendarPick = function (day) {
+    var year = calendarView.getFullYear(), month = calendarView.getMonth();
+    if (typeof currentYear !== 'undefined' && typeof currentMonth !== 'undefined') {
+      currentYear = year; currentMonth = month;
+      if (typeof render === 'function') render();
+      if (typeof switchTab === 'function') switchTab('transactions');
+    }
+    if (typeof closeModal === 'function') closeModal();
+    var key = year + '-' + String(month + 1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+    setTimeout(function () {
+      var group = document.querySelector('#tab-transactions .day-group[data-date="' + key + '"]');
+      if (group) group.scrollIntoView({ behavior:'smooth', block:'center' });
+    }, 60);
+  };
 
   function setupHeader() {
     var app = document.getElementById('app');
