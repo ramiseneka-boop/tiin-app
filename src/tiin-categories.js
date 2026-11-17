@@ -162,12 +162,15 @@
     else document.getElementById(subId).closest('.form-group').hidden = true;
   }
   function mainChip(cat,id,tx) { return `<button type="button" class="chip ${tx?.category === cat.id ? 'selected' : ''}" data-id="${html(cat.id)}" onclick="tiinSelectMain(this,'${id}')">${html(cat.icon)} ${html(cat.name)}</button>`; }
-  window.tiinToggleCats = button => { const more = button.nextElementSibling; more.hidden = !more.hidden; button.setAttribute('aria-expanded', String(!more.hidden)); };
+  const dismissKeyboard = () => { if (document.activeElement?.matches('input,textarea')) document.activeElement.blur(); };
+  window.tiinToggleCats = button => { dismissKeyboard(); const more = button.nextElementSibling; more.hidden = !more.hidden; button.setAttribute('aria-expanded', String(!more.hidden)); };
   window.tiinSelectPerson = function (button, id) {
+    dismissKeyboard();
     selectChip(button);
     document.getElementById(id)?.closest('.form-group')?.classList.remove('tiin-await-person');
   };
   window.tiinSelectMain = function (button, id) {
+    dismissKeyboard();
     document.querySelectorAll('#' + id + ' .chip.selected').forEach(chip => chip.classList.remove('selected'));
     button.classList.add('selected');
     fillSub(id, button.dataset.id);
@@ -182,7 +185,7 @@
       `<button type="button" class="chip ${!selected ? 'selected' : ''}" data-id="" onclick="tiinSelectSub(this,'${id}')">${tr('Без уточнения','Нақтыламай','No detail')}</button>`;
     fillItems(id, categoryId, selected, tx);
   }
-  window.tiinSelectSub = function(button,id) { selectChip(button); fillItems(id, document.querySelector('#'+id+' .chip.selected')?.dataset.id, button.dataset.id); };
+  window.tiinSelectSub = function(button,id) { dismissKeyboard(); selectChip(button); fillItems(id, document.querySelector('#'+id+' .chip.selected')?.dataset.id, button.dataset.id); };
   function fillItems(id, categoryId, subId, tx) {
     const host = document.getElementById(id + 'Items'); if (!host) return;
     const group = host.closest('.form-group');
@@ -194,7 +197,16 @@
     host.innerHTML = items.map(item => `<button type="button" class="chip ${selected.some(v => v.id === item.id) ? 'selected' : ''}" data-id="${html(item.id)}" aria-pressed="${selected.some(v => v.id === item.id)}" onclick="tiinToggleItem(this,'${id}')">${html(item.name)}</button>`).join('');
   }
   window.tiinToggleItem = function(button) {
+    dismissKeyboard();
     button.classList.toggle('selected'); button.setAttribute('aria-pressed',String(button.classList.contains('selected')));
+  };
+  window.tiinFocusAmount = function(edit) {
+    const modal = document.getElementById('modal');
+    const amount = document.getElementById(edit ? 'editAmount' : 'txAmount');
+    if (!amount) return;
+    modal.scrollTo({top:0,behavior:'instant'});
+    amount.focus();
+    amount.scrollIntoView({block:'center',behavior:'instant'});
   };
   window.tiinQuickItem = function(id) {
     const cat = document.querySelector('#'+id+' .chip.selected')?.dataset.id;
@@ -391,7 +403,8 @@
       if (document.activeElement?.matches('#modal input, #modal textarea')) {
         overlay.style.height = window.visualViewport.height + 'px';
         overlay.style.top = window.visualViewport.offsetTop + 'px';
-      } else { overlay.style.height = ''; overlay.style.top = ''; }
+        overlay.style.setProperty('--tiin-vv-height',window.visualViewport.height + 'px');
+      } else { overlay.style.height = ''; overlay.style.top = ''; overlay.style.removeProperty('--tiin-vv-height'); }
     };
     window.visualViewport.addEventListener('resize', resizeModal);
     window.visualViewport.addEventListener('scroll', resizeModal);
@@ -400,7 +413,7 @@
   const originalCloseModal = window.closeModal;
   window.closeModal = function (...args) {
     const overlay = document.getElementById('modalOverlay');
-    overlay.style.height = ''; overlay.style.top = '';
+    overlay.style.height = ''; overlay.style.top = ''; overlay.style.removeProperty('--tiin-vv-height');
     return originalCloseModal.apply(this,args);
   };
   queueMicrotask(() => window.render());

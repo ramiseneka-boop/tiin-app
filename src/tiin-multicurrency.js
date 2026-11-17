@@ -164,7 +164,7 @@
       '<div class="form-group"><label>' + t('comment') + '</label><input class="form-input" id="editComment" value="' + escape(tx.comment) + '"></div>' +
       '<div class="form-group"><label>' + t('wallet') + '</label><div class="chips" id="editWalletChips"><div class="chip ' + ((tx.wallet || 'personal') !== 'business' ? 'selected' : '') + '" data-id="personal" onclick="selectChip(this)">👤 ' + t('personal') + '</div><div class="chip ' + (tx.wallet === 'business' ? 'selected' : '') + '" data-id="business" onclick="selectChip(this)">💼 ' + t('business') + '</div></div></div>' +
       '<div class="form-group"><label>' + t('date') + '</label><input type="date" class="form-input" id="editDate" value="' + tx.date + '"></div>' +
-      '<button class="btn btn-gold tiin-sticky-save" onclick="saveEditedTx(\'' + String(tx.id).replace(/'/g, "\\'") + '\')">' + t('save') + '</button><button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="deleteTx(\'' + String(tx.id).replace(/'/g, "\\'") + '\')">' + t('delete') + '</button>';
+      '<div class="tiin-sticky-actions"><button type="button" class="tiin-amount-jump" onclick="tiinFocusAmount(true)">↑ ' + t('amount') + '</button><button class="btn btn-gold tiin-sticky-save" onclick="saveEditedTx(\'' + String(tx.id).replace(/'/g, "\\'") + '\')">' + t('save') + '</button></div><button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="deleteTx(\'' + String(tx.id).replace(/'/g, "\\'") + '\')">' + t('delete') + '</button>';
     document.getElementById('modalOverlay').classList.add('open');
     document.getElementById('editAmount').addEventListener('input', editPreview);
     document.getElementById('editCurrency').addEventListener('change', async () => {

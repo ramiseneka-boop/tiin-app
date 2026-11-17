@@ -46,3 +46,9 @@ html.light .tiin-sticky-save{--modal-surface:#faf8f2}
 .tiin-occurrence-box{margin-top:16px;padding:12px;border:1px solid rgba(150,160,190,.2);border-radius:16px}.tiin-occurrence-box h3{font-size:15px;text-align:left;margin:0 0 5px}.tiin-occurrence-box p{font-size:11px;color:var(--text2);margin-bottom:10px}.tiin-occurrence{display:inline-block;margin:3px;padding:6px 8px;border-radius:9px;background:rgba(216,183,93,.1);font-size:12px}
 .tiin-analytics-history{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(150,160,190,.14);padding:10px 0;font-size:12px}.tiin-analytics-history span{min-width:0;overflow-wrap:anywhere}.tiin-analytics-history b{white-space:nowrap}
 .tiin-quick-item{display:flex;gap:8px;margin-top:10px}.tiin-quick-item .form-input{flex:1;min-width:0}.tiin-quick-item button{width:46px;min-height:44px;flex:none;border:1px solid rgba(216,183,93,.55);border-radius:12px;background:linear-gradient(135deg,rgba(216,183,93,.18),rgba(216,183,93,.05));color:var(--gold,#d8b75d);font-size:23px;cursor:pointer}
+/* The sheet must fit the visual viewport when iOS opens its keyboard. */
+.modal-overlay.open .modal{max-height:min(90vh,calc(var(--tiin-vv-height,100dvh) - 12px));min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.tiin-sticky-actions{position:sticky;bottom:0;z-index:5;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px;padding:8px 0 2px;margin-top:10px;background:var(--modal-surface,#171d2f);box-shadow:0 -8px 22px var(--modal-surface,#171d2f)}
+.tiin-sticky-actions .tiin-sticky-save{position:static;min-width:0;margin:0;box-shadow:none}
+.tiin-amount-jump{min-height:52px;min-width:0;border:1px solid rgba(216,183,93,.48);border-radius:13px;background:linear-gradient(135deg,rgba(216,183,93,.15),rgba(216,183,93,.04));color:var(--gold,#d8b75d);font:inherit;font-weight:700;cursor:pointer}
+html.light .tiin-sticky-actions{--modal-surface:#faf8f2}
