@@ -388,6 +388,22 @@
   apply(catalog());
   const originalRender = window.render;
   window.render = function (...args) { apply(catalog()); return originalRender.apply(this, args); };
+  // Keep the actual editor in view after iOS changes the visual viewport.
+  // The sheet scrolls internally; scrolling the page behind it has no effect.
+  const revealFocusedField = () => {
+    const overlay = document.getElementById('modalOverlay');
+    const modal = document.getElementById('modal');
+    const field = document.activeElement;
+    if (!overlay?.classList.contains('tiin-keyboard-open') || !modal?.contains(field) || !field.matches('input, textarea')) return;
+    const fieldRect = field.getBoundingClientRect();
+    const modalRect = modal.getBoundingClientRect();
+    const topInset = field.matches('#txAmount, #editAmount') ? 100 : 76;
+    const visibleBottom = Math.min(modalRect.bottom, window.visualViewport ? window.visualViewport.offsetTop + window.visualViewport.height : window.innerHeight);
+    if (fieldRect.top < modalRect.top + 12 || fieldRect.bottom > visibleBottom - 20) {
+      modal.scrollTop += fieldRect.top - modalRect.top - topInset;
+    }
+  };
+  const queueReveal = () => requestAnimationFrame(() => requestAnimationFrame(revealFocusedField));
   const resizeModal = () => {
     const overlay = document.getElementById('modalOverlay');
     if (!overlay?.classList.contains('open')) return;
@@ -399,9 +415,7 @@
       overlay.style.top = window.visualViewport.offsetTop + 'px';
       overlay.style.bottom = 'auto';
       overlay.style.setProperty('--tiin-vv-height',window.visualViewport.height + 'px');
-      if (focused?.matches('#txAmount, #editAmount')) {
-        requestAnimationFrame(() => { if (document.activeElement === focused) document.getElementById('modal')?.scrollTo(0,0); });
-      }
+      queueReveal();
     } else {
       overlay.style.height = ''; overlay.style.top = ''; overlay.style.bottom = '';
       overlay.style.removeProperty('--tiin-vv-height');
@@ -410,9 +424,13 @@
   window.visualViewport?.addEventListener('resize', resizeModal);
   window.visualViewport?.addEventListener('scroll', resizeModal);
   document.addEventListener('focusin', event => {
-    if (!event.target.matches('#txAmount, #editAmount')) return;
-    document.getElementById('modal')?.scrollTo(0,0);
+    if (!event.target.matches('#modal input, #modal textarea')) return;
     resizeModal();
+    // iOS moves the keyboard over several frames and can auto-scroll again
+    // after focus. Recheck the focused field when its animation settles.
+    queueReveal();
+    setTimeout(revealFocusedField, 160);
+    setTimeout(revealFocusedField, 360);
   });
   document.addEventListener('focusout', () => setTimeout(resizeModal, 100));
   const originalCloseModal = window.closeModal;
