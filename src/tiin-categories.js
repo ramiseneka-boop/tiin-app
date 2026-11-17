@@ -26,7 +26,7 @@
   };
   const people = [
     ['self','👤','Я','Мен','Me'], ['wife','❤️','Жена','Жұбайым','Wife'],
-    ['child','👶','Ребёнок','Бала','Child'], ['family','🏠','Вся семья','Бүкіл отбасы','Whole family']
+    ['child','👶','Ребёнок','Бала','Child'], ['family','🏠','Общий расход','Ортақ шығыс','Shared expense']
   ];
   const tr = (ru, kk, en) => currentLang === 'kz' ? (kk || ru) : currentLang === 'en' ? (en || ru) : ru;
   const html = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -125,7 +125,8 @@
     if (!host) return;
     const parent = host.closest('.form-group');
     const personId = id + 'Person', subId = id + 'Sub';
-    parent.insertAdjacentHTML('beforebegin', `<div class="form-group tiin-person-group"><label>${tr('1. Для кого','1. Кім үшін','1. For whom')}</label><div class="chips" id="${personId}">${people.map(p => `<button type="button" class="chip ${tx?.beneficiary === p[0] ? 'selected' : ''}" data-id="${p[0]}" onclick="tiinSelectPerson(this,'${id}')">${p[1]} ${html(p[currentLang === 'kz' ? 3 : currentLang === 'en' ? 4 : 2])}</button>`).join('')}</div></div>`);
+    const beneficiary = tx?.beneficiary || 'family';
+    parent.insertAdjacentHTML('beforebegin', `<div class="form-group tiin-person-group"><label>${tr('1. Для кого','1. Кім үшін','1. For whom')}</label><div class="chips" id="${personId}">${people.map(p => `<button type="button" class="chip ${beneficiary === p[0] ? 'selected' : ''}" data-id="${p[0]}" onclick="tiinSelectPerson(this,'${id}')">${p[1]} ${html(p[currentLang === 'kz' ? 3 : currentLang === 'en' ? 4 : 2])}</button>`).join('')}</div></div>`);
     parent.querySelector('label').textContent = tr('2. Категория','2. Санат','2. Category');
     parent.classList.add('tiin-category-group');
     const addButton = `<button type="button" class="tiin-manage-link" onclick="openTIINCategories()">＋ ${tr('Настроить категории','Санаттарды реттеу','Manage categories')}</button>`;
@@ -135,7 +136,6 @@
     host.innerHTML = choices.filter(cat => cat.id !== 'business_cost').map(cat => `<button type="button" class="chip ${tx?.category === cat.id ? 'selected' : ''}" data-id="${html(cat.id)}" onclick="tiinSelectMain(this,'${id}')">${html(cat.icon)} ${html(cat.name)}</button>`).join('') +
       `<div class="tiin-special-label">✦ ${tr('Специальная категория','Арнайы санат','Special category')}</div>` +
       choices.filter(cat => cat.id === 'business_cost').map(cat => `<button type="button" class="chip tiin-cost-chip ${tx?.category === cat.id ? 'selected' : ''}" data-id="business_cost" onclick="tiinSelectMain(this,'${id}')">🏭 ${html(cat.name)} <small>${tr('Не из бюджета на жизнь','Тұрмыс бюджетінен емес','Outside living budget')}</small></button>`).join('');
-    if (isNew) parent.classList.add('tiin-await-person');
     if (tx?.category) fillSub(id, tx.category, tx.subcategory);
     else document.getElementById(subId).closest('.form-group').hidden = true;
   }

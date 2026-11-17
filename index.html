@@ -866,7 +866,7 @@ function getAllTags() {
 }
 
 function safeCalc(expr) {
-  const cleaned = expr.replace(/\s/g, '');
+  const cleaned = expr.replace(/\s/g, '').replace(/,/g, '.');
   if (!/^[\d+\-*/().]+$/.test(cleaned)) return null;
   try { const r = Function('"use strict";return (' + cleaned + ')')(); return isFinite(r) ? r : null; }
   catch(e) { return null; }
@@ -1565,8 +1565,15 @@ function openModal(type) {
     <h3>${title}</h3>
     <div class="form-group"><label>${t('amount')}</label>
       <div class="calc-row">
-        <input type="text" class="form-input big" id="txAmount" placeholder="0" inputmode="text" onblur="calcAmount()">
-        <button class="calc-btn" onclick="calcAmount()">=</button>
+        <input type="text" class="form-input big" id="txAmount" placeholder="0" inputmode="decimal" autocomplete="off" autocapitalize="off" spellcheck="false" onblur="calcAmount()">
+        <button type="button" class="calc-btn" onclick="calcAmount()">=</button>
+      </div>
+      <div class="tiin-amount-operators" aria-label="${t('canCalc')}">
+        <button type="button" onpointerdown="event.preventDefault()" onclick="tiinAmountKey('+')" aria-label="Плюс">＋</button>
+        <button type="button" onpointerdown="event.preventDefault()" onclick="tiinAmountKey('-')" aria-label="Минус">−</button>
+        <button type="button" onpointerdown="event.preventDefault()" onclick="tiinAmountKey('*')" aria-label="Умножить">×</button>
+        <button type="button" onpointerdown="event.preventDefault()" onclick="tiinAmountKey('/')" aria-label="Разделить">÷</button>
+        <button type="button" onpointerdown="event.preventDefault()" onclick="tiinAmountKey('backspace')" aria-label="Удалить символ">⌫</button>
       </div>
       <div style="font-size:11px;color:var(--text2);margin-top:4px;text-align:center">${t('canCalc')}</div>
     </div>
@@ -1598,7 +1605,23 @@ function calcAmount() {
   const result = safeCalc(val);
   if (result !== null && String(result) !== val) {
     el.value = Math.round(result * 100) / 100;
+    el.dispatchEvent(new Event('input', { bubbles:true }));
   }
+}
+
+function tiinAmountKey(key) {
+  const input = document.getElementById('txAmount');
+  if (!input) return;
+  const start = input.selectionStart ?? input.value.length;
+  const end = input.selectionEnd ?? start;
+  if (key === 'backspace') {
+    if (start !== end) input.setRangeText('', start, end, 'start');
+    else if (start > 0) input.setRangeText('', start - 1, start, 'start');
+  } else {
+    input.setRangeText(key, start, end, 'end');
+  }
+  input.focus();
+  input.dispatchEvent(new Event('input', { bubbles:true }));
 }
 
 function showTagSuggestions() {
@@ -1625,7 +1648,7 @@ function selectChip(el) {
 
 function saveTx(type) {
   calcAmount();
-  const amount = parseFloat(document.getElementById('txAmount').value);
+  const amount = Number(document.getElementById('txAmount').value);
   const cat = document.querySelector('#catChips .chip.selected');
   const comment = document.getElementById('txComment').value.trim();
   const date = document.getElementById('txDate').value;
@@ -2144,7 +2167,7 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=112', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=113', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
@@ -2159,8 +2182,8 @@ init();
 <script src="src/tiin-deals.js?v=10"></script>
 <script src="src/tiin-settings.js?v=19"></script>
 <script src="src/tiin-reports.js?v=6"></script>
-<script src="src/tiin-categories.js?v=2"></script>
-<link rel="stylesheet" href="styles/tiin-categories.css?v=2">
+<script src="src/tiin-categories.js?v=3"></script>
+<link rel="stylesheet" href="styles/tiin-categories.css?v=3">
 <link rel="stylesheet" href="styles/tiin-obsidian-system.css?v=6">
 <link rel="stylesheet" href="styles/tiin-pearl-system.css?v=4">
 </body>
