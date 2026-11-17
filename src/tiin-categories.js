@@ -153,9 +153,9 @@
     const choices = selectable('expense', tx?.category);
     const ordinary = sortFrequent(choices.filter(cat => cat.id !== 'business_cost'), recentlyUsed().categories, cat => cat.id);
     const frequent = ordinary.slice(0, 6);
-    host.innerHTML = `<div class="tiin-frequent-chips">${frequent.map(cat => mainChip(cat, id, tx)).join('')}</div>` +
-      `<button type="button" class="tiin-expand-cats" aria-expanded="${!!(tx?.category && !frequent.some(cat => cat.id === tx.category))}" onclick="tiinToggleCats(this)">${tr('Все категории','Барлық санаттар','All categories')} <span>⌄</span></button>` +
+    host.innerHTML = `<button type="button" class="tiin-expand-cats" aria-expanded="${!!(tx?.category && !frequent.some(cat => cat.id === tx.category))}" onclick="tiinToggleCats(this)">${tr('Все категории','Барлық санаттар','All categories')} <span>⌄</span></button>` +
       `<div class="tiin-more-chips" ${tx?.category && !frequent.some(cat => cat.id === tx.category) ? '' : 'hidden'}>${ordinary.slice(6).map(cat => mainChip(cat,id,tx)).join('')}</div>` +
+      `<div class="tiin-frequent-chips">${frequent.map(cat => mainChip(cat, id, tx)).join('')}</div>` +
       `<div class="tiin-special-label">✦ ${tr('Специальная категория','Арнайы санат','Special category')}</div>` +
       choices.filter(cat => cat.id === 'business_cost').map(cat => `<button type="button" class="chip tiin-cost-chip ${tx?.category === cat.id ? 'selected' : ''}" data-id="business_cost" onclick="tiinSelectMain(this,'${id}')">🏭 ${html(cat.name)} <small>${tr('Не из бюджета на жизнь','Тұрмыс бюджетінен емес','Outside living budget')}</small></button>`).join('');
     if (tx?.category) fillSub(id, tx.category, tx.subcategory, tx);
@@ -199,14 +199,6 @@
   window.tiinToggleItem = function(button) {
     dismissKeyboard();
     button.classList.toggle('selected'); button.setAttribute('aria-pressed',String(button.classList.contains('selected')));
-  };
-  window.tiinFocusAmount = function(edit) {
-    const modal = document.getElementById('modal');
-    const amount = document.getElementById(edit ? 'editAmount' : 'txAmount');
-    if (!amount) return;
-    modal.scrollTo({top:0,behavior:'instant'});
-    amount.focus();
-    amount.scrollIntoView({block:'center',behavior:'instant'});
   };
   window.tiinQuickItem = function(id) {
     const cat = document.querySelector('#'+id+' .chip.selected')?.dataset.id;
@@ -396,24 +388,38 @@
   apply(catalog());
   const originalRender = window.render;
   window.render = function (...args) { apply(catalog()); return originalRender.apply(this, args); };
-  if (window.visualViewport) {
-    const resizeModal = () => {
-      const overlay = document.getElementById('modalOverlay');
-      if (!overlay?.classList.contains('open')) return;
-      if (document.activeElement?.matches('#modal input, #modal textarea')) {
-        overlay.style.height = window.visualViewport.height + 'px';
-        overlay.style.top = window.visualViewport.offsetTop + 'px';
-        overlay.style.setProperty('--tiin-vv-height',window.visualViewport.height + 'px');
-      } else { overlay.style.height = ''; overlay.style.top = ''; overlay.style.removeProperty('--tiin-vv-height'); }
-    };
-    window.visualViewport.addEventListener('resize', resizeModal);
-    window.visualViewport.addEventListener('scroll', resizeModal);
-    document.addEventListener('focusout', () => setTimeout(resizeModal, 100));
-  }
+  const resizeModal = () => {
+    const overlay = document.getElementById('modalOverlay');
+    if (!overlay?.classList.contains('open')) return;
+    const focused = document.activeElement;
+    const editing = focused?.matches('#modal input, #modal textarea');
+    overlay.classList.toggle('tiin-keyboard-open', !!editing);
+    if (editing && window.visualViewport) {
+      overlay.style.height = window.visualViewport.height + 'px';
+      overlay.style.top = window.visualViewport.offsetTop + 'px';
+      overlay.style.bottom = 'auto';
+      overlay.style.setProperty('--tiin-vv-height',window.visualViewport.height + 'px');
+      if (focused?.matches('#txAmount, #editAmount')) {
+        requestAnimationFrame(() => { if (document.activeElement === focused) document.getElementById('modal')?.scrollTo(0,0); });
+      }
+    } else {
+      overlay.style.height = ''; overlay.style.top = ''; overlay.style.bottom = '';
+      overlay.style.removeProperty('--tiin-vv-height');
+    }
+  };
+  window.visualViewport?.addEventListener('resize', resizeModal);
+  window.visualViewport?.addEventListener('scroll', resizeModal);
+  document.addEventListener('focusin', event => {
+    if (!event.target.matches('#txAmount, #editAmount')) return;
+    document.getElementById('modal')?.scrollTo(0,0);
+    resizeModal();
+  });
+  document.addEventListener('focusout', () => setTimeout(resizeModal, 100));
   const originalCloseModal = window.closeModal;
   window.closeModal = function (...args) {
     const overlay = document.getElementById('modalOverlay');
-    overlay.style.height = ''; overlay.style.top = ''; overlay.style.removeProperty('--tiin-vv-height');
+    overlay.classList.remove('tiin-keyboard-open');
+    overlay.style.height = ''; overlay.style.top = ''; overlay.style.bottom = ''; overlay.style.removeProperty('--tiin-vv-height');
     return originalCloseModal.apply(this,args);
   };
   queueMicrotask(() => window.render());
