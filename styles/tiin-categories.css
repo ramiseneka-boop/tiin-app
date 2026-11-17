@@ -29,3 +29,20 @@
 .tiin-add-sub{background:transparent;color:var(--gold,#d8b75d);padding:9px;cursor:pointer}
 .tiin-category-manager>.btn{width:100%}
 #tplCatChips+.custom-category-row,#tplCatChips~.custom-category-hint{display:none}
+/* One compact picker: frequent categories first, everything else on demand. */
+.tiin-category-group #catChips,.tiin-category-group #editCatChips,.tiin-category-group #tplCatChips{display:flex;flex-direction:column;align-items:stretch;gap:8px;overflow:visible}
+.tiin-frequent-chips,.tiin-more-chips{display:flex;flex-wrap:wrap;gap:8px}
+.tiin-more-chips[hidden]{display:none}
+.tiin-expand-cats{min-height:44px;border:1px solid rgba(216,183,93,.27);border-radius:12px;background:linear-gradient(135deg,rgba(216,183,93,.08),transparent);color:var(--gold,#d8b75d);font:inherit;font-size:13px;cursor:pointer;text-align:left;padding:8px 12px}
+.tiin-expand-cats span{float:right;transition:transform .2s}.tiin-expand-cats[aria-expanded=true] span{transform:rotate(180deg)}
+.tiin-item-group .chips{display:flex;flex-wrap:wrap;gap:8px}.tiin-item-group .chip.selected{border-color:var(--gold,#d8b75d)}
+.tiin-item-hint{font-size:12px;color:var(--text2);margin:0 0 10px;line-height:1.45}
+.tiin-sticky-save{position:sticky;bottom:0;z-index:4;width:100%;min-height:52px;margin:12px 0 0;box-shadow:0 0 0 10px var(--modal-surface,#171d2f),0 -12px 25px rgba(0,0,0,.15)}
+html.light .tiin-sticky-save{--modal-surface:#faf8f2}
+.tiin-analytics-sheet{max-height:min(78vh,800px);overflow:auto;padding-bottom:30px}.tiin-analytics-sheet h2{font-size:22px;margin:8px 0}.tiin-analytics-sheet>p{color:var(--text2);font-size:13px;margin-bottom:16px}
+.tiin-analytics-back{background:none;border:0;color:var(--gold,#d8b75d);font:inherit;min-height:42px;padding:0;cursor:pointer}
+.tiin-analytics-total{border:1px solid rgba(216,183,93,.24);border-radius:16px;background:linear-gradient(135deg,rgba(216,183,93,.13),rgba(150,160,190,.06));padding:14px;margin:14px 0;display:grid;gap:5px}.tiin-analytics-total small{color:var(--text2)}.tiin-analytics-total strong{font-size:23px;color:var(--gold,#d8b75d)}
+.tiin-analytics-drill{display:flex;align-items:center;justify-content:space-between;text-align:left;gap:8px;width:100%;padding:12px 8px;border:0;border-bottom:1px solid rgba(150,160,190,.15);background:transparent;color:var(--text);font:inherit;cursor:pointer}.tiin-analytics-drill span{min-width:0;overflow-wrap:anywhere}.tiin-analytics-drill small{display:block;color:var(--text2);font-size:11px;margin-top:3px}.tiin-analytics-drill strong{white-space:nowrap;color:var(--gold,#d8b75d);font-size:13px}
+.tiin-occurrence-box{margin-top:16px;padding:12px;border:1px solid rgba(150,160,190,.2);border-radius:16px}.tiin-occurrence-box h3{font-size:15px;text-align:left;margin:0 0 5px}.tiin-occurrence-box p{font-size:11px;color:var(--text2);margin-bottom:10px}.tiin-occurrence{display:inline-block;margin:3px;padding:6px 8px;border-radius:9px;background:rgba(216,183,93,.1);font-size:12px}
+.tiin-analytics-history{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(150,160,190,.14);padding:10px 0;font-size:12px}.tiin-analytics-history span{min-width:0;overflow-wrap:anywhere}.tiin-analytics-history b{white-space:nowrap}
+.tiin-quick-item{display:flex;gap:8px;margin-top:10px}.tiin-quick-item .form-input{flex:1;min-width:0}.tiin-quick-item button{width:46px;min-height:44px;flex:none;border:1px solid rgba(216,183,93,.55);border-radius:12px;background:linear-gradient(135deg,rgba(216,183,93,.18),rgba(216,183,93,.05));color:var(--gold,#d8b75d);font-size:23px;cursor:pointer}

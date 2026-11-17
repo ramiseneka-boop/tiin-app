@@ -26,10 +26,8 @@
   window.renderTransactions = function renderTransactionsV2() {
     const el = document.getElementById('tab-transactions');
     let txns = filterTxnsByWallet(getTxns(currentYear, currentMonth));
-    const allTags = getAllTags();
     const tr = (ru, kz, en) => window.tiinText ? window.tiinText(ru, kz, en) : ru;
-    let filters = `<div class="filter-row"><select class="filter-select" onchange="currentTagFilter=this.value;renderTransactions()"><option value="">${tr('Все теги','Барлық тегтер','All tags')}</option>${allTags.map(tag => `<option value="${tag}" ${currentTagFilter === tag ? 'selected' : ''}>#${tag}</option>`).join('')}</select></div>`;
-    if (currentTagFilter) txns = txns.filter(tx => tx.tags && tx.tags.includes(currentTagFilter));
+    const filters = '';
     if (!txns.length) { el.innerHTML = filters + `<div class="empty"><div class="emoji">📭</div><p>${t('noTransactions')}</p></div>`; return; }
     const grouped = txns.reduce((groups, tx) => ((groups[tx.date] ||= []).push(tx), groups), {});
     const allCats = [...EXPENSE_CATS, ...INCOME_CATS];
@@ -48,7 +46,7 @@
       html += `<section class="day-group" data-date="${date}"><header class="day-header"><div class="day-heading"><div class="day-title">${label}</div><div class="day-caption">${tr('Итоги дня','Күн қорытындысы','Daily total')}</div></div><div class="day-totals">${incomeMetric}${expenseMetric}<span class="day-metric net"><small>${tr('Итог','Нәтиже','Total')}</small><b>${netSign}${fmt(Math.abs(totals.net))}</b></span></div></header>`;
       items.forEach(tx => {
         const cat = allCats.find(item => item.id === tx.category) || { icon:'•', name: tr('Категория','Санат','Category') };
-        const isIncome = tx.type === 'income'; const tags = tx.tags?.length ? `<div class="tx-tags">${tx.tags.map(tag => `#${tag}`).join(' ')}</div>` : '';
+        const isIncome = tx.type === 'income'; const tags = '';
         const wallet = tx.wallet === 'business' ? '💼 ' : '';
         // Keeping the id in a data attribute avoids invalid nested quotes in inline handlers.
         const txId = encodeURIComponent(String(tx.id));
@@ -73,7 +71,7 @@
     const txns = getTxns(currentYear, currentMonth); const tx = txns.find(item => String(item.id) === String(id));
     if (!tx) return;
     const cats = tx.type === 'income' ? INCOME_CATS : EXPENSE_CATS;
-    document.getElementById('modal').innerHTML = `<h3>${text('Редактировать операцию', 'Операцияны өңдеу', 'Edit transaction')}</h3><div class="form-group"><label>${t('amount')}</label><input type="number" class="form-input big" id="editAmount" value="${tx.amount}" inputmode="decimal"></div><div class="form-group"><label>${t('category')}</label><div class="chips" id="editCatChips">${cats.map(cat => `<div class="chip ${cat.id === tx.category ? 'selected' : ''}" data-id="${cat.id}" onclick="selectChip(this)">${cat.icon} ${cat.name}</div>`).join('')}</div></div><div class="form-group"><label>${t('comment')}</label><input class="form-input" id="editComment" value="${String(tx.comment || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"></div><div class="form-group"><label>${t('tag')}</label><input class="form-input" id="editTags" value="${(tx.tags || []).join(' ')}"></div><div class="form-group"><label>${t('wallet')}</label><div class="chips" id="editWalletChips"><div class="chip ${(tx.wallet || 'personal') !== 'business' ? 'selected' : ''}" data-id="personal" onclick="selectChip(this)">👤 ${t('personal')}</div><div class="chip ${tx.wallet === 'business' ? 'selected' : ''}" data-id="business" onclick="selectChip(this)">💼 ${t('business')}</div></div></div><div class="form-group"><label>${t('date')}</label><input type="date" class="form-input" id="editDate" value="${tx.date}"></div><button class="btn btn-gold" onclick="saveEditedTx('${String(tx.id)}')">${t('save')}</button><button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="deleteTx('${String(tx.id)}')">${t('delete')}</button>`;
+    document.getElementById('modal').innerHTML = `<h3>${text('Редактировать операцию', 'Операцияны өңдеу', 'Edit transaction')}</h3><div class="form-group"><label>${t('amount')}</label><input type="number" class="form-input big" id="editAmount" value="${tx.amount}" inputmode="decimal"></div><div class="form-group"><label>${t('category')}</label><div class="chips" id="editCatChips">${cats.map(cat => `<div class="chip ${cat.id === tx.category ? 'selected' : ''}" data-id="${cat.id}" onclick="selectChip(this)">${cat.icon} ${cat.name}</div>`).join('')}</div></div><div class="form-group"><label>${t('comment')}</label><input class="form-input" id="editComment" value="${String(tx.comment || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"></div><div class="form-group"><label>${t('wallet')}</label><div class="chips" id="editWalletChips"><div class="chip ${(tx.wallet || 'personal') !== 'business' ? 'selected' : ''}" data-id="personal" onclick="selectChip(this)">👤 ${t('personal')}</div><div class="chip ${tx.wallet === 'business' ? 'selected' : ''}" data-id="business" onclick="selectChip(this)">💼 ${t('business')}</div></div></div><div class="form-group"><label>${t('date')}</label><input type="date" class="form-input" id="editDate" value="${tx.date}"></div><button class="btn btn-gold" onclick="saveEditedTx('${String(tx.id)}')">${t('save')}</button><button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="deleteTx('${String(tx.id)}')">${t('delete')}</button>`;
     document.getElementById('modalOverlay').classList.add('open');
   };
 
@@ -81,7 +79,7 @@
     const oldTxns = getTxns(currentYear, currentMonth); const tx = oldTxns.find(item => String(item.id) === String(id));
     const amount = Number(document.getElementById('editAmount').value); const cat = document.querySelector('#editCatChips .chip.selected'); const date = document.getElementById('editDate').value;
     if (!tx || !amount || amount <= 0 || !cat || !date) { toast(t('fillAllFields')); return; }
-    const comment = document.getElementById('editComment').value.trim(); const tags = document.getElementById('editTags').value.trim().split(/[\s,]+/).filter(Boolean); const wallet = document.querySelector('#editWalletChips .chip.selected')?.dataset.id || 'personal';
+    const comment = document.getElementById('editComment').value.trim(); const tags = tx.tags || []; const wallet = document.querySelector('#editWalletChips .chip.selected')?.dataset.id || 'personal';
     const targetDate = new Date(date + 'T00:00:00'); const targetY = targetDate.getFullYear(); const targetM = targetDate.getMonth();
     saveTxns(currentYear, currentMonth, oldTxns.filter(item => String(item.id) !== String(id)));
     const target = targetY === currentYear && targetM === currentMonth ? getTxns(targetY, targetM) : getTxns(targetY, targetM);
