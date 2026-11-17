@@ -205,8 +205,9 @@
     if (!name) return;
     const rows = catalog(), entry = rows.find(row => row.id === cat)?.subcategories?.find(row => row.id === sub);
     if (!entry) return;
+    const selected = [...document.querySelectorAll('#'+id+'Items .chip.selected')].map(chip=>({id:chip.dataset.id}));
     entry.items ||= []; const item = {id:uid('item'),name:name.slice(0,60),hidden:false}; entry.items.push(item); put(rows);
-    fillItems(id,cat,sub);
+    fillItems(id,cat,sub,{itemSelections:selected});
     const chip = [...document.querySelectorAll('#'+id+'Items .chip')].find(c=>c.dataset.id===item.id); if (chip) {chip.classList.add('selected');chip.setAttribute('aria-pressed','true');}
     input.value = ''; input.focus();
   };
