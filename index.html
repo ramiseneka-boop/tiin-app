@@ -898,7 +898,7 @@ function checkRecurring(forYear, forMonth) {
 
 function isBusinessCostTransaction(tx) {
   if (!tx || tx.type !== 'expense') return false;
-  if (tx.category === 'business_cost' || tx.businessCost === true) return true;
+  if (tx.category === 'business_cost' || window.tiinIsCostCategory?.(tx.category) || tx.businessCost === true) return true;
   const tags = Array.isArray(tx.tags) ? tx.tags.join(' ') : '';
   return /(?:себестоим|өзіндік\s*құн|cost\s*of\s*goods|\bcogs\b)/i.test((String(tx.comment || '') + ' ' + tags).toLowerCase());
 }
@@ -961,6 +961,9 @@ function applyTemplate(i) {
   const templates = getTemplates();
   const t = templates[i];
   if (!t) return;
+  if (window.tiinIsCategoryActive && !window.tiinIsCategoryActive(t.category)) {
+    toast('Категория шаблона удалена. Измените шаблон.'); return;
+  }
   const now = new Date();
   const y = now.getFullYear(), m = now.getMonth();
   const txns = getTxns(y, m);
@@ -972,7 +975,9 @@ function applyTemplate(i) {
     comment: t.name,
     date: localDateString(now),
     wallet: currentWallet === 'all' ? 'personal' : currentWallet,
-    tags: t.tags || []
+    tags: t.tags || [],
+    ...(t.type !== 'income' ? { beneficiary:t.beneficiary || null, subcategory:t.subcategory || null,
+      subcategoryName:t.subcategoryName || null } : {})
   });
   saveTxns(y, m, txns);
   toast(`${t.name} ${currentLang==='ru'?'добавлено':'қосылды'} ✓`);
@@ -1006,7 +1011,9 @@ function saveTemplate() {
   if (!amount || amount <= 0) { toast(t('enterAmount')); return; }
   if (!catEl) { toast(t('selectCategory')); return; }
   const templates = getTemplates();
-  templates.push({ name, amount, type: typeEl ? typeEl.dataset.id : 'expense', category: catEl.dataset.id });
+  const type = typeEl ? typeEl.dataset.id : 'expense';
+  templates.push({ name, amount, type, category: catEl.dataset.id,
+    ...(type === 'expense' && window.tiinExpenseFields ? window.tiinExpenseFields('tplCatChips') : {}) });
   saveTemplates(templates);
   closeModal();
   toast(t('templateCreated'));
@@ -1529,7 +1536,7 @@ function savePaydayModal() {
 function openBudgetModal() {
   const budgets = getBudgets();
   let html = `<h3>${t('budgets')}</h3>`;
-  EXPENSE_CATS.forEach(cat => {
+  (window.tiinSelectableCats?.('expense') || EXPENSE_CATS).forEach(cat => {
     html += `<div class="form-group"><label>${cat.icon} ${cat.name}</label><input type="number" class="form-input" id="budget_${cat.id}" value="${budgets[cat.id] || ''}" placeholder="0" inputmode="numeric"></div>`;
   });
   html += `<button class="btn btn-gold" onclick="saveBudgetModal()" style="width:100%;margin-top:8px">${t('save')}</button>`;
@@ -1539,8 +1546,8 @@ function openBudgetModal() {
 
 function saveBudgetModal() {
   const budgets = {};
-  EXPENSE_CATS.forEach(cat => {
-    const val = parseFloat(document.getElementById('budget_' + cat.id).value);
+  (window.tiinSelectableCats?.('expense') || EXPENSE_CATS).forEach(cat => {
+    const val = parseFloat(document.getElementById('budget_' + cat.id)?.value);
     if (val && val > 0) budgets[cat.id] = val;
   });
   saveBudgets(budgets);
@@ -1632,7 +1639,8 @@ function saveTx(type) {
   const y = d.getFullYear(), m = d.getMonth();
   const txns = getTxns(y, m);
   const tags = tag ? tag.split(/[,\s]+/).filter(Boolean) : [];
-  txns.push({ id: Date.now(), type, amount, category: cat.dataset.id, comment, date, wallet, tags });
+  txns.push({ id: Date.now(), type, amount, category: cat.dataset.id, comment, date, wallet, tags,
+    ...(type === 'expense' && window.tiinExpenseFields ? window.tiinExpenseFields() : {}) });
   saveTxns(y, m, txns);
   closeModal();
   toast(type === 'income' ? t('incomeAdded') : t('expenseAdded'));
@@ -1717,7 +1725,7 @@ function exportCSV() {
   let csv = `${t('date')},${t('type')},${t('category')},${t('amount')},${t('comment')},${t('wallet')},${t('tag')}\n`;
   txns.forEach(tx => {
     const cat = allCats.find(c=>c.id===tx.category)||{name:tx.category};
-    csv += `${tx.date},${tx.type==='income'?t('income'):t('expense')},${cat.name},${tx.amount},"${tx.comment||''}",${tx.wallet||'personal'},"${(tx.tags||[]).join(',')}"\n`;
+    csv += `${tx.date},${tx.type==='income'?t('income'):t('expense')},${cat.name},${tx.amount},"${(window.tiinTransactionDetail?.(tx) || tx.comment || '').replace(/"/g,'""')}",${tx.wallet||'personal'},"${(tx.tags||[]).join(',')}"\n`;
   });
   const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -2099,7 +2107,7 @@ function openPaymentItemModal() {
     <div class="form-group"><label>${t('pt_name')}</label><input type="text" class="form-input" id="ptName" placeholder="${currentLang==='ru'?'Кредит Jusan':'Несие Jusan'}"></div>
     <div class="form-group"><label>${t('pt_amount')}</label><input type="number" class="form-input" id="ptAmount" placeholder="0" inputmode="numeric"></div>
     <div class="form-group"><label>${t('category')}</label><div class="chips" id="ptCatChips">
-      ${EXPENSE_CATS.map(c => `<div class="chip" data-id="${c.id}" onclick="selectChip(this)">${c.icon} ${c.name}</div>`).join('')}
+      ${(window.tiinSelectableCats?.('expense') || EXPENSE_CATS).map(c => `<div class="chip" data-id="${c.id}" onclick="selectChip(this)">${c.icon} ${c.name}</div>`).join('')}
     </div></div>
     <div class="form-group"><label>${t('pt_priority')}</label><div class="chips" id="ptPrioChips">
       <div class="chip" data-id="high" onclick="selectChip(this)">🔴 ${t('highPriority')}</div>
@@ -2136,7 +2144,7 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=110', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=111', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
@@ -2151,6 +2159,8 @@ init();
 <script src="src/tiin-deals.js?v=10"></script>
 <script src="src/tiin-settings.js?v=18"></script>
 <script src="src/tiin-reports.js?v=5"></script>
+<script src="src/tiin-categories.js?v=1"></script>
+<link rel="stylesheet" href="styles/tiin-categories.css?v=1">
 <link rel="stylesheet" href="styles/tiin-obsidian-system.css?v=6">
 <link rel="stylesheet" href="styles/tiin-pearl-system.css?v=4">
 </body>

@@ -51,7 +51,7 @@
   // "allocated for living" envelope and its daily limit.
   function isBusinessCost(item) {
     if (!item || item.type !== 'expense') return false;
-    if (item.category === 'business_cost' || item.businessCost === true) return true;
+    if (item.category === 'business_cost' || window.tiinIsCostCategory?.(item.category) || item.businessCost === true) return true;
     const tags = Array.isArray(item.tags) ? item.tags.join(' ') : '';
     const label = (String(item.comment || '') + ' ' + tags).toLowerCase();
     return /(?:себестоим|өзіндік\s*құн|cost\s*of\s*goods|\bcogs\b)/i.test(label);

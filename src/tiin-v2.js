@@ -52,7 +52,7 @@
         const wallet = tx.wallet === 'business' ? '💼 ' : '';
         // Keeping the id in a data attribute avoids invalid nested quotes in inline handlers.
         const txId = encodeURIComponent(String(tx.id));
-        html += `<article class="tx-item" data-tx-id="${txId}" onclick="editTx(decodeURIComponent(this.dataset.txId))"><div class="tx-icon">${cat.icon}</div><div class="tx-info"><div class="tx-cat">${wallet}${cat.name}</div><div class="tx-comment">${tx.comment || ''}</div>${tags}</div><div class="tx-actions"><div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '−'}${tx.currency && tx.currency !== 'KZT' && Number.isFinite(Number(tx.originalAmount)) ? new Intl.NumberFormat(window.tiinLocale ? window.tiinLocale() : 'ru-RU', { maximumFractionDigits: tx.currency === 'USD' || tx.currency === 'EUR' || tx.currency === 'RUB' ? 2 : 0 }).format(Number(tx.originalAmount)) + ' ' + ({ USD:'$', VND:'₫', EUR:'€', RUB:'₽' }[tx.currency] || tx.currency) : fmt(tx.amount)}</div>${tx.currency && tx.currency !== 'KZT' && Number.isFinite(Number(tx.originalAmount)) ? '<div class="tx-base-amount">≈ ' + (isIncome ? '+' : '−') + fmt(tx.amount) + '</div>' : ''}<button class="tx-menu" type="button" aria-label="${tr('Действия с операцией','Операция әрекеттері','Transaction actions')}" onclick="event.stopPropagation();openTxActions('${txId}')">⋮</button></div></article>`;
+        html += `<article class="tx-item" data-tx-id="${txId}" onclick="editTx(decodeURIComponent(this.dataset.txId))"><div class="tx-icon">${cat.icon}</div><div class="tx-info"><div class="tx-cat">${wallet}${cat.name}</div><div class="tx-comment">${esc(window.tiinTransactionDetail ? window.tiinTransactionDetail(tx) : (tx.comment || ''))}</div>${tags}</div><div class="tx-actions"><div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '−'}${tx.currency && tx.currency !== 'KZT' && Number.isFinite(Number(tx.originalAmount)) ? new Intl.NumberFormat(window.tiinLocale ? window.tiinLocale() : 'ru-RU', { maximumFractionDigits: tx.currency === 'USD' || tx.currency === 'EUR' || tx.currency === 'RUB' ? 2 : 0 }).format(Number(tx.originalAmount)) + ' ' + ({ USD:'$', VND:'₫', EUR:'€', RUB:'₽' }[tx.currency] || tx.currency) : fmt(tx.amount)}</div>${tx.currency && tx.currency !== 'KZT' && Number.isFinite(Number(tx.originalAmount)) ? '<div class="tx-base-amount">≈ ' + (isIncome ? '+' : '−') + fmt(tx.amount) + '</div>' : ''}<button class="tx-menu" type="button" aria-label="${tr('Действия с операцией','Операция әрекеттері','Transaction actions')}" onclick="event.stopPropagation();openTxActions('${txId}')">⋮</button></div></article>`;
       });
       html += '</section>';
     });
@@ -85,7 +85,8 @@
     const targetDate = new Date(date + 'T00:00:00'); const targetY = targetDate.getFullYear(); const targetM = targetDate.getMonth();
     saveTxns(currentYear, currentMonth, oldTxns.filter(item => String(item.id) !== String(id)));
     const target = targetY === currentYear && targetM === currentMonth ? getTxns(targetY, targetM) : getTxns(targetY, targetM);
-    target.push({ ...tx, amount, category:cat.dataset.id, comment, tags, wallet, date }); saveTxns(targetY, targetM, target);
+    target.push({ ...tx, amount, category:cat.dataset.id, comment, tags, wallet, date,
+      ...(tx.type === 'expense' && window.tiinExpenseFields ? window.tiinExpenseFields() : {}) }); saveTxns(targetY, targetM, target);
     closeModal(); toast(text('Сохранено ✓', 'Сақталды ✓', 'Saved ✓')); render();
   };
 
@@ -453,7 +454,7 @@
   };
 
   function planningCategories(type) {
-    return type === 'income' ? INCOME_CATS : EXPENSE_CATS;
+    return window.tiinSelectableCats ? window.tiinSelectableCats(type) : (type === 'income' ? INCOME_CATS : EXPENSE_CATS);
   }
 
   function renderPlanning() {
@@ -728,7 +729,7 @@
   }
   hydrateCustomCategories();
 
-  function templateCats(type) { return type === 'income' ? INCOME_CATS : EXPENSE_CATS; }
+  function templateCats(type) { return window.tiinSelectableCats ? window.tiinSelectableCats(type) : (type === 'income' ? INCOME_CATS : EXPENSE_CATS); }
   function renderTemplateCategoryChips(type, selectedId) {
     const holder = document.getElementById('tplCatChips');
     if (!holder) return;
@@ -873,7 +874,7 @@
       html += `<section class="day-group"><header class="day-header"><div class="day-heading"><div class="day-title">${label}</div><div class="day-caption">${singleLabel}</div></div><div class="day-totals"><span class="day-metric ${isIncome ? 'income' : 'expense'}"><small>${singleLabel}</small><b>${isIncome ? '+' : '−'}${fmt(daily)}</b></span></div></header>`;
       items.forEach(tx => {
         const cat = cats.find(item => item.id === tx.category) || { icon:'•', name:text('Категория','Санат','Category') };
-        const note = tx.comment ? esc(tx.comment) : copy.comment;
+        const note = esc(window.tiinTransactionDetail ? window.tiinTransactionDetail(tx) : tx.comment) || copy.comment;
         const wallet = tx.wallet === 'business' ? '💼 ' : '';
         const id = encodeURIComponent(String(tx.id));
         html += `<article class="tx-item" data-tx-id="${id}" onclick="editTx(decodeURIComponent(this.dataset.txId))"><div class="tx-icon">${cat.icon}</div><div class="tx-info"><div class="tx-cat">${wallet}${esc(cat.name)}</div><div class="tx-comment">${note}</div></div><div class="tx-actions"><div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '−'}${fmt(tx.amount)}</div><button class="tx-menu" type="button" aria-label="${text('Действия с операцией','Операция әрекеттері','Transaction actions')}" onclick="event.stopPropagation();openTxActions('${id}')">⋮</button></div></article>`;
@@ -897,7 +898,7 @@
     const total = rows.reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
     const items = rows.length ? rows.map(tx => {
       const date = new Date(tx.date + 'T00:00:00').toLocaleDateString(window.tiinLocale(), { day:'numeric', month:'long', year:'numeric' });
-      const note = tx.comment ? esc(tx.comment) : copy.comment;
+      const note = esc(window.tiinTransactionDetail ? window.tiinTransactionDetail(tx) : tx.comment) || copy.comment;
       return `<div class="analytics-detail-row"><div><b>${note}</b><small>${date}${tx.wallet === 'business' ? ' · 💼' : ''}</small></div><strong>−${fmt(tx.amount)}</strong></div>`;
     }).join('') : `<p class="analytics-detail-empty">${copy.empty}</p>`;
     document.getElementById('modal').innerHTML = `<div class="tiin-sheet analytics-detail-sheet"><div class="tiin-sheet-handle"></div><div class="analytics-detail-heading"><span>${category.icon}</span><div><p>${copy.title}</p><h2>${esc(category.name)}</h2></div></div><div class="analytics-detail-total"><span>${copy.total} · ${rows.length} ${copy.operations}</span><b>${fmt(total)}</b></div><div class="analytics-detail-list">${items}</div><button class="btn btn-gold" onclick="closeModal()">${copy.close}</button></div>`;

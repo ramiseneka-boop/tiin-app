@@ -110,7 +110,8 @@
     txns.push({
       id: Date.now(), type, amount: baseAmount, originalAmount, currency: currencyCode,
       rateToKzt: rate, rateUpdatedAt: sourceTime, category: cat.dataset.id, comment, date, wallet,
-      tags: tag ? tag.split(/[,\s]+/).filter(Boolean) : []
+      tags: tag ? tag.split(/[,\s]+/).filter(Boolean) : [],
+      ...(type === 'expense' && window.tiinExpenseFields ? window.tiinExpenseFields() : {})
     });
     localStorage.setItem(LAST_CURRENCY_KEY, currencyCode);
     saveTxns(d.getFullYear(), d.getMonth(), txns);
@@ -204,7 +205,8 @@
     const wallet = document.querySelector('#editWalletChips .chip.selected')?.dataset.id || 'personal';
     saveTxns(currentYear, currentMonth, oldTxns.filter(item => String(item.id) !== String(id)));
     const target = getTxns(targetDate.getFullYear(), targetDate.getMonth());
-    target.push({ ...tx, amount: Math.round(originalAmount * rate), originalAmount, currency: code, rateToKzt: rate, rateUpdatedAt, category: cat.dataset.id, comment, tags, wallet, date });
+    target.push({ ...tx, amount: Math.round(originalAmount * rate), originalAmount, currency: code, rateToKzt: rate, rateUpdatedAt, category: cat.dataset.id, comment, tags, wallet, date,
+      ...(tx.type === 'expense' && window.tiinExpenseFields ? window.tiinExpenseFields() : {}) });
     saveTxns(targetDate.getFullYear(), targetDate.getMonth(), target);
     localStorage.setItem(LAST_CURRENCY_KEY, code);
     closeModal(); toast(ru('Сохранено ✓', 'Сақталды ✓', 'Saved ✓')); render();

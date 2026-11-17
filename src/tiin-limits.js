@@ -87,13 +87,13 @@
   window.openSpendingLimits = function openSpendingLimits() {
     const l = limits(), c = copy();
     let html = `<div class="limits-modal"><h3>🎯 ${c.title}</h3><p class="limits-help">${c.total}: ${c.daily} / ${c.monthly}</p><div class="limits-grid"><label>${c.daily}<input type="number" class="form-input" id="limit_global_daily" value="${l.global.daily || ''}" placeholder="0" inputmode="numeric"></label><label>${c.monthly}<input type="number" class="form-input" id="limit_global_monthly" value="${l.global.monthly || ''}" placeholder="0" inputmode="numeric"></label></div><h4>${c.categories}</h4>`;
-    EXPENSE_CATS.forEach(cat => { const item = l.categories[cat.id] || {}; html += `<div class="limit-input-row"><span>${cat.icon} ${cat.name}</span><input type="number" class="form-input" id="limit_${cat.id}_daily" value="${item.daily || ''}" placeholder="${c.daily}" inputmode="numeric"><input type="number" class="form-input" id="limit_${cat.id}_monthly" value="${item.monthly || ''}" placeholder="${c.monthly}" inputmode="numeric"></div>`; });
+    (window.tiinSelectableCats?.('expense') || EXPENSE_CATS).forEach(cat => { const item = l.categories[cat.id] || {}; html += `<div class="limit-input-row"><span>${cat.icon} ${cat.name}</span><input type="number" class="form-input" id="limit_${cat.id}_daily" value="${item.daily || ''}" placeholder="${c.daily}" inputmode="numeric"><input type="number" class="form-input" id="limit_${cat.id}_monthly" value="${item.monthly || ''}" placeholder="${c.monthly}" inputmode="numeric"></div>`; });
     html += `<button class="btn btn-gold" onclick="saveSpendingLimits()" style="width:100%;margin-top:14px">${c.save}</button>`;
     document.getElementById('modal').innerHTML = html; document.getElementById('modalOverlay').classList.add('open');
   };
   window.saveSpendingLimits = function saveSpendingLimits() {
     const next = { global: { daily:number(document.getElementById('limit_global_daily').value), monthly:number(document.getElementById('limit_global_monthly').value) }, categories:{} };
-    EXPENSE_CATS.forEach(cat => { next.categories[cat.id] = { daily:number(document.getElementById('limit_'+cat.id+'_daily').value), monthly:number(document.getElementById('limit_'+cat.id+'_monthly').value) }; });
+    (window.tiinSelectableCats?.('expense') || EXPENSE_CATS).forEach(cat => { next.categories[cat.id] = { daily:number(document.getElementById('limit_'+cat.id+'_daily').value), monthly:number(document.getElementById('limit_'+cat.id+'_monthly').value) }; });
     saveLimits(next); closeModal(); toast(copy().limitSaved); render();
   };
 
