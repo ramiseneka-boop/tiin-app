@@ -6,9 +6,9 @@
 .tiin-person-group .chip,.tiin-category-group .chip,.tiin-sub-group .chip{min-height:42px;line-height:1.2;white-space:normal;text-align:left}
 .tiin-await-person{opacity:.45;pointer-events:none}
 .tiin-special-label{flex-basis:100%;margin:10px 0 0;color:var(--gold,#d8b75d);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-.tiin-cost-chip{border-color:rgba(216,183,93,.65)!important;background:linear-gradient(130deg,rgba(216,183,93,.14),transparent)!important;color:var(--text)!important}
+.tiin-cost-chip{flex-direction:column;align-items:flex-start;gap:3px;border-color:rgba(216,183,93,.65)!important;background:linear-gradient(130deg,rgba(216,183,93,.14),transparent)!important;color:var(--text)!important}
 .tiin-cost-chip.selected{background:linear-gradient(130deg,rgba(216,183,93,.32),rgba(216,183,93,.12))!important}
-.tiin-cost-chip small{display:block;color:var(--text2);font-size:10px;font-weight:400;margin-top:3px}
+.tiin-cost-chip small{color:var(--text2);font-size:10px;font-weight:400;line-height:1.2}
 .tiin-manage-link{display:block;width:100%;padding:12px 4px;margin:0 0 8px;text-align:center;border:0;background:none;color:var(--gold,#d8b75d);font:inherit;font-size:13px;cursor:pointer}
 .tiin-category-manager{max-height:min(75vh,780px);overflow:auto;padding-bottom:24px}
 .tiin-category-manager h2{font-size:22px;line-height:1.2;margin-bottom:8px}
