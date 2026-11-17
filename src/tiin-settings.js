@@ -209,7 +209,7 @@
     return '<div class="tiin-faq">'+rows.map(x=>'<details><summary>'+x[0]+'</summary><p>'+x[1]+'</p><button class="btn btn-ghost btn-sm" onclick="TIINGoTo(\''+x[2]+'\')">'+tr('Открыть раздел','Бөлімді ашу','Open section')+'</button></details>').join('')+'</div>';
   }
   window.TIINGoTo=function(tab){switchTab(tab); setTimeout(()=>document.getElementById('tab-'+tab)?.scrollIntoView({behavior:'smooth',block:'start'}),80);};
-  function setMode(value){savePrefs({mode:value});applyMode();renderSettings();}
+  function setMode(value){savePrefs({mode:value});applyMode();window.renderTransactions?.();renderSettings();}
   window.setTIINMode=setMode;
   function settings() {
     const host=document.getElementById('tab-settings');if(!host)return;

@@ -80,7 +80,7 @@
     const box = document.getElementById('modal');
     const overlay = document.getElementById('modalOverlay');
     if (!box || !overlay) return;
-    box.innerHTML = '<div class="currency-modal"><div class="currency-kicker">TIIN</div><h3>' + l.title + '</h3>' +
+    box.innerHTML = '<div class="currency-modal"><div class="currency-sheet-handle" aria-hidden="true"></div><button type="button" class="currency-close" aria-label="' + (window.currentLang === 'en' ? 'Close' : window.currentLang === 'kz' ? 'Жабу' : 'Закрыть') + '">×</button><div class="currency-kicker">TIIN</div><h3>' + l.title + '</h3>' +
       '<p class="currency-status" id="currencyStatus">' + statusText(cached) + '</p>' +
       '<div class="currency-fields"><div class="form-group"><label>' + l.amount + '</label><input id="currencyAmount" class="form-input currency-amount" type="number" inputmode="decimal" min="0" value="1"></div>' +
       '<div class="currency-pair"><div><label>' + l.from + '</label>' + selector('currencyFrom', 'USD') + '</div><button type="button" class="currency-swap" onclick="TIINCurrency.swap()" aria-label="swap">⇄</button><div><label>' + l.to + '</label>' + selector('currencyTo', 'KZT') + '</div></div></div>' +
@@ -88,6 +88,23 @@
       '<div class="currency-list" id="currencyRates"></div>' +
       '<button class="btn btn-ghost" style="width:100%;margin-top:14px" onclick="TIINCurrency.refresh()">' + l.refresh + '</button></div>';
     overlay.classList.add('open');
+    box.scrollTop = 0;
+    const close = () => window.closeModal();
+    box.querySelector('.currency-close').addEventListener('click', close);
+    box.querySelector('.currency-sheet-handle').addEventListener('click', close);
+    let startY = 0, startX = 0, startedAtTop = false;
+    box.addEventListener('touchstart', event => {
+      if (event.touches.length !== 1) return;
+      startY = event.touches[0].clientY;
+      startX = event.touches[0].clientX;
+      startedAtTop = box.scrollTop <= 1 && !event.target.closest('input, select, button');
+    }, { passive: true });
+    box.addEventListener('touchend', event => {
+      if (!startedAtTop || event.changedTouches.length !== 1) return;
+      const dy = event.changedTouches[0].clientY - startY;
+      if (dy > 80 && dy > Math.abs(event.changedTouches[0].clientX - startX) * 1.2 && box.scrollTop <= 1) close();
+      startedAtTop = false;
+    }, { passive: true });
     ['currencyAmount','currencyFrom','currencyTo'].forEach(id => document.getElementById(id).addEventListener('input', updateConversion));
     updateConversion();
   }

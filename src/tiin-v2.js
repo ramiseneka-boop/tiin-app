@@ -8,7 +8,7 @@
     const styles = document.createElement('link');
     styles.id = 'tiinV2FinalStyles';
     styles.rel = 'stylesheet';
-    styles.href = 'styles/tiin-v2.css?v=7';
+    styles.href = 'styles/tiin-v2.css?v=8';
     document.head.appendChild(styles);
   }
 
@@ -845,6 +845,10 @@
   window.renderTransactions = function renderTransactionsWithExpensePeriods() {
     const el = document.getElementById('tab-transactions');
     if (!el) return;
+    // The compact home screen always shows the current month's operations.
+    let simpleMode = document.body.classList.contains('tiin-simple-mode');
+    try { simpleMode ||= JSON.parse(localStorage.getItem('tiin_preferences_v1') || '{}').mode === 'simple'; } catch (_) { /* Use the current DOM mode. */ }
+    if (simpleMode) window.tiinExpenseHistoryRange = { type:'month' };
     const copy = historyCopy();
     const range = expenseHistoryRange();
     const state = window.tiinExpenseHistoryRange || { type:'month' };

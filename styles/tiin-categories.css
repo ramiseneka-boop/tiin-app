@@ -55,3 +55,4 @@ html.light .tiin-sticky-save{--modal-surface:#faf8f2}
 html.light .tiin-sticky-actions{--modal-surface:#faf8f2}
 .tiin-app-version{text-align:center;padding:22px 12px calc(140px + env(safe-area-inset-bottom,0px));color:var(--text2);font-size:12px}
 .tiin-app-version strong{display:block;margin-top:6px;color:var(--gold,#d8b75d);font-size:14px;letter-spacing:.03em}
+.tiin-simple-mode #balanceKpi,.tiin-simple-mode .expense-history-card{display:none!important}
