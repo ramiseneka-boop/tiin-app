@@ -923,7 +923,7 @@ function refreshIncomeCard(actualIncome) {
   value.parentElement.classList.toggle('income-showing-expected', expected);
   const toggle = document.getElementById('incomeModeToggle');
   const note = document.getElementById('incomeModeNote');
-  label.textContent = expected ? translate('Ожидаемый доход', 'Күтілетін кіріс', 'Expected income') : t('income');
+  label.textContent = expected ? translate('Ожидаемая прибыль', 'Күтілетін пайда', 'Expected profit') : t('income');
   value.textContent = fmt(expected ? (window.TIINExpectedDealIncome?.(currentYear, currentMonth, currentWallet) || 0) : actualIncome);
   value.classList.toggle('is-expected', expected);
   toggle.setAttribute('aria-label', translate('Вид дохода', 'Кіріс түрі', 'Income view'));
@@ -934,7 +934,7 @@ function refreshIncomeCard(actualIncome) {
     button.setAttribute('aria-pressed', String(active));
   });
   note.hidden = !expected;
-  note.textContent = translate('По сделкам · не в балансе', 'Мәмілелер бойынша · баланста жоқ', 'Deals · not in balance');
+  note.textContent = translate('Все неоплаченные сделки · не в балансе', 'Барлық төленбеген мәмілелер · баланста жоқ', 'All unpaid deals · not in balance');
 }
 window.setExpenseCostMode = function(include) {
   localStorage.setItem('tiin_expense_include_cost', include ? '1' : '0');
@@ -2187,20 +2187,20 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=128', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=129', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
 </script>
-<script src="src/tiin-v2.js?v=37"></script>
+<script src="src/tiin-v2.js?v=38"></script>
 <script src="src/tiin-currency.js?v=4"></script>
   <script src="src/tiin-multicurrency.js?v=4"></script>
 <script src="src/tiin-auth-handoff.js?v=1"></script>
 <script src="src/tiin-sync.js?v=16"></script>
 <script id="tiinLimitsScript" src="src/tiin-limits.js?v=4"></script>
 <script src="src/tiin-command-deck.js?v=33"></script>
-<script src="src/tiin-deals.js?v=14"></script>
-<script src="src/tiin-settings.js?v=23"></script>
+<script src="src/tiin-deals.js?v=15"></script>
+<script src="src/tiin-settings.js?v=24"></script>
 <script src="src/tiin-reports.js?v=8"></script>
 <script src="src/tiin-categories.js?v=8"></script>
 <link rel="stylesheet" href="styles/tiin-categories.css?v=8">
