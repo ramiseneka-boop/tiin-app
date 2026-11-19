@@ -8,7 +8,7 @@
     const styles = document.createElement('link');
     styles.id = 'tiinV2FinalStyles';
     styles.rel = 'stylesheet';
-    styles.href = 'styles/tiin-v2.css?v=10';
+    styles.href = 'styles/tiin-v2.css?v=11';
     document.head.appendChild(styles);
   }
 
@@ -204,7 +204,8 @@
     hero.querySelector('.balance-hero-label').textContent = text('Общий баланс', 'Жалпы баланс', 'Total balance');
     hero.querySelector('.balance-hero-period').textContent = `${t('months_arr')[currentMonth]} ${currentYear}`;
     const labels = summary.querySelectorAll('.summary-item .label');
-    if (labels[0]) labels[0].textContent = t('income');
+    if (labels[0]) labels[0].textContent = labels[0].parentElement.classList.contains('income-showing-expected')
+      ? text('Ожидаемый доход', 'Күтілетін кіріс', 'Expected income') : t('income');
     if (labels[1]) labels[1].textContent = t('expense');
     let balanceKpi = document.getElementById('balanceKpi');
     if (!balanceKpi) {

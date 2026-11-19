@@ -12,6 +12,9 @@
   Object.assign(ru,{dealName:'Название сделки',example:'Например, займ близкому человеку',optional:'Необязательно',dealType:'Тип записи',businessDeal:'Коммерческая сделка',personalLoan:'Возврат личного займа',loanPayment:'Возврат займа',loanAdded:'В баланс поступило: ',loanTotal:'Вся сумма займа',receivedNow:'Получено сейчас',receivedNowHint:'Если уже вернули часть, впишите её здесь: запись попадёт в баланс, остальное останется долгом.',loanPartialHint:'Можно ввести только полученную часть. Например, 50 000 ₸ из 75 000 ₸; остаток станет 25 000 ₸.',partialHint:'Можно отметить частичную оплату.',loanAmountHint:'Укажите исходную сумму займа. Полученные деньги внесите ниже; дальнейшие возвраты — через «Возврат займа». Остаток посчитается автоматически.',dealAmountHint:'Исходная сумма договора. Частичные оплаты вносите отдельно.',belowPaid:'Общая сумма не может быть меньше уже полученной. При ошибке сначала отмените оплату.'});
   Object.assign(kz,{dealType:'Жазба түрі',businessDeal:'Коммерциялық мәміле',personalLoan:'Жеке қарызды қайтару',loanPayment:'Қарызды қайтару',loanAdded:'Балансқа түсті: ',loanTotal:'Қарыздың жалпы сомасы',receivedNow:'Қазір алынғаны',receivedNowHint:'Қайтарылған бөлігін енгізіңіз: балансқа түседі, қалғаны қарыз болып қалады.',loanPartialHint:'Қайтарылған бөлігін ғана енгізіңіз, қалдық автоматты түрде есептеледі.',partialHint:'Ішінара төлемді енгізуге болады.',loanAmountHint:'Қарыздың бастапқы сомасын көрсетіңіз. Алынған ақшаны төменде енгізіңіз; кейінгі қайтарымдарды бөлек тіркеңіз.',dealAmountHint:'Шарттың бастапқы сомасы. Ішінара төлемдерді бөлек енгізіңіз.',belowPaid:'Жалпы сома алынған сомадан аз бола алмайды. Алдымен төлемді болдырмаңыз.'});
   Object.assign(en,{dealType:'Record type',businessDeal:'Business deal',personalLoan:'Personal loan repayment',loanPayment:'Loan repayment',loanAdded:'Added to balance: ',loanTotal:'Original loan total',receivedNow:'Received now',receivedNowHint:'Enter a repayment already received: it will enter the balance and leave the rest outstanding.',loanPartialHint:'Enter only the amount received, for example 50,000 of 75,000; the remaining 25,000 is calculated automatically.',partialHint:'You can record a partial payment.',loanAmountHint:'Enter the original loan total. Enter money already received below; record later repayments separately. The remainder is calculated automatically.',dealAmountHint:'Original contract amount. Record partial payments separately.',belowPaid:'The total cannot be less than the amount already received. Undo the payment first if needed.'});
+  Object.assign(ru,{notInBalance:'не входит в баланс',noScheduledDeals:'В этом месяце нет неоплаченных коммерческих сделок с плановой датой оплаты.'});
+  Object.assign(kz,{notInBalance:'нақты қалдыққа кірмейді',noScheduledDeals:'Бұл айда жоспарланған төлем күні бар төленбеген коммерциялық мәмілелер жоқ.'});
+  Object.assign(en,{notInBalance:'not in balance',noScheduledDeals:'No unpaid commercial deals have a planned payment date this month.'});
   function tx(key) { return (window.currentLang === 'kz' ? kz : window.currentLang === 'en' ? en : ru)[key] || ru[key] || key; }
   function esc(v) { return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
   function read() { try { const d=JSON.parse(localStorage.getItem(KEY)||'[]'); return Array.isArray(d)?d:[]; } catch (_) { return []; } }
@@ -49,17 +52,28 @@
   }
   // Only the net amount still to be credited can become factual income.
   // A loan repayment returns principal and is not earned income.
-  window.TIINExpectedDealIncome = function(year, month, wallet) {
+  function expectedDeals(year, month, wallet) {
     return read().filter(d => {
       if (d.kind === 'loan' || status(d) === 'cancelled' || status(d) === 'paid') return false;
       if (wallet !== 'all' && (d.wallet || 'personal') !== wallet) return false;
       if (!/^\d{4}-\d{2}-\d{2}$/.test(d.plannedDate || '')) return false;
       const date = new Date(d.plannedDate + 'T00:00:00');
       return date.getFullYear() === year && date.getMonth() === month;
-    }).reduce((total, d) => {
-      const fraction = remaining(d) / Math.max(1, n(d.amount));
-      return total + Math.max(0, net(d) * fraction);
-    }, 0);
+    });
+  }
+  function expectedNet(d) {
+    return Math.max(0, net(d) * remaining(d) / Math.max(1, n(d.amount)));
+  }
+  window.TIINExpectedDealIncome = function(year, month, wallet) {
+    return expectedDeals(year, month, wallet).reduce((total, d) => total + expectedNet(d), 0);
+  };
+  window.openTIINExpectedDeals = function() {
+    const rows = expectedDeals(currentYear, currentMonth, currentWallet);
+    const month = t('months_arr')[currentMonth] + ' ' + currentYear;
+    document.getElementById('modal').innerHTML = '<div class="tiin-sheet"><div class="tiin-sheet-handle"></div><h2>'+tx('forecastProfit')+'</h2><p class="planning-modal-description">'+esc(month)+' · '+tx('notInBalance')+'</p>'+
+      (rows.length ? '<div class="deal-payments">'+rows.map(d => '<div class="tiin-expected-row"><span><b>'+esc(d.title)+'</b><small>'+esc(dateLabel(d.plannedDate))+' · '+tx('remaining')+': '+fmt(remaining(d))+'</small></span><strong>'+fmt(expectedNet(d))+'</strong></div>').join('')+'</div>' : '<p class="planning-modal-description">'+tx('noScheduledDeals')+'</p>')+
+      '<button class="btn btn-gold" style="width:100%;margin-top:16px" onclick="closeModal();openDeals()">'+tx('title')+' →</button></div>';
+    document.getElementById('modalOverlay').classList.add('open');
   };
   function ensure() {
     const templates = document.getElementById('templatesScroll');

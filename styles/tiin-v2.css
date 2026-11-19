@@ -408,6 +408,9 @@ html.light .currency-select { background:var(--surface); border-color:rgba(32,36
 .income-mode-note{align-self:stretch;margin-top:5px;color:var(--text2);font-size:9px;line-height:1.2;text-align:center}
 .income-mode-note[hidden]{display:none!important}
 .summary-item.income-showing-expected .label{max-width:calc(100% - 40px);font-size:13px!important;line-height:1.2!important}
+.tiin-expected-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);font-size:13px}
+.tiin-expected-row span{min-width:0;overflow-wrap:anywhere}.tiin-expected-row small{display:block;margin-top:4px;color:var(--text2);font-size:11px}
+.tiin-expected-row strong{white-space:nowrap;color:var(--green)}
 
 /* In-app guide: readable, scannable steps in both Obsidian and light themes. */
 .tiin-guide-section > .tiin-muted { margin-bottom:14px; line-height:1.55; }
