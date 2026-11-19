@@ -403,7 +403,7 @@ html.light .currency-select { background:var(--surface); border-color:rgba(32,36
 /* In-app guide: readable, scannable steps in both Obsidian and light themes. */
 .tiin-guide-section > .tiin-muted { margin-bottom:14px; line-height:1.55; }
 .tiin-guide { display:grid; gap:9px; }
-.tiin-guide-topic { min-width:0; border:1px solid var(--border); border-radius:16px; background:linear-gradient(125deg,rgba(212,175,90,.055),transparent 70%),var(--card); overflow:hidden; }
+.tiin-guide-topic { min-width:0; border:1px solid var(--border); border-radius:16px; background-color:var(--card); background-image:linear-gradient(125deg,rgba(212,175,90,.055),transparent 70%); overflow:hidden; }
 .tiin-guide-topic[open] { border-color:rgba(212,175,90,.48); }
 .tiin-guide-topic summary { display:flex; gap:11px; align-items:center; min-height:52px; padding:10px 13px; color:var(--text); font-size:13px; font-weight:750; line-height:1.35; cursor:pointer; list-style:none; }
 .tiin-guide-topic summary::-webkit-details-marker { display:none; }
