@@ -8,7 +8,7 @@
     const styles = document.createElement('link');
     styles.id = 'tiinV2FinalStyles';
     styles.rel = 'stylesheet';
-    styles.href = 'styles/tiin-v2.css?v=9';
+    styles.href = 'styles/tiin-v2.css?v=10';
     document.head.appendChild(styles);
   }
 

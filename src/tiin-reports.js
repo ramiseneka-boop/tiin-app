@@ -148,7 +148,7 @@
     if (document.body.dataset.tiinReportsInstalled) return;
     document.body.dataset.tiinReportsInstalled = '1';
     document.addEventListener('click', event => {
-      if (event.target.closest('#expenseCostToggle, .sync-status')) return;
+      if (event.target.closest('#expenseCostToggle, #incomeModeToggle, .sync-status')) return;
       const card = event.target.closest('[data-tiin-report]');
       if (card) return window.openTIINStatement(card.dataset.tiinReport);
     });

@@ -401,3 +401,8 @@ html.light .cat-bar-track{background:#e9e0d3!important}
   html.light .lang-toggle span{min-width:22px!important;font-size:8px!important}
   html.light .ctrl-btn,html.light .tiin-account-button{min-width:30px!important;min-height:30px!important;padding-inline:4px!important}
 }
+html.light .summary-item:first-child{display:flex!important;flex-direction:column!important;align-items:flex-start!important}
+html.light .summary-item .income-mode-toggle{align-self:stretch!important;margin-top:auto!important;border-color:rgba(22,125,87,.3)!important;background:rgba(255,255,255,.6)!important}
+html.light .summary-item .income-mode-toggle button{min-height:28px!important;color:#496c5d!important}
+html.light .summary-item .income-mode-toggle button.active{background:linear-gradient(135deg,#d8f1e2,#bce1d0)!important;color:#116346!important}
+html.light .summary-item .income-mode-note{color:#526b5c!important}

@@ -15,7 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="styles/tiin-v2.css?v=9">
+<link rel="stylesheet" href="styles/tiin-v2.css?v=10">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -492,7 +492,7 @@ window.addEventListener('appinstalled',function(){
   </div>
 
   <div class="summary">
-    <div class="summary-item"><div class="label">Доход</div><div class="value income" id="totalIncome">0 ₸</div></div>
+    <div class="summary-item"><div class="label" id="incomeCardLabel">Доход</div><div class="value income" id="totalIncome" aria-live="polite">0 ₸</div><div class="income-mode-toggle" id="incomeModeToggle" role="group" aria-label="Вид дохода"><button type="button" data-mode="received" onclick="setIncomeCardMode('received')">Получено</button><button type="button" data-mode="expected" onclick="setIncomeCardMode('expected')">Ожидается</button></div><div class="income-mode-note" id="incomeModeNote" hidden>План · не в балансе</div></div>
     <div class="summary-item"><div class="label">Расход</div><div class="value expense" id="totalExpense">0 ₸</div><div class="expense-mode-toggle" id="expenseCostToggle"><button type="button" data-mode="without" onclick="setExpenseCostMode(false)">Без себест.</button><button type="button" data-mode="with" onclick="setExpenseCostMode(true)">С себест.</button></div></div>
     <div class="summary-item"><div class="label">Баланс</div><div class="value balance" id="totalBalance">0 ₸</div></div>
   </div>
@@ -909,6 +909,33 @@ function refreshExpenseCostToggle() {
   const include = includesCostInExpenseTotal();
   document.querySelectorAll('#expenseCostToggle button').forEach(button => button.classList.toggle('active', button.dataset.mode === (include ? 'with' : 'without')));
 }
+let incomeCardMode = localStorage.getItem('tiin_income_card_mode') === 'expected' ? 'expected' : 'received';
+window.setIncomeCardMode = function(mode) {
+  incomeCardMode = mode === 'expected' ? 'expected' : 'received';
+  localStorage.setItem('tiin_income_card_mode', incomeCardMode);
+  render();
+};
+function refreshIncomeCard(actualIncome) {
+  const expected = incomeCardMode === 'expected';
+  const translate = window.tiinText;
+  const label = document.getElementById('incomeCardLabel');
+  const value = document.getElementById('totalIncome');
+  value.parentElement.classList.toggle('income-showing-expected', expected);
+  const toggle = document.getElementById('incomeModeToggle');
+  const note = document.getElementById('incomeModeNote');
+  label.textContent = expected ? translate('Ожидаемый доход', 'Күтілетін кіріс', 'Expected income') : t('income');
+  value.textContent = fmt(expected ? (window.TIINExpectedDealIncome?.(currentYear, currentMonth, currentWallet) || 0) : actualIncome);
+  value.classList.toggle('is-expected', expected);
+  toggle.setAttribute('aria-label', translate('Вид дохода', 'Кіріс түрі', 'Income view'));
+  toggle.querySelectorAll('button').forEach(button => {
+    const active = button.dataset.mode === (expected ? 'expected' : 'received');
+    button.textContent = button.dataset.mode === 'expected' ? translate('Ожидается', 'Күтіледі', 'Expected') : translate('Получено', 'Алынды', 'Received');
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  note.hidden = !expected;
+  note.textContent = translate('По сделкам · не в балансе', 'Мәмілелер бойынша · баланста жоқ', 'Deals · not in balance');
+}
 window.setExpenseCostMode = function(include) {
   localStorage.setItem('tiin_expense_include_cost', include ? '1' : '0');
   render();
@@ -922,7 +949,7 @@ function render() {
   const allExpenses = txns.filter(tx=>tx.type==='expense');
   const actualExpense = allExpenses.reduce((s,tx)=>s+tx.amount,0);
   const shownExpense = includesCostInExpenseTotal() ? actualExpense : allExpenses.filter(tx=>!isBusinessCostTransaction(tx)).reduce((s,tx)=>s+tx.amount,0);
-  document.getElementById('totalIncome').textContent = fmt(inc);
+  refreshIncomeCard(inc);
   document.getElementById('totalExpense').textContent = fmt(shownExpense);
   // Balance always remains factual and therefore always includes себестоимость.
   document.getElementById('totalBalance').textContent = fmt(inc - actualExpense);
@@ -2160,24 +2187,24 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=126', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=127', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
 </script>
-<script src="src/tiin-v2.js?v=35"></script>
+<script src="src/tiin-v2.js?v=36"></script>
 <script src="src/tiin-currency.js?v=4"></script>
   <script src="src/tiin-multicurrency.js?v=4"></script>
 <script src="src/tiin-auth-handoff.js?v=1"></script>
 <script src="src/tiin-sync.js?v=16"></script>
 <script id="tiinLimitsScript" src="src/tiin-limits.js?v=4"></script>
 <script src="src/tiin-command-deck.js?v=33"></script>
-<script src="src/tiin-deals.js?v=12"></script>
-<script src="src/tiin-settings.js?v=22"></script>
-<script src="src/tiin-reports.js?v=6"></script>
+<script src="src/tiin-deals.js?v=13"></script>
+<script src="src/tiin-settings.js?v=23"></script>
+<script src="src/tiin-reports.js?v=7"></script>
 <script src="src/tiin-categories.js?v=8"></script>
 <link rel="stylesheet" href="styles/tiin-categories.css?v=8">
-<link rel="stylesheet" href="styles/tiin-obsidian-system.css?v=6">
-<link rel="stylesheet" href="styles/tiin-pearl-system.css?v=4">
+<link rel="stylesheet" href="styles/tiin-obsidian-system.css?v=7">
+<link rel="stylesheet" href="styles/tiin-pearl-system.css?v=5">
 </body>
 </html>

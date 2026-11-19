@@ -47,6 +47,20 @@
     const got = valid.reduce((s,d) => s + paid(d), 0);
     return { open, revenue:open.reduce((s,d)=>s+remaining(d),0), profit:open.filter(d=>d.kind!=='loan').reduce((s,d)=>s+Math.max(0, net(d) * (remaining(d)/Math.max(1,n(d.amount)))),0), due:due.reduce((s,d)=>s+remaining(d),0), got };
   }
+  // Only the net amount still to be credited can become factual income.
+  // A loan repayment returns principal and is not earned income.
+  window.TIINExpectedDealIncome = function(year, month, wallet) {
+    return read().filter(d => {
+      if (d.kind === 'loan' || status(d) === 'cancelled' || status(d) === 'paid') return false;
+      if (wallet !== 'all' && (d.wallet || 'personal') !== wallet) return false;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(d.plannedDate || '')) return false;
+      const date = new Date(d.plannedDate + 'T00:00:00');
+      return date.getFullYear() === year && date.getMonth() === month;
+    }).reduce((total, d) => {
+      const fraction = remaining(d) / Math.max(1, n(d.amount));
+      return total + Math.max(0, net(d) * fraction);
+    }, 0);
+  };
   function ensure() {
     const templates = document.getElementById('templatesScroll');
     if (templates && !document.getElementById('dealsAccess')) {
@@ -152,5 +166,5 @@
   };
   const legacyDealsReconciled=reconcileLegacyDealPayments();
   ensure();
-  if(legacyDealsReconciled&&typeof window.render==='function')window.render();
+  if(typeof window.render==='function')window.render();
 }());

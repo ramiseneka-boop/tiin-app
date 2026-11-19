@@ -518,3 +518,6 @@ html:not(.light) .tiin-report-icon{
   display:grid!important;place-items:center!important;width:34px;height:34px;
   border-radius:11px;background:rgba(85,103,137,.16)!important;
 }
+html:not(.light) .summary-item .income-mode-toggle{align-self:stretch;margin-top:auto!important;border-color:rgba(66,220,168,.3)!important;background:rgba(9,18,25,.52)!important}
+html:not(.light) .summary-item .income-mode-toggle button.active{background:linear-gradient(135deg,rgba(35,134,102,.65),rgba(26,90,75,.8))!important;color:#e9fff6!important}
+html:not(.light) .summary-item .income-mode-note{color:#a9bcb8!important}
