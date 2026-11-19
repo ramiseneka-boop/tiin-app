@@ -400,6 +400,24 @@ html.light .currency-select { background:var(--surface); border-color:rgba(32,36
 .tx-base-amount { margin-top:3px; color:var(--text-secondary, #9da7ba); font-size:12px; font-weight:650; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
 @media (max-width: 430px) { .tx-actions { min-width:96px; } .tx-base-amount { font-size:11px; } }
 
+/* In-app guide: readable, scannable steps in both Obsidian and light themes. */
+.tiin-guide-section > .tiin-muted { margin-bottom:14px; line-height:1.55; }
+.tiin-guide { display:grid; gap:9px; }
+.tiin-guide-topic { min-width:0; border:1px solid var(--border); border-radius:16px; background:linear-gradient(125deg,rgba(212,175,90,.055),transparent 70%),var(--card); overflow:hidden; }
+.tiin-guide-topic[open] { border-color:rgba(212,175,90,.48); }
+.tiin-guide-topic summary { display:flex; gap:11px; align-items:center; min-height:52px; padding:10px 13px; color:var(--text); font-size:13px; font-weight:750; line-height:1.35; cursor:pointer; list-style:none; }
+.tiin-guide-topic summary::-webkit-details-marker { display:none; }
+.tiin-guide-topic summary:focus-visible { outline:2px solid var(--gold1); outline-offset:-3px; }
+.tiin-guide-icon { display:grid; flex:none; place-items:center; width:30px; height:30px; border-radius:10px; background:rgba(212,175,90,.12); color:var(--gold1); font-size:17px; }
+.tiin-guide-chevron { margin-left:auto; color:var(--gold1); font-size:19px; transition:transform .2s; }
+.tiin-guide-topic[open] .tiin-guide-chevron { transform:rotate(180deg); }
+.tiin-guide-body { padding:0 14px 15px 54px; border-top:1px solid var(--border); }
+.tiin-guide-body ol { margin:12px 0 14px; padding-left:19px; color:var(--text2); font-size:12px; line-height:1.6; }
+.tiin-guide-body li { margin-bottom:10px; padding-left:2px; overflow-wrap:anywhere; }
+.tiin-guide-body li::marker { color:var(--gold1); font-weight:750; }
+.tiin-guide-body .btn { max-width:100%; white-space:normal; text-align:left; }
+@media(max-width:390px){.tiin-guide-topic summary{font-size:12px}.tiin-guide-body{padding-left:15px}}
+
 
 Warning: truncated output (original token count: 5171)
 Total output lines: 226
