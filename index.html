@@ -915,16 +915,22 @@ window.setIncomeCardMode = function(mode) {
   localStorage.setItem('tiin_income_card_mode', incomeCardMode);
   render();
 };
-function refreshIncomeCard(actualIncome) {
+function refreshIncomeCard(monthTransactions) {
   const expected = incomeCardMode === 'expected';
   const translate = window.tiinText;
   const label = document.getElementById('incomeCardLabel');
   const value = document.getElementById('totalIncome');
+  // The income KPI is a business profitability indicator. It intentionally
+  // excludes manual income and personal-loan repayments: only the net amount
+  // credited by a paid commercial deal belongs here.
+  const receivedNetProfit = (monthTransactions || [])
+    .filter(tx => tx.type === 'income' && tx.dealNetIncome === true && tx.category === 'business')
+    .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
   value.parentElement.classList.toggle('income-showing-expected', expected);
   const toggle = document.getElementById('incomeModeToggle');
   const note = document.getElementById('incomeModeNote');
-  label.textContent = expected ? translate('Ожидаемая прибыль', 'Күтілетін пайда', 'Expected profit') : t('income');
-  value.textContent = fmt(expected ? (window.TIINExpectedDealIncome?.(currentYear, currentMonth, currentWallet) || 0) : actualIncome);
+  label.textContent = expected ? translate('Ожидаемая прибыль', 'Күтілетін пайда', 'Expected profit') : translate('Чистая прибыль', 'Таза пайда', 'Net profit');
+  value.textContent = fmt(expected ? (window.TIINExpectedDealIncome?.(currentYear, currentMonth, currentWallet) || 0) : receivedNetProfit);
   value.classList.toggle('is-expected', expected);
   toggle.setAttribute('aria-label', translate('Вид дохода', 'Кіріс түрі', 'Income view'));
   toggle.querySelectorAll('button').forEach(button => {
@@ -949,7 +955,7 @@ function render() {
   const allExpenses = txns.filter(tx=>tx.type==='expense');
   const actualExpense = allExpenses.reduce((s,tx)=>s+tx.amount,0);
   const shownExpense = includesCostInExpenseTotal() ? actualExpense : allExpenses.filter(tx=>!isBusinessCostTransaction(tx)).reduce((s,tx)=>s+tx.amount,0);
-  refreshIncomeCard(inc);
+  refreshIncomeCard(txns);
   document.getElementById('totalExpense').textContent = fmt(shownExpense);
   // Balance always remains factual and therefore always includes себестоимость.
   document.getElementById('totalBalance').textContent = fmt(inc - actualExpense);
@@ -2187,21 +2193,21 @@ function deletePaymentItem(id) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=129', { updateViaCache: 'none' }).catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=130', { updateViaCache: 'none' }).catch(() => {}));
 }
 
 init();
 </script>
-<script src="src/tiin-v2.js?v=38"></script>
+<script src="src/tiin-v2.js?v=39"></script>
 <script src="src/tiin-currency.js?v=4"></script>
   <script src="src/tiin-multicurrency.js?v=4"></script>
 <script src="src/tiin-auth-handoff.js?v=1"></script>
 <script src="src/tiin-sync.js?v=16"></script>
 <script id="tiinLimitsScript" src="src/tiin-limits.js?v=4"></script>
 <script src="src/tiin-command-deck.js?v=33"></script>
-<script src="src/tiin-deals.js?v=15"></script>
-<script src="src/tiin-settings.js?v=24"></script>
-<script src="src/tiin-reports.js?v=8"></script>
+<script src="src/tiin-deals.js?v=16"></script>
+<script src="src/tiin-settings.js?v=25"></script>
+<script src="src/tiin-reports.js?v=9"></script>
 <script src="src/tiin-categories.js?v=8"></script>
 <link rel="stylesheet" href="styles/tiin-categories.css?v=8">
 <link rel="stylesheet" href="styles/tiin-obsidian-system.css?v=7">

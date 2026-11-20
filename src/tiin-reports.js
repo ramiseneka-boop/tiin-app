@@ -150,14 +150,14 @@
     document.addEventListener('click', event => {
       if (event.target.closest('#expenseCostToggle, #incomeModeToggle, .sync-status')) return;
       const card = event.target.closest('[data-tiin-report]');
-      if (card?.dataset.tiinReport === 'month-income' && card.classList.contains('income-showing-expected')) return window.openTIINExpectedDeals?.();
+      if (card?.dataset.tiinReport === 'month-income') return card.classList.contains('income-showing-expected') ? window.openTIINExpectedDeals?.() : window.openTIINReceivedDeals?.();
       if (card) return window.openTIINStatement(card.dataset.tiinReport);
     });
     document.addEventListener('keydown', event => {
       if ((event.key === 'Enter' || event.key === ' ') && document.activeElement?.matches?.('[data-tiin-report]')) {
         event.preventDefault();
         const card = document.activeElement;
-        if (card.dataset.tiinReport === 'month-income' && card.classList.contains('income-showing-expected')) window.openTIINExpectedDeals?.();
+        if (card.dataset.tiinReport === 'month-income') (card.classList.contains('income-showing-expected') ? window.openTIINExpectedDeals : window.openTIINReceivedDeals)?.();
         else window.openTIINStatement(card.dataset.tiinReport);
       }
     });

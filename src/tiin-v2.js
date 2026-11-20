@@ -205,7 +205,7 @@
     hero.querySelector('.balance-hero-period').textContent = `${t('months_arr')[currentMonth]} ${currentYear}`;
     const labels = summary.querySelectorAll('.summary-item .label');
     if (labels[0]) labels[0].textContent = labels[0].parentElement.classList.contains('income-showing-expected')
-      ? text('Ожидаемая прибыль', 'Күтілетін пайда', 'Expected profit') : t('income');
+      ? text('Ожидаемая прибыль', 'Күтілетін пайда', 'Expected profit') : text('Чистая прибыль', 'Таза пайда', 'Net profit');
     if (labels[1]) labels[1].textContent = t('expense');
     let balanceKpi = document.getElementById('balanceKpi');
     if (!balanceKpi) {
